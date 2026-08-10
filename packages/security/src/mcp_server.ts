@@ -696,6 +696,65 @@ const tools: McpTool[] = [
     },
   },
 
+  {
+    name: "ares_adcs_audit",
+    description: "Audit Active Directory Certificate Services (AD CS) for ESC1-ESC13 misconfigurations, Shadow Credentials, PKINIT support, and PetitPotam NTLM relay web enrollment endpoints.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        domain: { type: "string", description: "Target Active Directory domain" },
+        dc_ip:  { type: "string", description: "Domain Controller IP (optional)" },
+      },
+      required: ["domain"],
+    },
+    async handler({ domain, dc_ip }) {
+      const live = process.argv.includes("--live")
+      return security.adcs_audit.auditADCS({ domain: String(domain), dcIp: String(dc_ip ?? "") }, { live })
+    },
+  },
+
+  {
+    name: "ares_esxi_audit",
+    description: "Audit VMware ESXi & Hypervisor security: inspect vim-cmd & esxcli access, raw .vmdk datastore exposure, and snapshot integrity.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        host: { type: "string", description: "Target ESXi host IP or hostname" },
+      },
+      required: ["host"],
+    },
+    async handler({ host }) {
+      const live = process.argv.includes("--live")
+      return security.esxi_audit.auditESXi({ host: String(host) }, { live })
+    },
+  },
+
+  {
+    name: "ares_lolbins_audit",
+    description: "Discover system binaries useful for execution bypass and privilege escalation (LOLBas on Windows, GTFOBins on Linux/macOS).",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+    async handler() {
+      const live = process.argv.includes("--live")
+      return security.lolbins_audit.auditLOLBins({ live })
+    },
+  },
+
+  {
+    name: "ares_ebpf_audit",
+    description: "Audit stealth kernel persistence and rootkits: inspect eBPF socket filters/tracepoints and user-land LD_PRELOAD hooks (/etc/ld.so.preload).",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+    async handler() {
+      const live = process.argv.includes("--live")
+      return security.ebpf_audit.auditEBPFAndPersistence({ live })
+    },
+  },
+
 ]
 
 // ─── MCP server main loop ─────────────────────────────────────────────────────

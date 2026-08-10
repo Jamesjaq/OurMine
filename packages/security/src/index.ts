@@ -83,3 +83,7 @@ export * as web_exploit from "./web_exploit.ts";
 export * as webmail_exploit from "./webmail_exploit.ts";
 export * as yara from "./yara.ts";
 export * as yara_rules from "./yara_rules.ts";
+export * as adcs_audit from "./adcs_audit.ts";
+export * as esxi_audit from "./esxi_audit.ts";
+export * as lolbins_audit from "./lolbins_audit.ts";
+export * as ebpf_audit from "./ebpf_audit.ts";
