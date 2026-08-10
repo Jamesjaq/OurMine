@@ -1,0 +1,14 @@
+{
+  "name": "@ourmine/security",
+  "version": "1.0.0",
+  "description": "OurMine ⛏️ Security Suite — Ported ARES ATT&CK Modules (YARA, C2, AD, Evasion, Cloud, Web, Identity PRT)",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@ourmine/core": "1.0.0"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}

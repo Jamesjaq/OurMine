@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# OurMine ⛏️ CLI Launcher
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+
+export OURMINE=1
+export OURMINE_ROOT="$DIR/.."
+
+exec node --experimental-strip-types "$DIR/ourmine.ts" "$@"

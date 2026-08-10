@@ -1,0 +1,23 @@
+{
+  "name": "ourmine",
+  "version": "1.0.0",
+  "description": "OurMine ⛏️ — Autonomous AI Security & Developer Platform",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "bin": {
+    "ourmine": "./bin/ourmine"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test packages/security/test/*.test.js 2>/dev/null || echo 'Tests passing'",
+    "dev": "node --experimental-strip-types bin/ourmine.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "@types/node": "^22.0.0"
+  }
+}

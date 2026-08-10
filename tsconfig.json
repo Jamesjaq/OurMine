@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@ourmine/core": ["./packages/core/src/index.ts"],
+      "@ourmine/agent": ["./packages/agent/src/index.ts"],
+      "@ourmine/devtools": ["./packages/devtools/src/index.ts"],
+      "@ourmine/gateway": ["./packages/gateway/src/index.ts"],
+      "@ourmine/security": ["./packages/security/src/index.ts"],
+      "@ourmine/tui": ["./packages/tui/src/index.ts"],
+      "@ourmine/ui": ["./packages/ui/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "packages/ui", "packages/tui"]
+}
