@@ -92,3 +92,5 @@ export * as edge_appliance_audit from "./edge_appliance_audit.ts";
 export * as idp_oauth_audit from "./idp_oauth_audit.ts";
 export * as uefi_bootkit_audit from "./uefi_bootkit_audit.ts";
 export * as cicd_k8s_audit from "./cicd_k8s_audit.ts";
+export * as agent_resilience from "./agent_resilience.ts";
+export * as opsec_throttle from "./opsec_throttle.ts";

@@ -831,6 +831,47 @@ const tools: McpTool[] = [
     },
   },
 
+  {
+    name: "ares_opsec_throttle",
+    description: "Configure traffic control, execution pacing, and delay jitter to control test traffic density.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        requests_per_minute: { type: "number", description: "Max requests per minute" },
+        jitter_ms:           { type: "number", description: "Max random delay jitter in milliseconds" },
+      },
+    },
+    async handler({ requests_per_minute, jitter_ms }) {
+      const engine = new security.opsec_throttle.OpsecThrottleEngine({
+        maxRequestsPerMinute: Number(requests_per_minute ?? 60),
+        jitterMs: Number(jitter_ms ?? 200),
+      })
+      await engine.paceExecution()
+      return { status: "PACED", config: engine.getConfig() }
+    },
+  },
+
+  {
+    name: "ares_agent_resilience",
+    description: "Validate and repair AI agent tool-call parameter hallucinations, or checkpoint session state.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action:    { type: "string", description: "Resilience action", enum: ["repair_params", "checkpoint"] },
+        tool_name: { type: "string", description: "Tool name to validate/repair" },
+        session_id:{ type: "string", description: "Session ID for checkpointing" },
+      },
+      required: ["action"],
+    },
+    async handler({ action, tool_name, session_id }) {
+      const engine = security.agent_resilience.default
+      if (action === "repair_params") {
+        return engine.validateAndRepairToolCall(String(tool_name ?? "unknown"), {})
+      }
+      return engine.saveCheckpoint(String(session_id ?? "default"), 1, "Manual Checkpoint", [])
+    },
+  },
+
 ]
 
 // ─── MCP server main loop ─────────────────────────────────────────────────────
