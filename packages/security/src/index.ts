@@ -88,3 +88,7 @@ export * as esxi_audit from "./esxi_audit.ts";
 export * as lolbins_audit from "./lolbins_audit.ts";
 export * as ebpf_audit from "./ebpf_audit.ts";
 export * as ai_agent_audit from "./ai_agent_audit.ts";
+export * as edge_appliance_audit from "./edge_appliance_audit.ts";
+export * as idp_oauth_audit from "./idp_oauth_audit.ts";
+export * as uefi_bootkit_audit from "./uefi_bootkit_audit.ts";
+export * as cicd_k8s_audit from "./cicd_k8s_audit.ts";

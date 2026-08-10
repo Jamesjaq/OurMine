@@ -771,6 +771,66 @@ const tools: McpTool[] = [
     },
   },
 
+  {
+    name: "ares_edge_appliance_audit",
+    description: "Audit edge appliances (firewalls, VPNs) for firmware integrity hash mismatches, unencrypted TLS session tickets, and VPN memory leaks.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string", description: "Edge appliance IP or hostname" },
+      },
+      required: ["target"],
+    },
+    async handler({ target }) {
+      const live = process.argv.includes("--live")
+      return security.edge_appliance_audit.auditEdgeAppliance({ target: String(target) }, { live })
+    },
+  },
+
+  {
+    name: "ares_idp_oauth_audit",
+    description: "Audit Identity Providers (IdP) & OAuth apps for overprivileged multi-tenant consent permissions, FIDO2 fallback, and token bindings.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        domain: { type: "string", description: "Target IdP domain or tenant" },
+      },
+      required: ["domain"],
+    },
+    async handler({ domain }) {
+      const live = process.argv.includes("--live")
+      return security.idp_oauth_audit.auditIdPAndOAuth({ domain: String(domain) }, { live })
+    },
+  },
+
+  {
+    name: "ares_uefi_bootkit_audit",
+    description: "Audit UEFI firmware, Secure Boot DBX revoked hash database updates, NVRAM configuration, and vulnerable signed driver (BYOVD) loading.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+    async handler() {
+      const live = process.argv.includes("--live")
+      return security.uefi_bootkit_audit.auditUEFIAndBootkit({ live })
+    },
+  },
+
+  {
+    name: "ares_cicd_k8s_audit",
+    description: "Audit CI/CD pipeline workflows (GitHub Actions triggers/secrets) and Kubernetes ServiceAccount RBAC permissions for over-privileged wildcards.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string", description: "Repository path or cluster name" },
+      },
+    },
+    async handler({ target }) {
+      const live = process.argv.includes("--live")
+      return security.cicd_k8s_audit.auditCICDAndK8s({ repositoryOrCluster: String(target ?? "local") }, { live })
+    },
+  },
+
 ]
 
 // ─── MCP server main loop ─────────────────────────────────────────────────────
