@@ -755,6 +755,22 @@ const tools: McpTool[] = [
     },
   },
 
+  {
+    name: "ares_ai_agent_audit",
+    description: "Audit AI agent guardrails, RAG context pipelines, indirect prompt injection vulnerabilities, data poisoning risks, and tool parameter hijacking.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        agent_url:    { type: "string", description: "Target AI Agent HTTP endpoint or RAG URL" },
+        fuzz_depth:   { type: "string", description: "Fuzzing depth", enum: ["quick","full","deep"] },
+      },
+    },
+    async handler({ agent_url, fuzz_depth }) {
+      const live = process.argv.includes("--live")
+      return security.ai_agent_audit.auditAIAgentGuardrails({ targetAgentUrl: String(agent_url ?? ""), fuzzDepth: String(fuzz_depth ?? "quick") as any }, { live })
+    },
+  },
+
 ]
 
 // ─── MCP server main loop ─────────────────────────────────────────────────────

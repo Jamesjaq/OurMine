@@ -87,3 +87,4 @@ export * as adcs_audit from "./adcs_audit.ts";
 export * as esxi_audit from "./esxi_audit.ts";
 export * as lolbins_audit from "./lolbins_audit.ts";
 export * as ebpf_audit from "./ebpf_audit.ts";
+export * as ai_agent_audit from "./ai_agent_audit.ts";
