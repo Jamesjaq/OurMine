@@ -33,6 +33,11 @@ function err(id: unknown, code: number, message: string) {
   send({ jsonrpc: "2.0", id, error: { code, message } })
 }
 
+import { ToolBroker } from "./tool_broker.ts"
+import { ContextGuard } from "./context_guard.ts"
+
+const toolBroker = new ToolBroker()
+
 // ─── Tool definitions ─────────────────────────────────────────────────────────
 
 interface McpTool {
@@ -54,36 +59,35 @@ const tools: McpTool[] = [
 
   {
     name: "bash",
-    description: "Execute a bash shell command. Returns stdout, stderr, and exit code. Use for any terminal operation: running tools like nmap, gobuster, sqlmap, hydra, netcat, curl, git, python scripts, etc.",
+    description: "Execute a validated command from the allowed security tool registry. Commands are validated by ToolBroker and executed without shell metacharacter expansion.",
     inputSchema: {
       type: "object",
       properties: {
-        command:  { type: "string",  description: "Bash command to execute" },
-        timeout:  { type: "number",  description: "Timeout in milliseconds (default 30000)" },
-        cwd:      { type: "string",  description: "Working directory (default: project root)" },
+        command:  { type: "string",  description: "Security tool command to execute (e.g. nmap -sV target.com)" },
+        cwd:      { type: "string",  description: "Working directory" },
       },
       required: ["command"],
     },
-    async handler({ command, timeout = 30000, cwd }) {
+    async handler({ command, cwd }) {
       const live = process.argv.includes("--live")
       if (!live) {
         return { stdout: `[DRY-RUN] ${command}`, stderr: "", exitCode: 0, note: "Pass --live to execute real commands" }
       }
-      return new Promise(resolve => {
-        const proc = spawn("bash", ["-c", String(command)], {
-          cwd: String(cwd ?? process.cwd()),
-          env: process.env,
-          stdio: ["ignore", "pipe", "pipe"],
-        })
-        let stdout = "", stderr = ""
-        proc.stdout.on("data", (d: Buffer) => { stdout += d.toString() })
-        proc.stderr.on("data", (d: Buffer) => { stderr += d.toString() })
-        const timer = setTimeout(() => { proc.kill("SIGTERM") }, Number(timeout))
-        proc.on("close", (code) => {
-          clearTimeout(timer)
-          resolve({ stdout: stdout.slice(0, 50000), stderr: stderr.slice(0, 10000), exitCode: code ?? 1 })
-        })
-      })
+
+      try {
+        const result = await toolBroker.executeSafe(String(command), cwd ? String(cwd) : process.cwd())
+        return {
+          stdout: ContextGuard.wrapUntrustedData("bash_stdout", result.stdout),
+          stderr: ContextGuard.wrapUntrustedData("bash_stderr", result.stderr),
+          exitCode: result.exitCode,
+        }
+      } catch (err: any) {
+        return {
+          stdout: "",
+          stderr: ContextGuard.wrapUntrustedData("bash_error", err?.message ?? String(err)),
+          exitCode: 1,
+        }
+      }
     },
   },
 

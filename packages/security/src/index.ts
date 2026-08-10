@@ -94,3 +94,5 @@ export * as uefi_bootkit_audit from "./uefi_bootkit_audit.ts";
 export * as cicd_k8s_audit from "./cicd_k8s_audit.ts";
 export * as agent_resilience from "./agent_resilience.ts";
 export * as opsec_throttle from "./opsec_throttle.ts";
+export * as tool_broker from "./tool_broker.ts";
+export * as context_guard from "./context_guard.ts";
