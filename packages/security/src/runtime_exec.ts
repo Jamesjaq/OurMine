@@ -148,6 +148,9 @@ export interface ShellOptions {
   live?:    boolean
 }
 
+import { ToolBroker } from "./tool_broker.ts"
+const defaultBroker = new ToolBroker()
+
 export function execShell(
   cmd: string,
   display: ExecutionDisplay,
@@ -164,39 +167,23 @@ export function execShell(
 
     display.emit({ type: "shell_start", label: cmd })
 
-    const proc = spawn("bash", ["-c", cmd], {
-      env:   { ...process.env, ...(opts.env ?? {}) },
-      cwd:   opts.cwd ?? process.cwd(),
-      stdio: ["ignore", "pipe", "pipe"],
-    })
-
-    let stdout = ""
-    let stderr = ""
-
-    proc.stdout.setEncoding("utf8")
-    proc.stderr.setEncoding("utf8")
-
-    proc.stdout.on("data", (chunk: string) => {
-      stdout += chunk
-      chunk.trimEnd().split("\n").forEach(line =>
-        display.emit({ type: "shell_stdout", label: cmd, detail: line }))
-    })
-
-    proc.stderr.on("data", (chunk: string) => {
-      stderr += chunk
-      chunk.trimEnd().split("\n").forEach(line =>
-        display.emit({ type: "shell_stderr", label: cmd, detail: line }))
-    })
-
-    if (opts.timeout) {
-      setTimeout(() => proc.kill("SIGTERM"), opts.timeout)
-    }
-
-    proc.on("close", (code) => {
-      const exitCode = code ?? 1
-      display.emit({ type: "shell_done", label: cmd, exitCode })
-      resolve({ stdout, stderr, exitCode })
-    })
+    defaultBroker.executeSafe(cmd, opts.cwd ?? process.cwd())
+      .then(res => {
+        res.stdout.trimEnd().split("\n").forEach(line => {
+          if (line) display.emit({ type: "shell_stdout", label: cmd, detail: line })
+        })
+        res.stderr.trimEnd().split("\n").forEach(line => {
+          if (line) display.emit({ type: "shell_stderr", label: cmd, detail: line })
+        })
+        display.emit({ type: "shell_done", label: cmd, exitCode: res.exitCode })
+        resolve(res)
+      })
+      .catch(err => {
+        const msg = err?.message ?? String(err)
+        display.emit({ type: "shell_stderr", label: cmd, detail: msg })
+        display.emit({ type: "shell_done", label: cmd, exitCode: 1 })
+        resolve({ stdout: "", stderr: msg, exitCode: 1 })
+      })
   })
 }
 

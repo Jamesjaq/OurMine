@@ -35,8 +35,10 @@ function err(id: unknown, code: number, message: string) {
 
 import { ToolBroker } from "./tool_broker.ts"
 import { ContextGuard } from "./context_guard.ts"
+import { OpsecThrottleEngine } from "./opsec_throttle.ts"
 
 const toolBroker = new ToolBroker()
+const globalThrottleEngine = new OpsecThrottleEngine()
 
 // ─── Tool definitions ─────────────────────────────────────────────────────────
 
@@ -922,6 +924,8 @@ Always think step-by-step. Use ares_pentest_plan first to build a task tree, the
       break
 
     case "tools/call": {
+      await globalThrottleEngine.paceExecution()
+
       const toolName = params?.name
       const toolArgs = params?.arguments ?? {}
       const tool = toolMap.get(toolName)
