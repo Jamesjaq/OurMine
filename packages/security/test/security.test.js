@@ -1,44 +1,36 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import {
-  K8sSecurityAuditor,
-  AiSecurityAnalyzer,
-  CicdSupplyChainAuditor,
-  CredentialDumpingEngine,
-  AntiForensicsEngine
-} from '../src/index.ts';
+import * as security from '../src/index.ts';
 
-test('K8sSecurityAuditor audits cluster risks', async () => {
-  const auditor = new K8sSecurityAuditor();
-  const res = await auditor.auditCluster({ targetCluster: 'k8s.corp.local', dryRun: true });
-  assert.strictEqual(res.cluster, 'k8s.corp.local');
-  assert.ok(res.rbacIssues.length > 0);
-  assert.strictEqual(res.simulated, true);
+test('Container & K8s security auditing', async () => {
+  const audit = security.container.auditContainer({ live: false });
+  assert.strictEqual(audit.dryRun, true);
+  assert.strictEqual(typeof audit.isContainer, 'boolean');
 });
 
-test('AiSecurityAnalyzer tests prompt injection vulnerability', async () => {
-  const analyzer = new AiSecurityAnalyzer();
-  const res = await analyzer.analyzePromptSecurity({ modelEndpoint: 'https://api.ai.local/v1' });
-  assert.strictEqual(res.promptInjectionVulnerable, true);
-  assert.strictEqual(res.jailbreakRisk, 'high');
+test('AI Recon & Prompt injection analysis', async () => {
+  const prompts = security.atlas_arsenal.generateJailbreakPrompts();
+  assert.ok(prompts.length > 0);
+  assert.strictEqual(prompts[0].dryRun, true);
 });
 
-test('CicdSupplyChainAuditor checks pipeline security', async () => {
-  const auditor = new CicdSupplyChainAuditor();
-  const res = await auditor.auditPipeline({ repoUrl: 'https://github.com/corp/app' });
-  assert.strictEqual(res.untrustedRunnerRisk, true);
-  assert.ok(res.dependencyConfusionVulnerabilities.length > 0);
+test('CI/CD Supply chain auditing', async () => {
+  const audit = security.supply_chain.auditPackage('reqeusts');
+  assert.strictEqual(audit.isTyposquat, true);
 });
 
-test('CredentialDumpingEngine dumps simulated hashes', async () => {
-  const engine = new CredentialDumpingEngine();
-  const res = await engine.dumpCredentials({ targetSystem: 'DC01.corp.local', method: 'lsass' });
-  assert.strictEqual(res.extractedHashes, 4);
-  assert.ok(res.sampleArtifacts[0].includes('Administrator:500'));
+test('Credential dumping & Identity attacks', async () => {
+  const res = await security.identity.kerberoast({ live: false });
+  assert.ok(res.length > 0);
+  assert.strictEqual(res[0].hashType, 'krb5tgs');
 });
 
-test('AntiForensicsEngine checks log wiping posture', async () => {
-  const engine = new AntiForensicsEngine();
-  const res = await engine.reviewAntiForensics({ targetOS: 'linux' });
-  assert.strictEqual(res.clearedArtifacts.length, 3);
+test('Anti-Forensics & Anti-Analysis', async () => {
+  const profile = security.anti_analysis.profileEnvironment({ live: false });
+  assert.strictEqual(typeof profile.score, 'number');
+});
+
+test('Master security export index covers all 75 modules', async () => {
+  const modules = Object.keys(security);
+  assert.ok(modules.length >= 75, `Expected >= 75 modules exported, found ${modules.length}`);
 });
