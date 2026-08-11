@@ -131,10 +131,13 @@ export interface ParsedEndpoint {
 export function parseGobusterOutput(output: string): ParsedEndpoint[] {
   const results: ParsedEndpoint[] = []
   for (const line of output.split("\n")) {
-    const m = line.match(/^(\/[^\s]*)[\s\t]+\(Status:\s*(\d+)\)(?:\s+\[Size:\s*(\d+)\])?/)
+    const m = line.trim().match(/^(\/?[^\s]+)[\s\t]+\(Status:\s*(\d+)\)(?:\s+\[Size:\s*(\d+)\])?/)
     if (!m) continue
+    const rawPath = m[1]!
+    if (rawPath.startsWith("==") || rawPath.startsWith("[+]") || rawPath.startsWith("Finished")) continue
+    const path = rawPath.startsWith("/") ? rawPath : "/" + rawPath
     results.push({
-      path:   m[1]!,
+      path,
       status: parseInt(m[2]!, 10),
       size:   m[3] ? parseInt(m[3], 10) : undefined,
       method: "GET",

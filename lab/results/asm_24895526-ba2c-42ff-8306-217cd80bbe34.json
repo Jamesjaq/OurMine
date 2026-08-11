@@ -1,0 +1,384 @@
+{
+  "sessionId": "24895526-ba2c-42ff-8306-217cd80bbe34",
+  "target": "127.0.0.1",
+  "startedAt": "2026-08-11T04:31:44.638Z",
+  "assets": {
+    "127.0.0.1": {
+      "ip": "127.0.0.1",
+      "hostname": "127.0.0.1",
+      "services": {
+        "8080": {
+          "port": 8080,
+          "protocol": "tcp",
+          "state": "open",
+          "service": "http",
+          "version": "Apache httpd 2.4.29",
+          "evidence": [
+            {
+              "id": "f76b4f0a-264e-4f1d-8baf-58788f003992",
+              "tool": "nmap",
+              "command": "nmap -sV -p 8080 127.0.0.1",
+              "rawOutput": "/usr/bin/nmap: 8: exec: /usr/lib/nmap/nmap: Operation not permitted\n",
+              "parsedAt": "2026-08-11T04:31:44.653Z",
+              "executionMs": 1200
+            }
+          ],
+          "vulns": [
+            {
+              "id": "log4j-version-probe",
+              "title": "Apache Log4j Vulnerable Header",
+              "severity": "critical",
+              "confidence": "suspected",
+              "state": "CONFIRMED",
+              "capLevel": 2,
+              "evidence": [
+                {
+                  "id": "6d83eea4-1447-4273-bbfe-af5b36d3dcd0",
+                  "tool": "nuclei",
+                  "command": "nuclei -u http://127.0.0.1:8080/ -json",
+                  "rawOutput": "{\"template-id\":\"log4j-version-probe\",\"info\":{\"name\":\"Apache Log4j Vulnerable Header\",\"severity\":\"critical\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+                  "parsedAt": "2026-08-11T04:31:44.902Z",
+                  "executionMs": 1500
+                },
+                {
+                  "id": "b533b206-8624-4fa4-8ca6-28f1292c6b1f",
+                  "tool": "http-200-probe",
+                  "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+                  "rawOutput": "\"000<html><body><h1>Vulnerable Web App</h1><p>Welcome to OurMine Lab Target</p></body></html>\"200\"000* URL rejected: Bad hostname\n*   Trying 127.0.0.1:8080...\n* Established connection to 127.0.0.1 (127.0.0.1 port 8080) from 127.0.0.1 port 60130 \n* using HTTP/1.x\n> GET / HTTP/1.1\r\n> Host: 127.0.0.1:8080\r\n> User-Agent: curl/8.20.0\r\n> Accept: */*\r\n> \r\n* Request completely sent off\n< HTTP/1.1 200 OK\r\n< Content-Type: text/html\r\n< X-Powered-By: Log4j/2.14.1\r\n< Server: Apache/2.4.29 (Ubuntu)\r\n< Date: Tue, 11 Aug 2026 04:31:44 GMT\r\n< Connection: keep-alive\r\n< Keep-Alive: timeout=5\r\n< Transfer-Encoding: chunked\r\n< \r\n{ [100 bytes data]\n* Connection #0 to host 127.0.0.1:8080 left intact\n* URL rejected: Bad hostname\n",
+                  "parsedAt": "2026-08-11T04:31:44.921Z",
+                  "executionMs": 17
+                }
+              ],
+              "stateMachine": {
+                "state": "CONFIRMED",
+                "history": [
+                  {
+                    "from": "SUSPECTED",
+                    "to": "VALIDATION_PENDING",
+                    "reason": "plan=d4bd1599-160a-4983-99fa-b9bbdc7afc80 cap=http-200-probe",
+                    "ts": "2026-08-11T04:31:44.904Z"
+                  },
+                  {
+                    "from": "VALIDATION_PENDING",
+                    "to": "VALIDATING",
+                    "reason": "executing HTTP_PROBE",
+                    "ts": "2026-08-11T04:31:44.904Z"
+                  },
+                  {
+                    "from": "VALIDATING",
+                    "to": "CONFIRMED",
+                    "reason": "HTTP service responded on http://127.0.0.1:8080/ (status=0).",
+                    "ts": "2026-08-11T04:31:44.921Z"
+                  }
+                ]
+              },
+              "validatedAt": "2026-08-11T04:31:44.921Z"
+            },
+            {
+              "id": "http-admin-path",
+              "title": "Exposed Nonexistent Admin",
+              "severity": "medium",
+              "confidence": "false_positive",
+              "state": "FALSE_POSITIVE",
+              "capLevel": 2,
+              "evidence": [
+                {
+                  "id": "52bb5dbd-4abf-4f0a-89f6-97123b2e3d96",
+                  "tool": "nuclei",
+                  "command": "nuclei probe",
+                  "rawOutput": "{\"template-id\":\"http-admin-path\",\"info\":{\"name\":\"Exposed Nonexistent Admin\",\"severity\":\"medium\"},\"matched-at\":\"http://127.0.0.1:8080/nonexistent_admin_999\"}",
+                  "parsedAt": "2026-08-11T04:31:44.922Z",
+                  "executionMs": 1000
+                },
+                {
+                  "id": "dd286fd2-c516-4ef2-815c-228ad981de75",
+                  "tool": "curl",
+                  "command": "curl -sv http://127.0.0.1:8080/nonexistent_admin_999",
+                  "rawOutput": "HTTP/1.1 404 Not Found",
+                  "parsedAt": "2026-08-11T04:31:44.922Z",
+                  "executionMs": 200
+                }
+              ],
+              "falsePositiveReason": "Path returned HTTP 404"
+            },
+            {
+              "id": "unknown-custom-proto-vuln",
+              "title": "Unknown Protocol Finding",
+              "severity": "low",
+              "confidence": "suspected",
+              "state": "CONFIRMED",
+              "capLevel": 2,
+              "evidence": [
+                {
+                  "id": "afa126bf-7cdc-4fdf-8f88-4b561e512575",
+                  "tool": "nuclei",
+                  "command": "nuclei probe",
+                  "rawOutput": "{\"template-id\":\"unknown-custom-proto-vuln\",\"info\":{\"name\":\"Unknown Protocol Finding\",\"severity\":\"low\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+                  "parsedAt": "2026-08-11T04:31:44.922Z",
+                  "executionMs": 1000
+                },
+                {
+                  "id": "d38d0aab-f3fb-49c8-818d-0321e563ca22",
+                  "tool": "http-200-probe",
+                  "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+                  "rawOutput": "\"000<html><body><h1>Vulnerable Web App</h1><p>Welcome to OurMine Lab Target</p></body></html>\"200\"000* URL rejected: Bad hostname\n*   Trying 127.0.0.1:8080...\n* Established connection to 127.0.0.1 (127.0.0.1 port 8080) from 127.0.0.1 port 60138 \n* using HTTP/1.x\n> GET / HTTP/1.1\r\n> Host: 127.0.0.1:8080\r\n> User-Agent: curl/8.20.0\r\n> Accept: */*\r\n> \r\n* Request completely sent off\n< HTTP/1.1 200 OK\r\n< Content-Type: text/html\r\n< X-Powered-By: Log4j/2.14.1\r\n< Server: Apache/2.4.29 (Ubuntu)\r\n< Date: Tue, 11 Aug 2026 04:31:44 GMT\r\n< Connection: keep-alive\r\n< Keep-Alive: timeout=5\r\n< Transfer-Encoding: chunked\r\n< \r\n{ [100 bytes data]\n* Connection #0 to host 127.0.0.1:8080 left intact\n* URL rejected: Bad hostname\n",
+                  "parsedAt": "2026-08-11T04:31:44.943Z",
+                  "executionMs": 20
+                }
+              ],
+              "stateMachine": {
+                "state": "CONFIRMED",
+                "history": [
+                  {
+                    "from": "SUSPECTED",
+                    "to": "VALIDATION_PENDING",
+                    "reason": "plan=79ff87f4-f063-4359-8d66-b50842b59a4a cap=http-200-probe",
+                    "ts": "2026-08-11T04:31:44.923Z"
+                  },
+                  {
+                    "from": "VALIDATION_PENDING",
+                    "to": "VALIDATING",
+                    "reason": "executing HTTP_PROBE",
+                    "ts": "2026-08-11T04:31:44.923Z"
+                  },
+                  {
+                    "from": "VALIDATING",
+                    "to": "CONFIRMED",
+                    "reason": "HTTP service responded on http://127.0.0.1:8080/ (status=0).",
+                    "ts": "2026-08-11T04:31:44.943Z"
+                  }
+                ]
+              },
+              "validatedAt": "2026-08-11T04:31:44.943Z"
+            }
+          ]
+        }
+      },
+      "endpoints": [
+        {
+          "path": "/login",
+          "status": 200,
+          "size": 67,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T04:31:44.901Z",
+          "evidence": [
+            {
+              "id": "01f6ee47-35a7-411b-b2f8-3eb537d40e8a",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\nbackup.sql           (Status: 200) [Size: 68]\napi/v1               (Status: 200) [Size: 33]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T04:31:44.900Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "auth"
+        },
+        {
+          "path": "/admin",
+          "status": 301,
+          "size": 22,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T04:31:44.901Z",
+          "evidence": [
+            {
+              "id": "01f6ee47-35a7-411b-b2f8-3eb537d40e8a",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\nbackup.sql           (Status: 200) [Size: 68]\napi/v1               (Status: 200) [Size: 33]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T04:31:44.900Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "admin"
+        },
+        {
+          "path": "/backup.sql",
+          "status": 200,
+          "size": 68,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T04:31:44.901Z",
+          "evidence": [
+            {
+              "id": "01f6ee47-35a7-411b-b2f8-3eb537d40e8a",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\nbackup.sql           (Status: 200) [Size: 68]\napi/v1               (Status: 200) [Size: 33]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T04:31:44.900Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "backup"
+        },
+        {
+          "path": "/api/v1",
+          "status": 200,
+          "size": 33,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T04:31:44.901Z",
+          "evidence": [
+            {
+              "id": "01f6ee47-35a7-411b-b2f8-3eb537d40e8a",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\nbackup.sql           (Status: 200) [Size: 68]\napi/v1               (Status: 200) [Size: 33]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T04:31:44.900Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "api"
+        }
+      ],
+      "notes": [],
+      "evidence": [
+        {
+          "id": "f76b4f0a-264e-4f1d-8baf-58788f003992",
+          "tool": "nmap",
+          "command": "nmap -sV -p 8080 127.0.0.1",
+          "rawOutput": "/usr/bin/nmap: 8: exec: /usr/lib/nmap/nmap: Operation not permitted\n",
+          "parsedAt": "2026-08-11T04:31:44.653Z",
+          "executionMs": 1200
+        },
+        {
+          "id": "01f6ee47-35a7-411b-b2f8-3eb537d40e8a",
+          "tool": "gobuster",
+          "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+          "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\nbackup.sql           (Status: 200) [Size: 68]\napi/v1               (Status: 200) [Size: 33]\n===============================================================\nFinished\n===============================================================\n\n",
+          "parsedAt": "2026-08-11T04:31:44.900Z",
+          "executionMs": 2500
+        },
+        {
+          "id": "6d83eea4-1447-4273-bbfe-af5b36d3dcd0",
+          "tool": "nuclei",
+          "command": "nuclei -u http://127.0.0.1:8080/ -json",
+          "rawOutput": "{\"template-id\":\"log4j-version-probe\",\"info\":{\"name\":\"Apache Log4j Vulnerable Header\",\"severity\":\"critical\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+          "parsedAt": "2026-08-11T04:31:44.902Z",
+          "executionMs": 1500
+        },
+        {
+          "id": "52bb5dbd-4abf-4f0a-89f6-97123b2e3d96",
+          "tool": "nuclei",
+          "command": "nuclei probe",
+          "rawOutput": "{\"template-id\":\"http-admin-path\",\"info\":{\"name\":\"Exposed Nonexistent Admin\",\"severity\":\"medium\"},\"matched-at\":\"http://127.0.0.1:8080/nonexistent_admin_999\"}",
+          "parsedAt": "2026-08-11T04:31:44.922Z",
+          "executionMs": 1000
+        },
+        {
+          "id": "afa126bf-7cdc-4fdf-8f88-4b561e512575",
+          "tool": "nuclei",
+          "command": "nuclei probe",
+          "rawOutput": "{\"template-id\":\"unknown-custom-proto-vuln\",\"info\":{\"name\":\"Unknown Protocol Finding\",\"severity\":\"low\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+          "parsedAt": "2026-08-11T04:31:44.922Z",
+          "executionMs": 1000
+        }
+      ]
+    }
+  },
+  "services": 1,
+  "openPorts": [
+    8080
+  ],
+  "endpoints": {
+    "total": 4,
+    "admin": 1,
+    "api": 1,
+    "auth": 1
+  },
+  "vulns": {
+    "total": 3,
+    "confirmed": 2,
+    "suspected": 0,
+    "validating": 0,
+    "falsePos": 1,
+    "unverified": 0,
+    "bySeverity": {
+      "critical": 1,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "info": 0
+    }
+  },
+  "attackPaths": 1,
+  "toolCalls": 8,
+  "paths": [
+    {
+      "id": "4392c74d-4943-4707-891d-d430b6963ac5",
+      "label": "Admin/Privileged Endpoints Exposed (1)",
+      "steps": [
+        "127.0.0.1/admin"
+      ],
+      "severity": "medium",
+      "narrative": "Enumeration found 1 admin/privileged endpoint(s) on 127.0.0.1: /admin. These are heuristic candidates, not confirmed vulnerabilities."
+    }
+  ],
+  "toolLog": [
+    {
+      "id": "f76b4f0a-264e-4f1d-8baf-58788f003992",
+      "tool": "nmap",
+      "command": "nmap -sV -p 8080 127.0.0.1",
+      "rawOutput": "/usr/bin/nmap: 8: exec: /usr/lib/nmap/nmap: Operation not permitted\n",
+      "parsedAt": "2026-08-11T04:31:44.653Z",
+      "executionMs": 1200
+    },
+    {
+      "id": "01f6ee47-35a7-411b-b2f8-3eb537d40e8a",
+      "tool": "gobuster",
+      "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+      "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\nbackup.sql           (Status: 200) [Size: 68]\napi/v1               (Status: 200) [Size: 33]\n===============================================================\nFinished\n===============================================================\n\n",
+      "parsedAt": "2026-08-11T04:31:44.900Z",
+      "executionMs": 2500
+    },
+    {
+      "id": "6d83eea4-1447-4273-bbfe-af5b36d3dcd0",
+      "tool": "nuclei",
+      "command": "nuclei -u http://127.0.0.1:8080/ -json",
+      "rawOutput": "{\"template-id\":\"log4j-version-probe\",\"info\":{\"name\":\"Apache Log4j Vulnerable Header\",\"severity\":\"critical\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+      "parsedAt": "2026-08-11T04:31:44.902Z",
+      "executionMs": 1500
+    },
+    {
+      "id": "b533b206-8624-4fa4-8ca6-28f1292c6b1f",
+      "tool": "http-200-probe",
+      "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+      "rawOutput": "\"000<html><body><h1>Vulnerable Web App</h1><p>Welcome to OurMine Lab Target</p></body></html>\"200\"000* URL rejected: Bad hostname\n*   Trying 127.0.0.1:8080...\n* Established connection to 127.0.0.1 (127.0.0.1 port 8080) from 127.0.0.1 port 60130 \n* using HTTP/1.x\n> GET / HTTP/1.1\r\n> Host: 127.0.0.1:8080\r\n> User-Agent: curl/8.20.0\r\n> Accept: */*\r\n> \r\n* Request completely sent off\n< HTTP/1.1 200 OK\r\n< Content-Type: text/html\r\n< X-Powered-By: Log4j/2.14.1\r\n< Server: Apache/2.4.29 (Ubuntu)\r\n< Date: Tue, 11 Aug 2026 04:31:44 GMT\r\n< Connection: keep-alive\r\n< Keep-Alive: timeout=5\r\n< Transfer-Encoding: chunked\r\n< \r\n{ [100 bytes data]\n* Connection #0 to host 127.0.0.1:8080 left intact\n* URL rejected: Bad hostname\n",
+      "parsedAt": "2026-08-11T04:31:44.921Z",
+      "executionMs": 17
+    },
+    {
+      "id": "52bb5dbd-4abf-4f0a-89f6-97123b2e3d96",
+      "tool": "nuclei",
+      "command": "nuclei probe",
+      "rawOutput": "{\"template-id\":\"http-admin-path\",\"info\":{\"name\":\"Exposed Nonexistent Admin\",\"severity\":\"medium\"},\"matched-at\":\"http://127.0.0.1:8080/nonexistent_admin_999\"}",
+      "parsedAt": "2026-08-11T04:31:44.922Z",
+      "executionMs": 1000
+    },
+    {
+      "id": "dd286fd2-c516-4ef2-815c-228ad981de75",
+      "tool": "curl",
+      "command": "curl -sv http://127.0.0.1:8080/nonexistent_admin_999",
+      "rawOutput": "HTTP/1.1 404 Not Found",
+      "parsedAt": "2026-08-11T04:31:44.922Z",
+      "executionMs": 200
+    },
+    {
+      "id": "afa126bf-7cdc-4fdf-8f88-4b561e512575",
+      "tool": "nuclei",
+      "command": "nuclei probe",
+      "rawOutput": "{\"template-id\":\"unknown-custom-proto-vuln\",\"info\":{\"name\":\"Unknown Protocol Finding\",\"severity\":\"low\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+      "parsedAt": "2026-08-11T04:31:44.922Z",
+      "executionMs": 1000
+    },
+    {
+      "id": "d38d0aab-f3fb-49c8-818d-0321e563ca22",
+      "tool": "http-200-probe",
+      "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+      "rawOutput": "\"000<html><body><h1>Vulnerable Web App</h1><p>Welcome to OurMine Lab Target</p></body></html>\"200\"000* URL rejected: Bad hostname\n*   Trying 127.0.0.1:8080...\n* Established connection to 127.0.0.1 (127.0.0.1 port 8080) from 127.0.0.1 port 60138 \n* using HTTP/1.x\n> GET / HTTP/1.1\r\n> Host: 127.0.0.1:8080\r\n> User-Agent: curl/8.20.0\r\n> Accept: */*\r\n> \r\n* Request completely sent off\n< HTTP/1.1 200 OK\r\n< Content-Type: text/html\r\n< X-Powered-By: Log4j/2.14.1\r\n< Server: Apache/2.4.29 (Ubuntu)\r\n< Date: Tue, 11 Aug 2026 04:31:44 GMT\r\n< Connection: keep-alive\r\n< Keep-Alive: timeout=5\r\n< Transfer-Encoding: chunked\r\n< \r\n{ [100 bytes data]\n* Connection #0 to host 127.0.0.1:8080 left intact\n* URL rejected: Bad hostname\n",
+      "parsedAt": "2026-08-11T04:31:44.943Z",
+      "executionMs": 20
+    }
+  ]
+}

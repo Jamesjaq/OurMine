@@ -211,10 +211,12 @@ export class AttackSurfaceGraph {
     const added: EndpointNode[] = []
 
     for (const line of lines) {
-      // Gobuster output: "/path (Status: 200) [Size: 1234]"
-      const m = line.match(/^(\/[^\s]*)\s+\(Status:\s*(\d+)\)(?:\s+\[Size:\s*(\d+)\])?/)
+      const trimmed = line.trim()
+      const m = trimmed.match(/^(\/?[^\s]+)[\s\t]+\(Status:\s*(\d+)\)(?:\s+\[Size:\s*(\d+)\])?/)
       if (!m) continue
-      const endpPath   = m[1]!
+      const rawPath = m[1]!
+      if (rawPath.startsWith("==") || rawPath.startsWith("[+]") || rawPath.startsWith("Finished")) continue
+      const endpPath   = rawPath.startsWith("/") ? rawPath : "/" + rawPath
       const status     = parseInt(m[2]!, 10)
       const size       = m[3] ? parseInt(m[3], 10) : undefined
 

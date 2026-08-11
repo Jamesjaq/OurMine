@@ -14,7 +14,12 @@
     "build": "tsc -b",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test packages/security/test/*.test.js 2>/dev/null || echo 'Tests passing'",
-    "dev": "node --experimental-strip-types bin/ourmine.ts"
+    "dev": "node --experimental-strip-types bin/ourmine.ts",
+    "lab:up": "bash lab/setup.sh",
+    "lab:down": "bash lab/teardown.sh",
+    "lab:health": "node --experimental-strip-types lab/health.ts",
+    "capability:benchmark": "node --experimental-strip-types lab/benchmark_runner.ts",
+    "capability:report": "cat lab/results/capability_report.md"
   },
   "devDependencies": {
     "typescript": "^5.8.3",
