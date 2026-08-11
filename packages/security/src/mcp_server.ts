@@ -39,9 +39,15 @@ function err(id: unknown, code: number, message: string) {
 import { ToolBroker } from "./tool_broker.ts"
 import { ContextGuard } from "./context_guard.ts"
 import { OpsecThrottleEngine } from "./opsec_throttle.ts"
+import { resolveLiveMode } from "./exec_options.ts"
+import { gateExecution } from "./opsec_gate.ts"
 
 const toolBroker = new ToolBroker()
 const globalThrottleEngine = new OpsecThrottleEngine()
+
+function mcpLive(): boolean {
+  return resolveLiveMode()
+}
 
 // ─── Tool definitions ─────────────────────────────────────────────────────────
 
@@ -56,7 +62,7 @@ interface McpTool {
   handler: (args: Record<string, unknown>) => Promise<unknown>
 }
 
-const LIVE_DEFAULT = false  // always dry-run unless --live flag in args
+const LIVE_DEFAULT = resolveLiveMode()
 
 const tools: McpTool[] = [
 
@@ -64,7 +70,7 @@ const tools: McpTool[] = [
 
   {
     name: "bash",
-    description: "Execute a validated command from the allowed security tool registry. Commands are validated by ToolBroker and executed without shell metacharacter expansion.",
+    description: "Execute a validated command from the allowed security tool registry (nmap, apt, wallet CLIs, etc.). For pipes/scripts/complex shell, use OpenCode native bash instead.",
     inputSchema: {
       type: "object",
       properties: {
@@ -74,13 +80,18 @@ const tools: McpTool[] = [
       required: ["command"],
     },
     async handler({ command, cwd }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       if (!live) {
-        return { stdout: `[DRY-RUN] ${command}`, stderr: "", exitCode: 0, note: "Pass --live to execute real commands" }
+        return { stdout: "", stderr: "dry-run: pass --live or run on Kali", exitCode: 0, dryRun: true }
       }
+      const gate = await gateExecution({ tool: "bash", command: String(command), live: true })
+      if (!gate.allowed) {
+        return { stdout: "", stderr: gate.review.mitigations.join("; "), exitCode: 1, opsec_blocked: true }
+      }
+      const cmd = gate.mitigatedCommand ?? String(command)
 
       try {
-        const result = await toolBroker.executeSafe(String(command), cwd ? String(cwd) : process.cwd())
+        const result = await toolBroker.executeSafe(cmd, cwd ? String(cwd) : process.cwd())
         return {
           stdout: ContextGuard.wrapUntrustedData("bash_stdout", result.stdout),
           stderr: ContextGuard.wrapUntrustedData("bash_stderr", result.stderr),
@@ -110,7 +121,7 @@ const tools: McpTool[] = [
       required: ["domain"],
     },
     async handler({ domain, deep }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.ai_recon.runRecon({ domain: String(domain), deep: deep === "true" }, { live })
     },
   },
@@ -127,7 +138,7 @@ const tools: McpTool[] = [
       required: ["target"],
     },
     async handler({ target, endpoints }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       const eps = String(endpoints ?? "").split(",").filter(Boolean)
       return security.bountyhunter.recon({ target: String(target), endpoints: eps }, { live })
     },
@@ -163,7 +174,7 @@ const tools: McpTool[] = [
       required: ["query"],
     },
     async handler({ query, limit }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.vulnResearch({ query: String(query), limit: Number(limit ?? 10) }, { live })
     },
   },
@@ -180,7 +191,7 @@ const tools: McpTool[] = [
       required: ["target"],
     },
     async handler({ target, strategy }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.autoResearch({ target: String(target), strategy: String(strategy ?? "cve") }, { live })
     },
   },
@@ -200,7 +211,7 @@ const tools: McpTool[] = [
       required: ["domain", "attack"],
     },
     async handler({ domain, attack, dc }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.identity.execute({ domain: String(domain), attack: String(attack) as any, dc: String(dc ?? "") }, { live })
     },
   },
@@ -218,7 +229,7 @@ const tools: McpTool[] = [
       required: ["domain", "technique"],
     },
     async handler({ domain, technique, target }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.adExploitExecute({ domain: String(domain), technique: String(technique), target: String(target ?? "") }, { live })
     },
   },
@@ -236,7 +247,7 @@ const tools: McpTool[] = [
       required: ["domain"],
     },
     async handler({ domain, tenant_id, technique }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.hybridAdEntraExecute({ domain: String(domain), tenantId: String(tenant_id ?? ""), technique: String(technique ?? "ssso_token") }, { live })
     },
   },
@@ -256,7 +267,7 @@ const tools: McpTool[] = [
       required: ["url", "attack"],
     },
     async handler({ url, attack, payload }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.strixExecute({ url: String(url), attack: String(attack), payload: String(payload ?? "") }, { live })
     },
   },
@@ -274,7 +285,7 @@ const tools: McpTool[] = [
       required: ["target", "technique"],
     },
     async handler({ target, technique, client_id }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.oauthChainExecute({ target: String(target), technique: String(technique), clientId: String(client_id ?? "") }, { live })
     },
   },
@@ -291,7 +302,7 @@ const tools: McpTool[] = [
       required: ["target", "technique"],
     },
     async handler({ target, technique }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.webmailExploitExecute({ target: String(target), technique: String(technique) }, { live })
     },
   },
@@ -309,7 +320,7 @@ const tools: McpTool[] = [
       required: ["provider"],
     },
     async handler({ provider }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       if (String(provider) === "aws") return security.cloud_token.fetchAWSMetadata({ live })
       return security.cloud_token.fetchCloudCredentials({ provider: String(provider) as any, live })
     },
@@ -325,7 +336,7 @@ const tools: McpTool[] = [
       },
     },
     async handler({ technique }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.container.escape({ technique: String(technique ?? "docker_socket") as any, live })
     },
   },
@@ -340,7 +351,7 @@ const tools: McpTool[] = [
       },
     },
     async handler({ depth }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.container.auditContainer({ live, depth: String(depth ?? "quick") as any })
     },
   },
@@ -360,7 +371,7 @@ const tools: McpTool[] = [
       required: ["data", "channel"],
     },
     async handler({ data, channel, endpoint }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.exfiltrate({ data: String(data), channel: String(channel), endpoint: String(endpoint ?? "") }, { live })
     },
   },
@@ -382,7 +393,7 @@ const tools: McpTool[] = [
       required: ["method"],
     },
     async handler({ method, lhost, lport, rhost, rport }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.pivotTunnelExecute({ method: String(method), lhost: String(lhost ?? "127.0.0.1"), lport: Number(lport ?? 1080), rhost: String(rhost ?? ""), rport: Number(rport ?? 0) }, { live })
     },
   },
@@ -400,7 +411,7 @@ const tools: McpTool[] = [
       required: ["action"],
     },
     async handler({ action, channel, payload }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.c2Execute({ action: String(action), channel: String(channel ?? "https"), payload: String(payload ?? "") }, { live })
     },
   },
@@ -422,7 +433,7 @@ const tools: McpTool[] = [
       required: ["target_name", "lure"],
     },
     async handler({ target_name, target_email, target_company, lure, method }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.socialEngGenerate({ targetName: String(target_name), targetEmail: String(target_email ?? ""), targetCompany: String(target_company ?? ""), lure: String(lure), method: String(method ?? "email") }, { live })
     },
   },
@@ -444,7 +455,7 @@ const tools: McpTool[] = [
       required: ["type", "language"],
     },
     async handler({ type, language, lhost, lport, encode }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.toolkitGeneratePayload({ type: String(type), language: String(language), lhost: String(lhost ?? "127.0.0.1"), lport: Number(lport ?? 4444), encode: String(encode ?? "none") }, { live })
     },
   },
@@ -461,7 +472,7 @@ const tools: McpTool[] = [
       required: ["technique"],
     },
     async handler({ technique, target_process }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.malwareDevExecute({ technique: String(technique), targetProcess: String(target_process ?? "explorer.exe") }, { live })
     },
   },
@@ -505,7 +516,7 @@ const tools: McpTool[] = [
       required: ["host", "protocol"],
     },
     async handler({ host, protocol, action }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.iotScadaExecute({ host: String(host), protocol: String(protocol), action: String(action ?? "enumerate") }, { live })
     },
   },
@@ -522,7 +533,7 @@ const tools: McpTool[] = [
       required: ["action"],
     },
     async handler({ action, target }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.mobileExecute({ action: String(action), target: String(target ?? "") }, { live })
     },
   },
@@ -539,7 +550,7 @@ const tools: McpTool[] = [
       required: ["path", "action"],
     },
     async handler({ path, action }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.firmwareAnalyze({ path: String(path), action: String(action) }, { live })
     },
   },
@@ -557,7 +568,7 @@ const tools: McpTool[] = [
       required: ["check"],
     },
     async handler({ check }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.counter_intel.detect({ check: String(check ?? "all") as any, live })
     },
   },
@@ -595,7 +606,7 @@ const tools: McpTool[] = [
       required: ["target"],
     },
     async handler({ target, scope }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       const scopes = String(scope ?? target).split(",").map(s => s.trim())
       const agent = new PentestAgent({ target: String(target), scope: scopes, live })
       return agent.runAutonomous()
@@ -616,7 +627,7 @@ const tools: McpTool[] = [
       required: ["technique_id"],
     },
     async handler({ technique_id, profile }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.calderaTtpExecute({ techniqueId: String(technique_id), profile: String(profile ?? "") }, { live })
     },
   },
@@ -633,7 +644,7 @@ const tools: McpTool[] = [
       required: ["attack"],
     },
     async handler({ attack, model_url }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.atlasArsenalExecute({ attack: String(attack), modelUrl: String(model_url ?? "") }, { live })
     },
   },
@@ -652,7 +663,7 @@ const tools: McpTool[] = [
       required: ["target", "technique"],
     },
     async handler({ target, technique }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return dispatch.devTargetExecute({ target: String(target), technique: String(technique) }, { live })
     },
   },
@@ -670,7 +681,7 @@ const tools: McpTool[] = [
       required: ["package", "ecosystem"],
     },
     async handler({ package: pkg, ecosystem, mode }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.supply_chain.analyze({ package: String(pkg), ecosystem: String(ecosystem) as any, mode: String(mode ?? "detect") as any }, { live })
     },
   },
@@ -684,14 +695,24 @@ const tools: McpTool[] = [
       type: "object",
       properties: {
         target:    { type: "string", description: "Campaign target organization" },
-        objective: { type: "string", description: "Campaign objective", enum: ["data_exfil","ransomware","persistence","destructive","espionage"] },
+        objective: { type: "string", description: "Campaign objective", enum: ["espionage","ransomware","destructive","supply_chain","agentic","data_exfil","persistence"] },
+        execute:   { type: "boolean", description: "Execute campaign (runCampaign) vs plan-only" },
+        profileId: { type: "string", description: "APT profile id from intel feeds" },
         phases:    { type: "string", description: "Comma-separated phases to include" },
       },
-      required: ["target", "objective"],
+      required: ["target"],
     },
-    async handler({ target, objective, phases }) {
-      const live = process.argv.includes("--live")
-      return dispatch.campaignPlan({ target: String(target), objective: String(objective), phases: String(phases ?? "all").split(",") }, { live })
+    async handler({ target, objective, execute, profileId, phases }) {
+      const live = mcpLive()
+      if (execute && live) {
+        return dispatch.campaignExecute({
+          target: String(target),
+          objective: String(objective ?? "espionage"),
+          profileId: profileId ? String(profileId) : undefined,
+          phases: String(phases ?? "all").split(","),
+        }, { live })
+      }
+      return dispatch.campaignPlan({ target: String(target), objective: String(objective ?? "espionage"), profileId: profileId ? String(profileId) : undefined, phases: String(phases ?? "all").split(",") }, { live })
     },
   },
 
@@ -723,7 +744,7 @@ const tools: McpTool[] = [
       required: ["domain"],
     },
     async handler({ domain, dc_ip }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.adcs_audit.auditADCS({ domain: String(domain), dcIp: String(dc_ip ?? "") }, { live })
     },
   },
@@ -739,7 +760,7 @@ const tools: McpTool[] = [
       required: ["host"],
     },
     async handler({ host }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.esxi_audit.auditESXi({ host: String(host) }, { live })
     },
   },
@@ -752,7 +773,7 @@ const tools: McpTool[] = [
       properties: {},
     },
     async handler() {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.lolbins_audit.auditLOLBins({ live })
     },
   },
@@ -765,7 +786,7 @@ const tools: McpTool[] = [
       properties: {},
     },
     async handler() {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.ebpf_audit.auditEBPFAndPersistence({ live })
     },
   },
@@ -781,7 +802,7 @@ const tools: McpTool[] = [
       },
     },
     async handler({ agent_url, fuzz_depth }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.ai_agent_audit.auditAIAgentGuardrails({ targetAgentUrl: String(agent_url ?? ""), fuzzDepth: String(fuzz_depth ?? "quick") as any }, { live })
     },
   },
@@ -797,7 +818,7 @@ const tools: McpTool[] = [
       required: ["target"],
     },
     async handler({ target }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.edge_appliance_audit.auditEdgeAppliance({ target: String(target) }, { live })
     },
   },
@@ -813,7 +834,7 @@ const tools: McpTool[] = [
       required: ["domain"],
     },
     async handler({ domain }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.idp_oauth_audit.auditIdPAndOAuth({ domain: String(domain) }, { live })
     },
   },
@@ -826,7 +847,7 @@ const tools: McpTool[] = [
       properties: {},
     },
     async handler() {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.uefi_bootkit_audit.auditUEFIAndBootkit({ live })
     },
   },
@@ -841,7 +862,7 @@ const tools: McpTool[] = [
       },
     },
     async handler({ target }) {
-      const live = process.argv.includes("--live")
+      const live = mcpLive()
       return security.cicd_k8s_audit.auditCICDAndK8s({ repositoryOrCluster: String(target ?? "local") }, { live })
     },
   },
@@ -886,8 +907,266 @@ const tools: McpTool[] = [
       return engine.saveCheckpoint(String(session_id ?? "default"), 1, "Manual Checkpoint", [])
     },
   },
+];
 
-]
+// ─── Threat Intel MCP tools ───────────────────────────────────────────────────
+
+tools.push(
+  {
+    name: "ares_intel_feed",
+    description: "Query threat intel feeds by actor, CVE, family, or target. Returns enrichTarget/pollFeeds metadata (no malware binaries).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string", description: "Target host/domain/IP" },
+        actor: { type: "string", description: "APT profile id filter" },
+        cve: { type: "string", description: "CVE id filter" },
+        family: { type: "string", description: "vx malware family name" },
+        poll: { type: "boolean", description: "Poll live KEV/Ransomwatch feeds" },
+      },
+    },
+    async handler({ target, actor, cve, family, poll }) {
+      const live = mcpLive()
+      if (poll) {
+        const records = await security.intel_feeds.pollFeeds({ live })
+        return { records, count: records.length }
+      }
+      if (family) {
+        return { family: security.intel_feeds.lookupVxFamily(String(family)) }
+      }
+      if (target) {
+        const brief = await security.intel_feeds.enrichTarget(String(target), { live })
+        if (actor) {
+          brief.activeProfiles = brief.activeProfiles.filter((p) => p.id === String(actor))
+        }
+        if (cve) {
+          brief.priorityCves = brief.priorityCves.filter((c) => c.cve === String(cve))
+        }
+        return brief
+      }
+      return {
+        cves: security.intel_feeds.loadCvePriority(),
+        vxFamilies: security.intel_feeds.loadVxFamilyIndex().slice(0, 20),
+      }
+    },
+  },
+  {
+    name: "ares_intel_watch",
+    description: "Watch org/domain against ransomwatch + cached intel feeds for stealer-log / victim matches.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        org: { type: "string", description: "Organization name" },
+        domains: { type: "array", items: { type: "string" }, description: "Domains to watch" },
+      },
+      required: ["org"],
+    },
+    async handler({ org, domains }) {
+      const live = mcpLive()
+      const domainList = Array.isArray(domains) ? domains.map(String) : []
+      const watch = security.intel_feeds.watchOrg(String(org), domainList)
+      const ransom = await security.intel_feeds.fetchRansomwatch(live)
+      const matches = ransom.filter((r) =>
+        String(r.ioc ?? "").toLowerCase().includes(String(org).toLowerCase()) ||
+        domainList.some((d) => String(r.ioc ?? "").includes(d)),
+      )
+      return { ...watch, ransomMatches: matches }
+    },
+  },
+  {
+    name: "ares_vx_lookup",
+    description: "Hash or vx-underground family metadata lookup (metadata only — never downloads samples).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        hash: { type: "string", description: "SHA256 hash" },
+        family: { type: "string", description: "Malware family name" },
+      },
+    },
+    async handler({ hash, family }) {
+      if (hash) return security.intel_feeds.lookupHash(String(hash))
+      if (family) return { entry: security.intel_feeds.lookupVxFamily(String(family)) }
+      return { vxFamilies: security.intel_feeds.loadVxFamilyIndex().slice(0, 50) }
+    },
+  },
+  {
+    name: "ares_ai_surface",
+    description: "Scan for exposed AI/ML stack (Langflow, Nacos, n8n, MinIO). Live-only probes.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string", description: "Target host or URL" },
+      },
+      required: ["target"],
+    },
+    async handler({ target }) {
+      const live = mcpLive()
+      return security.intel_feeds.scanAiSurface(String(target), live)
+    },
+  },
+  {
+    name: "ares_stix_ingest",
+    description: "Ingest STIX/TAXII threat intel collection into target graph. Enable feeds in data/intel/taxii_feeds.json.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string", description: "Target host/domain for IOC matching" },
+        baseUrl: { type: "string", description: "TAXII 2.1 server base URL" },
+        collectionId: { type: "string", description: "TAXII collection ID" },
+        pollAll: { type: "boolean", description: "Poll all enabled feeds from taxii_feeds.json" },
+      },
+      required: ["target"],
+    },
+    async handler({ target, baseUrl, collectionId, pollAll }) {
+      const live = mcpLive()
+      const { AttackSurfaceGraph } = await import("./attack_surface.ts")
+      const graph = new AttackSurfaceGraph(String(target))
+      graph.upsertAsset(String(target).replace(/^https?:\/\//, "").split("/")[0]!)
+      if (pollAll) {
+        const records = await security.intel_feeds.pollStixFeeds(graph, { live })
+        return { records, count: records.length, hits: records.length }
+      }
+      if (baseUrl && collectionId) {
+        return security.intel_feeds.ingestStixTaxii(String(baseUrl), String(collectionId), graph, {})
+      }
+      const feeds = security.intel_feeds.loadTaxiiFeeds().filter((f) => f.enabled)
+      return { feeds, note: "Enable feeds in taxii_feeds.json or pass baseUrl+collectionId" }
+    },
+  },
+  {
+    name: "ares_proof_export",
+    description: "Build tamper-evident proof pack (JSON + HTML + PDF) from target engagement graph.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string", description: "Engagement target" },
+      },
+      required: ["target"],
+    },
+    async handler({ target }) {
+      const { AttackSurfaceGraph } = await import("./attack_surface.ts")
+      const { buildProofPack, writeProofPack } = await import("./proof_pack.ts")
+      const graph = new AttackSurfaceGraph(String(target))
+      graph.upsertAsset(String(target).replace(/^https?:\/\//, "").split("/")[0]!)
+      const pack = buildProofPack(graph)
+      const path = writeProofPack(pack)
+      return { path, merkleRoot: pack.merkleRoot, findings: pack.findings.length }
+    },
+  },
+  {
+    name: "ares_engagement_watch",
+    description: "Run engagement watch cycle: snapshot, delta findings, persist graph.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string" },
+        live: { type: "boolean" },
+      },
+      required: ["target"],
+    },
+    async handler({ target, live: liveArg }) {
+      const live = liveArg ?? mcpLive()
+      const { runWatchCycle } = await import("./engagement_watch.ts")
+      return runWatchCycle({ target: String(target), intervalMinutes: 60, live })
+    },
+  },
+  {
+    name: "ares_retest_finding",
+    description: "Retest a finding against watch history for remediation status.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string" },
+        findingId: { type: "string" },
+        live: { type: "boolean" },
+      },
+      required: ["target", "findingId"],
+    },
+    async handler({ target, findingId, live: liveArg }) {
+      const live = liveArg ?? mcpLive()
+      const { retestFinding } = await import("./engagement_watch.ts")
+      return retestFinding(String(target), String(findingId), { live })
+    },
+  },
+  {
+    name: "ares_opsec_review",
+    description: "OPSEC gate review for a command before execution.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tool: { type: "string" },
+        command: { type: "string" },
+        force: { type: "boolean" },
+      },
+      required: ["tool", "command"],
+    },
+    async handler({ tool, command, force }) {
+      return gateExecution({ tool: String(tool), command: String(command), live: mcpLive(), force: Boolean(force) })
+    },
+  },
+  {
+    name: "ares_pivot_replay",
+    description: "BloodHound + netexec credential replay pivot chain.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        target: { type: "string" },
+        domain: { type: "string" },
+      },
+      required: ["target"],
+    },
+    async handler({ target, domain }) {
+      const live = mcpLive()
+      const { executeAgentTool } = await import("./agent_tools.ts")
+      const { ToolBroker } = await import("./tool_broker.ts")
+      const { AttackSurfaceGraph } = await import("./attack_surface.ts")
+      const graph = new AttackSurfaceGraph(String(target))
+      const ctx = { target: String(target), graph, broker: new ToolBroker(), live }
+      return executeAgentTool(ctx, "pivot_replay", { domain: domain ? String(domain) : undefined })
+    },
+  },
+  {
+    name: "ares_raas_campaign",
+    description: "RaaS stack: VSS wipe, double-extortion catalog, RSA payment bundle, ESXi encrypt, SMB/GPO spread. Destructive ops require live + forceLive.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        targetDir: { type: "string", description: "Directory to catalog/encrypt" },
+        esxiHost: { type: "string" },
+        smbTargets: { type: "array", items: { type: "string" } },
+        domain: { type: "string" },
+        forceLive: { type: "boolean" },
+        family: { type: "string" },
+        live: { type: "boolean" },
+      },
+      required: ["targetDir"],
+    },
+    async handler({ targetDir, esxiHost, smbTargets, domain, forceLive, family, live: liveArg }) {
+      const live = liveArg ?? mcpLive()
+      return dispatch.raasCampaignExecute(
+        {
+          targetDir: String(targetDir),
+          esxiHost: esxiHost ? String(esxiHost) : undefined,
+          smbTargets: Array.isArray(smbTargets) ? smbTargets.map(String) : undefined,
+          domain: domain ? String(domain) : undefined,
+          forceLive: Boolean(forceLive),
+          family: family ? String(family) : undefined,
+        },
+        { live },
+      )
+    },
+  },
+  {
+    name: "ares_topcut_assess",
+    description: "Score OurMine readiness vs enterprise BAS top-cut bar.",
+    inputSchema: { type: "object", properties: {} },
+    async handler() {
+      const { assessTopCut, formatTopCutReport } = await import("./top_cut_score.ts")
+      const report = await assessTopCut()
+      return { ...report, formatted: formatTopCutReport(report) }
+    },
+  },
+)
 
 // ─── MCP server main loop ─────────────────────────────────────────────────────
 
@@ -908,13 +1187,14 @@ async function handleRequest(req: any) {
 You can autonomously:
 - Run reconnaissance (recon, OSINT, subdomain enum)
 - Exploit vulnerabilities (web, AD, cloud, IoT, mobile)
-- Execute shell commands and real terminal tools (nmap, sqlmap, etc.) via the 'bash' tool
+- Execute shell commands via ares_bash (allowlisted) or OpenCode native bash (full shell — install packages, pipes, scripts)
+- Edit packages/security/src to tweak modules or scaffold new bridged tools when ares_* handlers are insufficient
 - Generate payloads and C2 infrastructure
 - Run full autonomous pentest campaigns
 
-Security posture: DRY-RUN by default. Server started with --live flag enables real execution.
+Security posture: Live on Kali / OURMINE_LIVE=1 / --live. Otherwise dry-run unless explicit live opt-in.
 
-Always think step-by-step. Use ares_pentest_plan first to build a task tree, then execute phases.`,
+Always think step-by-step. Use ares_intel_feed + ares_pentest_plan first, then execute phases. Prefer ares_* when they fit; fall back to bash and source edits when they do not.`,
       })
       break
 

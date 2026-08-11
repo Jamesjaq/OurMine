@@ -358,70 +358,23 @@ function checkNetworkMonitoring(): Finding[] {
   return findings;
 }
 
-function buildSimulatedResult(): CounterIntelResult {
-  const rng = (arr: string[]): string[] => {
-    const count = Math.floor(Math.random() * (arr.length + 1));
-    return arr.sort(() => Math.random() - 0.5).slice(0, count);
-  };
-
-  const simulatedEDR = rng([
-    "CrowdStrike Falcon",
-    "Sysmon",
-    "osquery",
-    "Carbon Black",
-  ]);
-
-  const simulatedHoneypots = rng([
-    "Cowrie",
-    "Dionaea",
-  ]);
-
-  const simulatedCanary = rng([
-    "File Canary Token: /tmp/canary.token",
-    "Environment Canary Token: CANARYTOKEN",
-  ]);
-
-  const simulatedSandbox = rng([
-    "VM Hypervisor: DMI vendor: VMware",
-    "Virtual CPU: /proc/cpuinfo indicates virtualization",
-  ]);
-
-  const simulatedNetwork = rng([
-    "Traffic Logging: iptables LOG rules detected",
-    "Promiscuous Mode: Interface: eth0",
-  ]);
-
-  return {
-    honeypotDetected: simulatedHoneypots.length > 0,
-    canaryTokensFound: simulatedCanary,
-    blueTeamMonitoring: simulatedEDR.length > 0,
-    edrDetected: simulatedEDR,
-    sandboxIndicators: simulatedSandbox,
-    networkMonitoring: simulatedNetwork,
-    processAlerts: [
-      ...simulatedEDR.map((e) => `EDR: ${e}`),
-      ...simulatedHoneypots.map((h) => `Honeypot: ${h}`),
-    ],
-    dryRun: true,
-  };
-}
 
 export function auditDefenses(opts: { live?: boolean; dryRun?: boolean; check?: string } = {}): CounterIntelResult {
-  const dryRun = opts.dryRun ?? !opts.live ?? true;
-
-  if (dryRun) {
-    return buildSimulatedResult();
-  }
+  const dryRun = resolveDryRun(opts);
 
   try {
     const findings: Finding[] = [];
 
+    // Local checks always run (real process/service enumeration)
     findings.push(...checkRunningProcesses());
     findings.push(...checkSystemdServices());
-    findings.push(...checkHoneypots());
-    findings.push(...checkCanaryTokens());
     findings.push(...checkSandboxIndicators());
-    findings.push(...checkNetworkMonitoring());
+
+    if (!dryRun) {
+      findings.push(...checkHoneypots());
+      findings.push(...checkCanaryTokens());
+      findings.push(...checkNetworkMonitoring());
+    }
 
     const edrDetected = findings.filter((f) => f.type === "edr").map((f) => f.name);
     const canaryTokensFound = findings.filter((f) => f.type === "canary").map((f) => f.detail);
@@ -438,7 +391,7 @@ export function auditDefenses(opts: { live?: boolean; dryRun?: boolean; check?: 
       sandboxIndicators,
       networkMonitoring,
       processAlerts,
-      dryRun: false,
+      dryRun,
     };
   } catch (err) {
     return {
@@ -449,7 +402,7 @@ export function auditDefenses(opts: { live?: boolean; dryRun?: boolean; check?: 
       sandboxIndicators: [],
       networkMonitoring: [],
       processAlerts: [],
-      dryRun: false,
+      dryRun,
       error: err instanceof Error ? err.message : String(err),
     };
   }

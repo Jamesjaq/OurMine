@@ -34,7 +34,7 @@ const C = {
 
 const SECURITY_COMMANDS = new Set([
   "recon", "audit", "pentest", "yara", "c2", "modules",
-  "security", "sec", "serve", "agent", "toolcheck",
+  "security", "sec", "serve", "agent", "toolcheck", "watch", "retest", "topcut",
 ])
 
 // ─── Security-only help addendum ──────────────────────────────────────────────
@@ -50,6 +50,10 @@ ${C.bold}${C.orange}OurMine Security Commands (ARES Suite):${C.reset}
   ourmine serve                Start ARES MCP server on stdio (for LLM agents)
   ourmine agent <target>       Interactive LLM-driven pentest agent
   ourmine toolcheck            Check which security tools are installed
+  ourmine watch <target> [min]     Continuous engagement snapshots (default 60 min)
+  ourmine watch <target> --daemon    Run scheduled watch daemon (interval from [min] or 60)
+  ourmine retest <target> <id> Retest a finding for remediation status
+  ourmine topcut                 Score readiness vs enterprise BAS platforms
   ourmine modules              List all 77+ ARES security modules
   ourmine security list        Same as 'modules'
 
@@ -264,13 +268,70 @@ async function cmdToolCheck() {
   console.log()
 }
 
+async function cmdWatch(target: string, intervalMinutes: number, isLive: boolean, daemon: boolean) {
+  const { runWatchCycle, computeDelta, startWatch } = await import("../packages/security/src/engagement_watch.ts")
+  console.log(`\n${C.bold}${C.orange}Engagement Watch${C.reset}`)
+  console.log(`${C.grey}Target: ${target} | Interval: ${intervalMinutes}m | Mode: ${isLive ? "LIVE" : "DRY-RUN"}${daemon ? " | DAEMON" : ""}${C.reset}\n`)
+
+  const printResult = (result: { snapshot: { findingIds: string[]; merkleRoot?: string }; delta: { since: string; newFindings: string[]; removedFindings: string[] } | null }) => {
+    const ts = new Date().toISOString()
+    console.log(`${C.grey}[${ts}]${C.reset} ${C.green}Snapshot${C.reset} — ${result.snapshot.findingIds.length} findings`)
+    if (result.snapshot.merkleRoot) {
+      console.log(`${C.grey}  Merkle: ${result.snapshot.merkleRoot.slice(0, 16)}…${C.reset}`)
+    }
+    if (result.delta) {
+      console.log(`  ${C.bold}Delta:${C.reset} +${result.delta.newFindings.length} / -${result.delta.removedFindings.length}`)
+      result.delta.newFindings.slice(0, 5).forEach((id) => console.log(`    ${C.red}+ ${id}${C.reset}`))
+      result.delta.removedFindings.slice(0, 5).forEach((id) => console.log(`    ${C.green}- ${id}${C.reset}`))
+    }
+  }
+
+  if (daemon) {
+    console.log(`${C.cyan}Watch daemon running. Press Ctrl+C to stop.${C.reset}\n`)
+    const stop = startWatch({ target, intervalMinutes, live: isLive }, printResult)
+    const shutdown = () => { stop(); console.log(`\n${C.yellow}Watch daemon stopped.${C.reset}`); process.exit(0) }
+    process.on("SIGINT", shutdown)
+    process.on("SIGTERM", shutdown)
+    await new Promise(() => {})
+    return
+  }
+
+  const result = await runWatchCycle({ target, intervalMinutes, live: isLive })
+  printResult(result)
+  if (!result.delta) {
+    console.log(`${C.grey}No prior snapshot for delta comparison.${C.reset}`)
+  }
+  console.log()
+}
+
+async function cmdTopCut() {
+  const { assessTopCut, formatTopCutReport } = await import("../packages/security/src/top_cut_score.ts")
+  const report = await assessTopCut()
+  console.log(formatTopCutReport(report))
+  console.log()
+  if (!report.meetsTopCut) process.exitCode = 1
+}
+
+async function cmdRetest(target: string, findingId: string, isLive: boolean) {
+  const { retestFinding } = await import("../packages/security/src/engagement_watch.ts")
+  console.log(`\n${C.bold}${C.orange}Finding Retest${C.reset}`)
+  console.log(`${C.grey}Target: ${target} | Finding: ${findingId} | Mode: ${isLive ? "LIVE" : "DRY-RUN"}${C.reset}\n`)
+
+  const result = await retestFinding(target, findingId, { live: isLive })
+  const color = result.remediated ? C.green : result.newState === "RETEST_PENDING" ? C.yellow : C.orange
+  console.log(`  ${color}${result.previousState} → ${result.newState}${C.reset}`)
+  console.log(`  Remediated: ${result.remediated ? "yes" : "no"}`)
+  console.log(`  ${C.grey}${result.output}${C.reset}\n`)
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   const args    = process.argv.slice(2)
   const dryRun  = args.includes("--dry-run")
   const requireLive = args.includes("--require-live")
-  const passArgs = args.filter(a => !["--live", "--dry-run", "--require-live"].includes(a))
+  const daemon = args.includes("--daemon")
+  const passArgs = args.filter(a => !["--live", "--dry-run", "--require-live", "--daemon"].includes(a))
 
   const { isKaliLinux } = await import("../packages/security/src/apt_tradecraft.ts")
   const isLive  = !dryRun && (args.includes("--live") || isKaliLinux())
@@ -350,6 +411,24 @@ async function main() {
       case "toolcheck":
         await cmdToolCheck()
         break
+      case "watch": {
+        const intervalArg = rest.find((a) => /^\d+$/.test(a))
+        const interval = parseInt(intervalArg ?? "60", 10) || 60
+        await cmdWatch(target, interval, isLive, daemon)
+        break
+      }
+      case "topcut":
+        await cmdTopCut()
+        break
+      case "retest": {
+        const findingId = rest[1]
+        if (!findingId) {
+          console.error(`${C.red}Usage: ourmine retest <target> <finding-id>${C.reset}`)
+          process.exit(1)
+        }
+        await cmdRetest(target, findingId, isLive)
+        break
+      }
     }
     return
   }

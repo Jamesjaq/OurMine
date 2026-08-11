@@ -21,6 +21,8 @@ export const FINDING_STATES = [
   "CONFIRMED",
   "FALSE_POSITIVE",
   "UNVERIFIED",
+  "RETEST_PENDING",
+  "REMEDIATED",
 ] as const
 
 export type FindingState = typeof FINDING_STATES[number]
@@ -33,9 +35,11 @@ const LEGAL_TRANSITIONS: Record<FindingState, FindingState[]> = {
   SUSPECTED:           ["VALIDATION_PENDING", "UNVERIFIED"],
   VALIDATION_PENDING:  ["VALIDATING", "UNVERIFIED"],
   VALIDATING:          ["CONFIRMED", "FALSE_POSITIVE", "UNVERIFIED"],
-  CONFIRMED:           [],
+  CONFIRMED:           ["RETEST_PENDING", "REMEDIATED"],
   FALSE_POSITIVE:      [],
-  UNVERIFIED:          ["VALIDATION_PENDING"],  // allow retry after expiry
+  UNVERIFIED:          ["VALIDATION_PENDING"],
+  RETEST_PENDING:      ["VALIDATING", "REMEDIATED", "CONFIRMED"],
+  REMEDIATED:          [],
 }
 
 export class FindingStateMachine {

@@ -41,8 +41,9 @@ test('Container K8s audit (dry-run)', async () => {
   const { auditCluster } = await import('../src/container_k8s.ts');
   const result = await auditCluster({ dryRun: true });
   assert.ok(result);
-  assert.ok(result.findings);
-  assert.ok(result.findings.length > 0);
+  assert.ok(Array.isArray(result.findings));
+  assert.strictEqual(result.findings.length, 0);
+  assert.strictEqual(result.dryRun, true);
 });
 
 // ─── Recon Tests ─────────────────────────────────────────────────────────────
@@ -51,10 +52,9 @@ test('AI Recon (dry-run)', async () => {
   const { runRecon } = await import('../src/ai_recon.ts');
   const result = await runRecon({ domain: 'example.com' }, { dryRun: true });
   assert.ok(result);
-  assert.ok(result.employees.length > 0);
-  assert.ok(result.subdomains.length > 0);
-  assert.ok(result.emailPatterns.length > 0);
   assert.strictEqual(result.dryRun, true);
+  assert.strictEqual(result.employees.length, 0);
+  assert.strictEqual(result.subdomains.length, 0);
 });
 
 // ─── Supply Chain Tests ──────────────────────────────────────────────────────
@@ -79,7 +79,8 @@ test('Credential dumping (dry-run)', async () => {
 test('Identity kerberoast (dry-run)', async () => {
   const { kerberoast } = await import('../src/identity.ts');
   const res = await kerberoast({ live: false });
-  assert.ok(res.length > 0);
+  assert.ok(Array.isArray(res));
+  assert.strictEqual(res.length, 0);
 });
 
 // ─── Anti-Analysis Tests ─────────────────────────────────────────────────────

@@ -85,7 +85,11 @@ const TOOL_DATABASE: Record<string, { installHint: string; required: boolean }> 
   tshark: { installHint: "apt install tshark", required: false },
   evilginx: { installHint: "go install github.com/kgretzky/evilginx2@latest", required: false },
   evilginx2: { installHint: "go install github.com/kgretzky/evilginx2@latest", required: false },
-  "arp-scan": { installHint: "apt install arp-scan", required: false },
+  tor: { installHint: "apt install tor / brew install tor", required: false },
+  "bitcoin-cli": { installHint: "apt install bitcoin-cli / brew install bitcoin", required: false },
+  "monero-wallet-cli": { installHint: "apt install monero-wallet-cli", required: false },
+  monerod: { installHint: "apt install monerod", required: false },
+  electrum: { installHint: "apt install electrum / pip install electrum", required: false },
 }
 
 /** GUI or interactive tools — PATH check only, never spawn (avoids OWASP DirBuster GUI, msfconsole, etc.) */

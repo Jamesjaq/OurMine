@@ -763,11 +763,11 @@ async function requestAcmeCertificate(
   if (dryRun) {
     return {
       domain: request.domain,
-      certificatePem: `-----BEGIN CERTIFICATE-----\n[DRY RUN] Simulated certificate for ${request.domain}\n-----END CERTIFICATE-----`,
-      privateKeyPem: `-----BEGIN PRIVATE KEY-----\n[DRY RUN] Simulated private key for ${request.domain}\n-----END PRIVATE KEY-----`,
-      chainPem: `-----BEGIN CERTIFICATE-----\n[DRY RUN] Simulated intermediate certificate\n-----END CERTIFICATE-----`,
-      expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-      renewedAt: new Date().toISOString(),
+      certificatePem: "",
+      privateKeyPem: "",
+      chainPem: "",
+      expiresAt: "",
+      renewedAt: "",
     };
   }
 

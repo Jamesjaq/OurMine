@@ -199,11 +199,11 @@ export async function runAutomatedCampaign(options: AutomatedCampaignOptions): P
   if (dryRun) {
     return {
       campaignId,
-      status: "SIMULATED",
-      emailTemplate: `Simulated ${lureType} email template for ${options.targetDomain}`,
-      landingPage: `Simulated landing page for ${options.targetDomain}`,
+      status: "ASSESSMENT",
+      emailTemplate: `${lureType} template scaffold (no delivery)`,
+      landingPage: "",
       trackingPixel: generateTrackingPixel(campaignId),
-      targetsCount: targets.length || 5,
+      targetsCount: targets.length,
       files: [],
     }
   }

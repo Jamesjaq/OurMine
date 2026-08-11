@@ -189,6 +189,42 @@ const SKILL_CATALOG: SecuritySkill[] = [
     requiredTools: ["nmap"],
     optionalTools: ["masscan", "arp-scan"],
   },
+  {
+    id: "skill_agentic_ai_hunt",
+    name: "Agentic AI Surface Hunt",
+    category: "recon",
+    description: "Intel-driven hunt for exposed LLM endpoints, Langflow, Nacos, n8n, MinIO",
+    tags: ["ai", "agentic", "intel", "langflow"],
+    requiredTools: ["curl"],
+    optionalTools: ["nuclei"],
+  },
+  {
+    id: "skill_ransomware_readiness",
+    name: "Ransomware Readiness Assessment",
+    category: "post_exploit",
+    description: "Read-only backup/snapshot audit, ESXi exposure, recovery gap analysis",
+    tags: ["ransomware", "backup", "esxi", "impact"],
+    requiredTools: ["curl"],
+    optionalTools: ["nmap"],
+  },
+  {
+    id: "skill_supply_chain_worm",
+    name: "Supply Chain Worm Hunt",
+    category: "exploit",
+    description: "Lockfile poison detection, CI/CD pipeline audit, npm worm indicators",
+    tags: ["supply_chain", "npm", "cicd", "lockfile"],
+    requiredTools: ["grep"],
+    optionalTools: ["npm"],
+  },
+  {
+    id: "skill_identity_first",
+    name: "Identity-First Attack Chain",
+    category: "exploit",
+    description: "Scattered Spider style: social eng assess, identity attack, evilginx, IdP OAuth audit",
+    tags: ["identity", "okta", "oauth", "phishing"],
+    requiredTools: ["curl"],
+    optionalTools: ["evilginx2"],
+  },
 ];
 
 const KNOWN_TOOL_PATHS: Record<string, string[]> = {
@@ -354,6 +390,18 @@ async function executeSkillCommand(
       break;
     case "skill_priv_esc_linux":
       command = `find / -perm -4000 -type f 2>/dev/null; sudo -l 2>/dev/null; cat /etc/crontab 2>/dev/null`;
+      break;
+    case "skill_agentic_ai_hunt":
+      command = `curl -sk -m 5 -o /dev/null -w "%{http_code}" http://${target}:7860/api/v1/version; curl -sk -m 5 -o /dev/null -w "%{http_code}" http://${target}:8848/nacos/`;
+      break;
+    case "skill_ransomware_readiness":
+      command = `curl -sk -m 8 -I https://${target}:443/ 2>/dev/null; echo "backup_audit:read-only"`;
+      break;
+    case "skill_supply_chain_worm":
+      command = `test -f package-lock.json && grep -E "easy-day-js|reqeusts" package-lock.json 2>/dev/null || echo "no lockfile in cwd"`;
+      break;
+    case "skill_identity_first":
+      command = `curl -sk -m 5 -I https://${target}/.well-known/openid-configuration 2>/dev/null`;
       break;
     default:
       command = `echo "No default command for skill: ${skill.name}"`;

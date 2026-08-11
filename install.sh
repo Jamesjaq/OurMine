@@ -42,4 +42,25 @@ npm install --ignore-scripts 2>/dev/null || npm install || true
 echo "Linking ourmine CLI..."
 npm link --force
 
+# Kali / offensive tooling extras
+if [ -f /etc/os-release ] && grep -qi kali /etc/os-release; then
+  echo "Kali detected — configuring live mode and intel cache..."
+  mkdir -p "${HOME}/.ourmine/intel" "${HOME}/.ourmine/opsec"
+  export OURMINE_LIVE=1
+  PROFILE_SNIPPET="${HOME}/.ourmine/env.sh"
+  cat > "${PROFILE_SNIPPET}" <<'EOF'
+# OurMine — auto-generated on Kali install
+export OURMINE_LIVE=1
+export OURMINE_REQUIRE_LIVE=1
+EOF
+  for pkg in yara nuclei whatweb; do
+    if ! command -v "$pkg" >/dev/null 2>&1; then
+      echo "Optional: install ${pkg} for full live tooling (sudo apt install ${pkg})"
+    fi
+  done
+  if command -v nuclei >/dev/null 2>&1; then
+    nuclei -update-templates 2>/dev/null || true
+  fi
+fi
+
 echo -e "\n\033[32m✔ Done.\033[0m Run \033[38;5;208mourmine\033[0m to launch."

@@ -51,6 +51,21 @@ test('CLI/MCP critical wiring functions exist', async () => {
   assert.strictEqual(typeof security.supply_chain.analyze, 'function');
   assert.strictEqual(typeof security.identity.execute, 'function');
   assert.strictEqual(typeof security.agent_resilience.resilienceEngine, 'object');
+  assert.strictEqual(typeof security.intel_feeds.enrichTarget, 'function');
+  assert.strictEqual(typeof security.opsec_gate.gateExecution, 'function');
+  assert.strictEqual(typeof security.attack_navigator.exportNavigatorLayer, 'function');
+});
+
+test('new agent tools are dispatchable', async () => {
+  const { AttackSurfaceGraph } = await import('../src/attack_surface.ts');
+  const { ToolBroker } = await import('../src/tool_broker.ts');
+  const { executeAgentTool } = await import('../src/agent_tools.ts');
+  const ctx = { target: '127.0.0.1', graph: new AttackSurfaceGraph('127.0.0.1'), broker: new ToolBroker(), live: false };
+  for (const tool of ['intel_enrich', 'ai_surface_scan', 'cpanel_audit', 'edge_audit', 'cicd_audit', 'idp_audit']) {
+    const res = await executeAgentTool(ctx, tool, {});
+    assert.strictEqual(res.tool, tool);
+    assert.ok(typeof res.success === 'boolean');
+  }
 });
 
 test('ai_recon honors live flag', async () => {

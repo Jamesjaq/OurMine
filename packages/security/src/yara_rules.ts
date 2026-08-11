@@ -133,7 +133,118 @@ export const BUILTIN_RULES: readonly string[] = [
         any of them
 }
 `,
+  // ─── vx-derived detection shapes (metadata only, no payloads) ───
+  `rule detect_stealer_prynt {
+    meta:
+        description = "PryntStealer / infostealer string artifacts"
+        author = "OurMine vx-index"
+        ruleset = "stealer"
+        attack_id = "T1555"
+    strings:
+        $a = "PryntStealer" ascii wide nocase
+        $b = "BrowserPasswords" ascii wide nocase
+        $c = "DiscordToken" ascii wide nocase
+    condition:
+        2 of them
+}
+`,
+  `rule detect_botnet_mirai {
+    meta:
+        description = "Mirai botnet family strings"
+        author = "OurMine vx-index"
+        ruleset = "botnet"
+        attack_id = "T1584.005"
+    strings:
+        $a = "/bin/busybox" ascii
+        $b = "mirai" ascii nocase
+        $c = "POST /cdn-cgi/" ascii
+    condition:
+        2 of them
+}
+`,
+  `rule detect_rootkit_bpfdoor {
+    meta:
+        description = "BPFDoor passive rootkit markers"
+        author = "OurMine vx-index"
+        ruleset = "rootkit"
+        attack_id = "T1014"
+    strings:
+        $a = "BPFDoor" ascii nocase
+        $b = "libpcap" ascii nocase
+        $c = "magic packet" ascii nocase
+    condition:
+        any of them
+}
+`,
+  `rule detect_agentic_llm_keys {
+    meta:
+        description = "LLM API key strings in scripts/logs (agentic abuse)"
+        author = "OurMine vx-index"
+        ruleset = "agentic"
+        attack_id = "T1552.001"
+    strings:
+        $a = "sk-ant-" ascii
+        $b = "sk-proj-" ascii
+        $c = "OPENAI_API_KEY" ascii nocase
+        $d = "anthropic.com" ascii nocase
+    condition:
+        any of them
+}
+`,
+  `rule detect_sorry_ransomware {
+    meta:
+        description = "Sorry ransomware .sorry extension / header markers"
+        author = "OurMine vx-index"
+        ruleset = "ransomware"
+        attack_id = "T1486"
+    strings:
+        $a = ".sorry" ascii nocase
+        $b = "SORRY" ascii wide nocase
+        $c = { 00 00 08 09 }
+    condition:
+        any of them
+}
+`,
+  `rule detect_encforge_ml_ext {
+    meta:
+        description = "ENCFORGE ML model extension sweep"
+        author = "OurMine vx-index"
+        ruleset = "ransomware"
+        attack_id = "T1486"
+    strings:
+        $a = ".safetensors" ascii nocase
+        $b = ".gguf" ascii nocase
+        $c = ".ckpt" ascii nocase
+    condition:
+        any of them
+}
+`,
 ];
+
+/** Rules grouped by vx-underground family category for selective OPSEC scans. */
+export const RULESETS: Record<string, string[]> = {
+  stealer: ["detect_stealer_prynt"],
+  botnet: ["detect_botnet_mirai"],
+  rootkit: ["detect_rootkit_bpfdoor"],
+  agentic: ["detect_agentic_llm_keys"],
+  ransomware: ["detect_sorry_ransomware", "detect_encforge_ml_ext"],
+};
+
+function extractRuleNameFromSource(source: string): string {
+  for (const raw of source.split("\n")) {
+    const line = raw.trim()
+    if (line.startsWith("rule ")) {
+      return line.split(/\s+/)[1]?.replace(/\{$/, "") ?? ""
+    }
+  }
+  return ""
+}
+
+export function rulesForRuleset(name: string): string[] {
+  if (name === "default") return [...BUILTIN_RULES]
+  const names = new Set(RULESETS[name] ?? [])
+  return BUILTIN_RULES.filter((r) => names.has(extractRuleNameFromSource(r)))
+}
 
 // ------------------------------------------------------------------------- //
 // Rule generation from findings

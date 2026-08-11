@@ -692,8 +692,44 @@ export class CicdSupplyChainAuditor {
     console.log(`[OurMine Security] Auditing CI/CD pipeline for '${repo}' (cwd: ${cwd})...`)
 
     if (isDryRun) {
-      console.log("[OurMine Security] Dry-run mode: returning simulated audit findings.")
-      return buildDryRunResult(repo, cwd)
+      const findings: CicdFinding[] = []
+      const poisonedPipelineSecrets: string[] = []
+      const dependencyConfusionVulnerabilities: string[] = []
+      let workflowsParsed = 0
+      let dependenciesChecked = 0
+      let npmAuditVulnerabilities = 0
+      let dockerfileIssues = 0
+      let untrustedRunnerRisk = false
+
+      try {
+        const wfResult = auditWorkflows(cwd, findings)
+        workflowsParsed = wfResult.parsed
+        poisonedPipelineSecrets.push(...wfResult.poisonedSecrets)
+        untrustedRunnerRisk = findings.some((f) => f.severity === "CRITICAL" && f.title.includes("trigger"))
+      } catch { /* skip */ }
+
+      try {
+        const depResult = auditDependencies(cwd, findings)
+        dependenciesChecked = depResult.checked
+        npmAuditVulnerabilities = depResult.vulnCount
+      } catch { /* skip */ }
+
+      try { auditNpmrc(cwd, findings) } catch { /* skip */ }
+      try { dockerfileIssues = auditDockerfile(cwd, findings) } catch { /* skip */ }
+
+      return {
+        repo,
+        cwd,
+        untrustedRunnerRisk,
+        poisonedPipelineSecrets,
+        dependencyConfusionVulnerabilities,
+        findings,
+        workflowsParsed,
+        dependenciesChecked,
+        npmAuditVulnerabilities,
+        dockerfileIssues,
+        simulated: false,
+      }
     }
 
     const findings: CicdFinding[] = []

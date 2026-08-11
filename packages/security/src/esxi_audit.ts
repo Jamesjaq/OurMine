@@ -117,99 +117,7 @@ function parseBool(val: string | null): boolean {
   if (!val) return false
   const v = val.trim().toLowerCase()
   return v === "true" || v === "1" || v === "enabled" || v === "on"
-}
-
-// ---------------------------------------------------------------------------
-// Dry-run simulation data
-// ---------------------------------------------------------------------------
-
-function generateSimulatedVMs(): ESXiVMInfo[] {
-  return [
-    { name: "dc01-prod", powerState: "powered on", snapshotCount: 2, snapshotAge_days: 45, vmdkPath: "[datastore1] dc01-prod/dc01-prod.vmdk" },
-    { name: "web-server-01", powerState: "powered on", snapshotCount: 0, snapshotAge_days: null, vmdkPath: "[datastore1] web-server-01/web-server-01.vmdk" },
-    { name: "db-replica", powerState: "powered off", snapshotCount: 1, snapshotAge_days: 120, vmdkPath: "[datastore2] db-replica/db-replica.vmdk" },
-    { name: "dev-test-vm", powerState: "powered on", snapshotCount: 5, snapshotAge_days: 180, vmdkPath: "[datastore1] dev-test-vm/dev-test-vm.vmdk" },
-  ]
-}
-
-function generateSimulatedDatastores(): ESXiDatastoreInfo[] {
-  return [
-    { name: "datastore1", capacityGB: 4800, freeGB: 1200, mounted: true, permissions: "drwxrwxrwx 1 root root" },
-    { name: "datastore2", capacityGB: 9600, freeGB: 3400, mounted: true, permissions: "drwxrwxrwx 1 root root" },
-  ]
-}
-
-function generateSimulatedFindings(): ESXiFinding[] {
-  return [
-    {
-      id: "ESXI-01",
-      category: "ADMIN",
-      severity: "HIGH",
-      title: "ESXi Shell and SSH Access Enabled",
-      description: "The ESXi host has both Shell and SSH services enabled, allowing remote command-line access to the hypervisor. This increases the attack surface and may allow unauthorized administrative actions.",
-      remediation: "Disable ESXi Shell and SSH via the vSphere Client or running 'esxcli system ssh server set --disabled=true' and 'esxcli system shell set --disabled=true' when not in active maintenance.",
-    },
-    {
-      id: "ESXI-02",
-      category: "ADMIN",
-      severity: "MEDIUM",
-      title: "Lockdown Mode Not in Strict Enforcement",
-      description: "The host is not running in strict lockdown mode, meaning users with direct ESXi credentials can perform operations bypassing vCenter audit trails.",
-      remediation: "Enable strict lockdown mode via vCenter to force all administrative operations through the vCenter audit pipeline.",
-    },
-    {
-      id: "ESXI-03",
-      category: "STORAGE",
-      severity: "CRITICAL",
-      title: "Direct VMDK Datastore Access",
-      description: "Datastore mount points allow direct raw reading of .vmdk files, bypassing virtual machine access controls. Any user with datastore browse permissions can extract disk contents.",
-      remediation: "Restrict VMFS volume access using vSphere permissions and enforce explicit vSphere API authorization for datastore browsing. Use encrypted VMDK where possible.",
-    },
-    {
-      id: "ESXI-04",
-      category: "STORAGE",
-      severity: "HIGH",
-      title: "Overly Permissive Datastore Permissions",
-      description: "Datastore volumes are mounted with world-writable permissions (drwxrwxrwx), allowing any local user to read, modify, or delete VM disk files.",
-      remediation: "Apply least-privilege NFS/VMFS export permissions and restrict datastore access to authorized service accounts only.",
-    },
-    {
-      id: "ESXI-05",
-      category: "SNAPSHOT",
-      severity: "MEDIUM",
-      title: "Stale VM Snapshots Detected (>30 days)",
-      description: "Multiple VMs have snapshots older than 30 days. Stale snapshots consume storage, degrade performance, and may contain sensitive data from previous states.",
-      remediation: "Implement a snapshot lifecycle policy: delete all snapshots older than 72 hours. Use 'vim-cmd vmsvc/snapshot.getall' to audit and remove stale snapshots.",
-    },
-    {
-      id: "ESXI-06",
-      category: "SNAPSHOT",
-      severity: "HIGH",
-      title: "Excessive Snapshot Chain on dev-test-vm",
-      description: "VM 'dev-test-vm' has 5 accumulated snapshots forming a deep delta chain, risking data corruption and significant I/O performance degradation.",
-      remediation: "Consolidate all snapshots on affected VMs immediately. Implement monitoring to alert when snapshot count exceeds 2 per VM.",
-    },
-    {
-      id: "ESXI-07",
-      category: "NETWORK",
-      severity: "HIGH",
-      title: "VMkernel Management Interface Exposed",
-      description: "The VMkernel management interface is bound to a network segment that may be routable from less-trusted zones, exposing vSphere management protocols (SOAP, CIM) to potential lateral movement.",
-      remediation: "Isolate management interfaces to a dedicated VLAN with firewall rules restricting access to authorized jump hosts only.",
-    },
-    {
-      id: "ESXI-08",
-      category: "NETWORK",
-      severity: "MEDIUM",
-      title: "Unencrypted VM Traffic on Management vSwitch",
-      description: "VM-to-VM traffic on the management vSwitch is not encrypted, allowing potential interception of sensitive inter-VM communications on the same host.",
-      remediation: "Implement NSX-T distributed firewall with encryption enabled, or use VM encryption policies for sensitive workloads.",
-    },
-  ]
-}
-
-// ---------------------------------------------------------------------------
-// Live audit implementation
+}// Live audit implementation
 // ---------------------------------------------------------------------------
 
 function performLiveAudit(config: ESXiConfig, creds: ESXiCredentials): ESXiAuditResult {
@@ -551,17 +459,17 @@ export function auditESXi(
   if (isDryRun) {
     return {
       host: config.host,
-      esxcliAvailable: true,
-      vimCmdExposed: true,
-      sshAccessConfirmed: true,
-      shellEnabled: true,
-      lockdownMode: "Disabled",
-      version: "7.0.3",
-      vmsDetected: generateSimulatedVMs(),
-      snapshotsDetected: 8,
-      datastores: generateSimulatedDatastores(),
-      rawDatastoresExposed: ["/vmfs/volumes/datastore1", "/vmfs/volumes/datastore2"],
-      findings: generateSimulatedFindings(),
+      esxcliAvailable: isToolAvailable("ssh"),
+      vimCmdExposed: false,
+      sshAccessConfirmed: false,
+      shellEnabled: false,
+      lockdownMode: "unknown",
+      version: null,
+      vmsDetected: [],
+      snapshotsDetected: 0,
+      datastores: [],
+      rawDatastoresExposed: [],
+      findings: [],
       isDryRun: true,
     }
   }

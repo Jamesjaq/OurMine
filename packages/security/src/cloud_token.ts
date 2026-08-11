@@ -28,14 +28,7 @@ export async function fetchAWSMetadata(opts: CloudTokenOptions = {}): Promise<Cl
   const { live = false, timeoutMs = 2000 } = opts;
 
   if (!live) {
-    return {
-      provider: "aws",
-      accessKeyId: "ASIAIOSFODNN7EXAMPLE",
-      secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-      sessionToken: "IQoJb3JpZ2luX2VjEEXAMPLE...",
-      expiration: new Date(Date.now() + 3600 * 1000).toISOString(),
-      rawResponse: { dryRun: true },
-    };
+    return null;
   }
 
   try {
@@ -84,12 +77,7 @@ export async function fetchGCPMetadata(opts: CloudTokenOptions = {}): Promise<Cl
   const { live = false, timeoutMs = 2000 } = opts;
 
   if (!live) {
-    return {
-      provider: "gcp",
-      token: "ya29.a0ARrdaM...DRY_RUN",
-      expiration: new Date(Date.now() + 3600 * 1000).toISOString(),
-      rawResponse: { dryRun: true },
-    };
+    return null;
   }
 
   try {
@@ -116,11 +104,7 @@ export async function fetchAzureMetadata(opts: CloudTokenOptions = {}): Promise<
   const { live = false, timeoutMs = 2000 } = opts;
 
   if (!live) {
-    return {
-      provider: "azure",
-      token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...DRY_RUN",
-      rawResponse: { dryRun: true },
-    };
+    return null;
   }
 
   try {

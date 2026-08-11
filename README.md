@@ -2,7 +2,7 @@
 
 **Autonomous AI Security & Developer Platform**
 
-Built on **OpenCode** with the **ARES Security Suite** — 115+ security modules for recon, auditing, pentest automation, MITRE ATT&CK TTPs, validation pipelines, and OPSEC-safe dry-run defaults.
+Built on **OpenCode** with the **ARES Security Suite** — real execution on Kali, evidence-backed findings, OPSEC-gated tooling, and a deterministic validation engine that never hallucinates confirmations.
 
 ## Install
 
@@ -61,7 +61,8 @@ rm -rf ~/.ourmine
 On first launch, OurMine auto-wires:
 - **ARES MCP server** (`ares`) — 50+ offensive security tools
 - **`pentest` agent** as default — APT-level autonomous engagement
-- **Live mode on Kali** — real execution, no simulations
+- **Live mode on Kali** — real execution only; no fabricated scan output
+- **Credential graph + campaign executor** — chained pivots and multi-phase runs
 
 ### Example session
 

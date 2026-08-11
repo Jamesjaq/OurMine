@@ -209,155 +209,29 @@ function extractPermissionNames(scopes: unknown): string[] {
   return scopes.map((s: Record<string, unknown>) => String(s.adminDisplayName || s.displayName || s.id || "")).filter(Boolean)
 }
 
-// ─── Dry-Run Simulation ───────────────────────────────────────────────────────
+// ─── Empty policy defaults (error paths — no fabricated tenant data) ─────────
 
-function simulateOAuthApps(domain: string): OAuthAppRegistration[] {
-  return [
-    {
-      appId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      displayName: "Contoso Integration Service",
-      createdDateTime: new Date(Date.now() - 180 * 86400000).toISOString(),
-      lastSignInDateTime: new Date(Date.now() - 2 * 86400000).toISOString(),
-      signInAudience: "AzureADMultipleOrgs",
-      servicePrincipalType: "Application",
-      appRoles: [],
-      delegatedPermissionScopes: ["User.Read", "Mail.Read", "Files.ReadWrite.All"],
-      apiPermissionScopes: ["Directory.ReadWrite.All", "Application.ReadWrite.All"],
-      hasClientSecret: true,
-      secretExpiry: new Date(Date.now() + 45 * 86400000).toISOString(),
-      passwordCredentialCount: 1,
-      keyCredentialCount: 0,
-      identifierUris: [`https://${domain.toLowerCase().replace(/\./g, "")}.com`],
-      redirectUris: [`https://api.${domain.toLowerCase()}/auth/callback`],
-    },
-    {
-      appId: "b2c3d4e5-f6a7-8901-bcde-f12345678901",
-      displayName: "Dev Dashboard (Unused)",
-      createdDateTime: new Date(Date.now() - 365 * 86400000).toISOString(),
-      lastSignInDateTime: null,
-      signInAudience: "AzureADMyOrg",
-      servicePrincipalType: "Application",
-      appRoles: [],
-      delegatedPermissionScopes: ["User.Read", "openid", "profile"],
-      apiPermissionScopes: [],
-      hasClientSecret: true,
-      secretExpiry: new Date(Date.now() - 30 * 86400000).toISOString(),
-      passwordCredentialCount: 1,
-      keyCredentialCount: 0,
-      identifierUris: [],
-      redirectUris: ["http://localhost:3000/callback"],
-    },
-    {
-      appId: "c3d4e5f6-a7b8-9012-cdef-123456789012",
-      displayName: "Partner Portal SSO",
-      createdDateTime: new Date(Date.now() - 90 * 86400000).toISOString(),
-      lastSignInDateTime: new Date(Date.now() - 1 * 86400000).toISOString(),
-      signInAudience: "AzureADMultipleOrgs",
-      servicePrincipalType: "Application",
-      appRoles: ["GlobalReader"],
-      delegatedPermissionScopes: ["User.Read", "profile", "email"],
-      apiPermissionScopes: ["RoleManagement.ReadWrite.Directory", "Group.ReadWrite.All"],
-      hasClientSecret: false,
-      secretExpiry: null,
-      passwordCredentialCount: 0,
-      keyCredentialCount: 2,
-      identifierUris: [`https://partner.${domain.toLowerCase()}/sso`],
-      redirectUris: [`https://partner.${domain.toLowerCase()}/auth/callback`],
-    },
-  ]
+const EMPTY_AUTH_METHOD: AuthenticationMethodPolicy = {
+  fido2: {
+    isFIDO2Enabled: false,
+    allowSelfServiceRegistration: false,
+    enforceAttestation: false,
+    isEnforced: false,
+    combinedFIDO2Setting: "disabled",
+  },
+  smsEnabled: false,
+  voiceEnabled: false,
+  totpEnabled: false,
+  emailOtpEnabled: false,
+  softwareOathEnabled: false,
+  hardwareOathEnabled: false,
+  temporaryAccessPassEnabled: false,
 }
 
-function simulateAuthMethodPolicy(): AuthenticationMethodPolicy {
-  return {
-    fido2: {
-      isFIDO2Enabled: true,
-      allowSelfServiceRegistration: true,
-      enforceAttestation: false,
-      isEnforced: true,
-      combinedFIDO2Setting: "enabled",
-    },
-    smsEnabled: true,
-    voiceEnabled: false,
-    totpEnabled: true,
-    emailOtpEnabled: true,
-    softwareOathEnabled: true,
-    hardwareOathEnabled: false,
-    temporaryAccessPassEnabled: true,
-  }
-}
-
-function simulateTokenBindingPolicy(): TokenBindingPolicy {
-  return {
-    includeTokenBinding: false,
-    tokenBindingType: null,
-    excludeNonTransferableTokens: false,
-  }
-}
-
-function generateSimulatedFindings(apps: OAuthAppRegistration[], domain: string): IdPFinding[] {
-  const findings: IdPFinding[] = []
-
-  findings.push({
-    id: makeId(),
-    category: "OAUTH_CONSENT",
-    severity: "CRITICAL",
-    title: "Overprivileged Multi-Tenant OAuth Application",
-    description: `App "${apps[0].displayName}" (${apps[0].appId}) is registered as multi-tenant with Directory.ReadWrite.All and Application.ReadWrite.All application permissions and user consent permitted. Any user in any tenant can grant these permissions without admin approval.`,
-    remediation: "Restrict user consent for high-privilege permissions. Require admin consent workflow for all multi-tenant apps. Remove or scope down Directory.ReadWrite.All to the minimum required.",
-    evidence: `appId=${apps[0].appId}, signInAudience=${apps[0].signInAudience}, apiPermissions=[${apps[0].apiPermissionScopes.join(", ")}]`,
-  })
-
-  findings.push({
-    id: makeId(),
-    category: "MFA_POLICY",
-    severity: "HIGH",
-    title: "FIDO2 / WebAuthn Fallback to SMS/TOTP Enabled",
-    description: "MFA authentication method policy permits downgrade from hardware security key (FIDO2) to SMS or TOTP, enabling SIM swap and phishing attacks against privileged accounts.",
-    remediation: "Enforce FIDO2-only requirement for administrative roles. Disable SMS and voice MFA for privileged accounts. Configure Conditional Access to require phishing-resistant MFA.",
-    evidence: "smsEnabled=true, voiceEnabled not enforced, fido2.allowSelfServiceRegistration=true",
-  })
-
-  findings.push({
-    id: makeId(),
-    category: "OAUTH_CONSENT",
-    severity: "MEDIUM",
-    title: "Stale OAuth App Registration with No Sign-In Activity",
-    description: `App "${apps[1].displayName}" (${apps[1].appId}) was created over 365 days ago and has never been used (lastSignInDateTime is null). This represents a dormant attack surface.`,
-    remediation: "Review and remove unused app registrations. Implement app registration lifecycle policies to auto-expire inactive applications.",
-    evidence: `appId=${apps[1].appId}, created=${apps[1].createdDateTime}, lastSignIn=null`,
-  })
-
-  findings.push({
-    id: makeId(),
-    category: "SECRET_EXPOSURE",
-    severity: "HIGH",
-    title: "Expired Client Secret on OAuth Application",
-    description: `App "${apps[1].displayName}" (${apps[1].appId}) has a client secret that expired 30 days ago. Expired secrets may still be accepted by some endpoints or logged in plaintext.`,
-    remediation: "Rotate client secrets regularly. Use certificate-based authentication instead of client secrets. Remove expired secrets.",
-    evidence: `appId=${apps[1].appId}, secretExpiry=${apps[1].secretExpiry}`,
-  })
-
-  findings.push({
-    id: makeId(),
-    category: "OAUTH_CONSENT",
-    severity: "HIGH",
-    title: "OAuth App with Privileged Application Roles",
-    description: `App "${apps[2].displayName}" (${apps[2].appId}) has been granted the GlobalReader app role and multi-tenant API permissions including RoleManagement.ReadWrite.Directory.`,
-    remediation: "Audit app role assignments. Apply least-privilege principle. Remove unnecessary administrative roles.",
-    evidence: `appId=${apps[2].appId}, appRoles=[${apps[2].appRoles.join(", ")}], apiPermissions=[${apps[2].apiPermissionScopes.join(", ")}]`,
-  })
-
-  findings.push({
-    id: makeId(),
-    category: "TOKEN_BINDING",
-    severity: "MEDIUM",
-    title: "Token Binding Not Enforced",
-    description: "Token binding is not enabled in the tenant. Without token binding, access tokens can be replayed from any device if stolen.",
-    remediation: "Enable token binding in Authentication Methods policy. Configure Conditional Access to require token-bound tokens.",
-    evidence: "tokenBinding.includeTokenBinding=false, tokenBindingType=null",
-  })
-
-  return findings
+const EMPTY_TOKEN_BINDING: TokenBindingPolicy = {
+  includeTokenBinding: false,
+  tokenBindingType: null,
+  excludeNonTransferableTokens: false,
 }
 
 // ─── Live Implementation ──────────────────────────────────────────────────────
@@ -699,28 +573,19 @@ export async function auditIdPAndOAuth(
   const domain = config.domain || options.domain
 
   if (dryRun) {
-    const apps = simulateOAuthApps(domain)
-    const authMethod = simulateAuthMethodPolicy()
-    const tokenBinding = simulateTokenBindingPolicy()
-    const findings = generateSimulatedFindings(apps, domain)
-
-    const highRiskOAuthApps = apps.filter(a =>
-      a.apiPermissionScopes.some(p => HIGH_RISK_PERMISSIONS.has(p)),
-    ).length
-
     return {
       domain,
       tenantId: tenantId || config.tenantId || null,
-      highRiskOAuthApps,
-      totalOAuthApps: apps.length,
-      fido2FallbackAllowed: authMethod.smsEnabled || authMethod.voiceEnabled,
-      tokenBindingEnforced: tokenBinding.includeTokenBinding,
-      staleAppsCount: apps.filter(a => a.lastSignInDateTime === null).length,
-      exposedSecretsCount: apps.filter(a => a.secretExpiry && new Date(a.secretExpiry).getTime() < Date.now()).length,
-      authMethodPolicy: authMethod,
-      tokenBindingPolicy: tokenBinding,
-      oauthApps: apps,
-      findings,
+      highRiskOAuthApps: 0,
+      totalOAuthApps: 0,
+      fido2FallbackAllowed: false,
+      tokenBindingEnforced: false,
+      staleAppsCount: 0,
+      exposedSecretsCount: 0,
+      authMethodPolicy: null,
+      tokenBindingPolicy: null,
+      oauthApps: [],
+      findings: [],
       isDryRun: true,
     }
   }
@@ -737,8 +602,8 @@ export async function auditIdPAndOAuth(
       tokenBindingEnforced: false,
       staleAppsCount: 0,
       exposedSecretsCount: 0,
-      authMethodPolicy: simulateAuthMethodPolicy(),
-      tokenBindingPolicy: simulateTokenBindingPolicy(),
+      authMethodPolicy: EMPTY_AUTH_METHOD,
+      tokenBindingPolicy: EMPTY_TOKEN_BINDING,
       oauthApps: [],
       findings: [{
         id: makeId(),
@@ -762,8 +627,8 @@ export async function auditIdPAndOAuth(
       tokenBindingEnforced: false,
       staleAppsCount: 0,
       exposedSecretsCount: 0,
-      authMethodPolicy: simulateAuthMethodPolicy(),
-      tokenBindingPolicy: simulateTokenBindingPolicy(),
+      authMethodPolicy: EMPTY_AUTH_METHOD,
+      tokenBindingPolicy: EMPTY_TOKEN_BINDING,
       oauthApps: [],
       findings: [{
         id: makeId(),
@@ -812,8 +677,8 @@ export async function auditIdPAndOAuth(
       tokenBindingEnforced: false,
       staleAppsCount: 0,
       exposedSecretsCount: 0,
-      authMethodPolicy: simulateAuthMethodPolicy(),
-      tokenBindingPolicy: simulateTokenBindingPolicy(),
+      authMethodPolicy: EMPTY_AUTH_METHOD,
+      tokenBindingPolicy: EMPTY_TOKEN_BINDING,
       oauthApps: [],
       findings: [{
         id: makeId(),

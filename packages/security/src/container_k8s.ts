@@ -24,6 +24,7 @@ export interface K8sAuditResult {
   /** Flattened findings list for CLI/tests */
   findings: string[];
   simulated: boolean;
+  dryRun?: boolean;
 }
 
 interface RawPermission {
@@ -291,12 +292,13 @@ function getDryRunFindings(cluster: string): K8sAuditResult {
 
   return {
     cluster,
-    rbacIssues,
-    podSecurityPolicies,
-    containerEscapeRisks,
-    findingsCount: rbacIssues.length + podSecurityPolicies.length + containerEscapeRisks.length,
-    findings: [...rbacIssues, ...podSecurityPolicies, ...containerEscapeRisks],
-    simulated: true,
+    rbacIssues: [],
+    podSecurityPolicies: [],
+    containerEscapeRisks: [],
+    findingsCount: 0,
+    findings: [],
+    simulated: false,
+    dryRun: true,
   };
 }
 
@@ -308,7 +310,7 @@ export class K8sSecurityAuditor {
     console.log(`[OurMine Security] Auditing K8s cluster '${cluster}' (dryRun: ${isDryRun})...`);
 
     if (isDryRun) {
-      console.log("[OurMine Security] Dry-run mode: returning simulated findings.");
+      console.log("[OurMine Security] Dry-run mode: skipping cluster API — no fabricated findings.");
       return getDryRunFindings(cluster);
     }
 

@@ -133,115 +133,6 @@ export function inferEmailPatterns(
   }).sort((a, b) => b.confidence - a.confidence);
 }
 
-// ─── Dry-run generators ──────────────────────────────────────────────────────
-
-function generateDryRunEmployees(domain: string, max: number): EmployeeRecord[] {
-  const firstNames = [
-    "Alice", "Bob", "Carol", "David", "Eve", "Frank", "Grace", "Hank",
-    "Ivy", "Jack", "Karen", "Leo", "Mona", "Nate", "Olivia", "Paul",
-    "Quinn", "Rita", "Sam", "Tina", "Uma", "Vic", "Wendy", "Xander",
-    "Yara", "Zane",
-  ];
-  const lastNames = [
-    "Anderson", "Baker", "Chen", "Davis", "Evans", "Fischer", "Garcia",
-    "Harris", "Ivanov", "Jackson", "Kim", "Lopez", "Muller", "Nguyen",
-    "Okafor", "Park", "Quinn", "Rivera", "Singh", "Tanaka", "Ueda",
-    "Volkov", "Wang", "Xu", "Yamamoto", "Zhang",
-  ];
-  const titles = [
-    { title: "Chief Executive Officer", dept: "Executive", seniority: "executive" as const },
-    { title: "Chief Information Officer", dept: "IT", seniority: "executive" as const },
-    { title: "VP of Engineering", dept: "Engineering", seniority: "executive" as const },
-    { title: "Director of Security", dept: "Security", seniority: "manager" as const },
-    { title: "Engineering Manager", dept: "Engineering", seniority: "manager" as const },
-    { title: "Senior Software Engineer", dept: "Engineering", seniority: "ic" as const },
-    { title: "DevOps Engineer", dept: "Infrastructure", seniority: "ic" as const },
-    { title: "Security Analyst", dept: "Security", seniority: "ic" as const },
-    { title: "Product Manager", dept: "Product", seniority: "manager" as const },
-    { title: "Data Scientist", dept: "Data", seniority: "ic" as const },
-    { title: "Systems Administrator", dept: "IT", seniority: "ic" as const },
-    { title: "Cloud Architect", dept: "Infrastructure", seniority: "ic" as const },
-    { title: "Frontend Developer", dept: "Engineering", seniority: "ic" as const },
-    { title: "Backend Developer", dept: "Engineering", seniority: "ic" as const },
-    { title: "SOC Lead", dept: "Security", seniority: "manager" as const },
-  ];
-
-  const employees: EmployeeRecord[] = [];
-  const usedNames = new Set<string>();
-  const count = Math.min(max, 20);
-
-  for (let i = 0; i < count; i++) {
-    let first = firstNames[i % firstNames.length]!;
-    let last = lastNames[i % lastNames.length]!;
-    let nameKey = `${first}.${last}`;
-    let attempt = 0;
-    while (usedNames.has(nameKey) && attempt < 10) {
-      last = lastNames[(i + attempt + 1) % lastNames.length]!;
-      nameKey = `${first}.${last}`;
-      attempt++;
-    }
-    usedNames.add(nameKey);
-
-    const role = titles[i % titles.length]!;
-    employees.push({
-      fullName: `${first} ${last}`,
-      title: role.title,
-      email: `${first.toLowerCase()}.${last.toLowerCase()}@${domain}`,
-      linkedInUrl: `https://linkedin.com/in/${first.toLowerCase()}-${last.toLowerCase()}-${Math.floor(Math.random() * 9000 + 1000)}`,
-      department: role.dept,
-      seniority: role.seniority,
-    });
-  }
-  return employees;
-}
-
-function generateDryRunSubdomains(domain: string): string[] {
-  const prefixes = [
-    "mail", "vpn", "api", "dev", "staging", "admin", "portal", "docs",
-    "ci", "cdn", "img", "assets", "grafana", "jira", "gitlab", "sso",
-    "auth", "status", "monitor", "backup", "db", "redis", "kafka",
-  ];
-  return prefixes.slice(0, 12).map((p) => `${p}.${domain}`);
-}
-
-function generateDryRunDNS(domain: string): DNSRecord[] {
-  return [
-    { type: "A", value: "203.0.113.42", ttl: 3600 },
-    { type: "A", value: "203.0.113.43", ttl: 3600 },
-    { type: "AAAA", value: "2001:db8::1", ttl: 3600 },
-    { type: "MX", value: `mail.${domain}`, ttl: 3600 },
-    { type: "MX", value: `mail2.${domain}`, ttl: 3600 },
-    { type: "TXT", value: "v=spf1 include:_spf.google.com ~all", ttl: 3600 },
-    { type: "TXT", value: "google-site-verification=abc123", ttl: 3600 },
-    { type: "NS", value: `ns1.${domain}`, ttl: 86400 },
-    { type: "NS", value: `ns2.${domain}`, ttl: 86400 },
-    { type: "CNAME", value: `www.${domain}`, ttl: 3600 },
-  ];
-}
-
-function generateDryRunWHOIS(domain: string): WHOISData {
-  return {
-    registrar: "Example Registrar, Inc.",
-    creationDate: "2010-03-15T00:00:00Z",
-    expirationDate: "2026-03-15T00:00:00Z",
-    nameServers: [`ns1.${domain}`, `ns2.${domain}`],
-    registrantOrg: "Example Corp",
-    registrantCountry: "US",
-  };
-}
-
-function generateDryRunTechStack(): TechStackFingerprint[] {
-  return [
-    { category: "Web Server", name: "Nginx", version: "1.24.0", confidence: 0.85 },
-    { category: "Language", name: "TypeScript", version: "5.3", confidence: 0.8 },
-    { category: "Framework", name: "Next.js", version: "14.0", confidence: 0.75 },
-    { category: "Database", name: "PostgreSQL", version: "16", confidence: 0.7 },
-    { category: "Cloud", name: "AWS", confidence: 0.9 },
-    { category: "CI/CD", name: "GitHub Actions", confidence: 0.8 },
-    { category: "Monitoring", name: "Datadog", confidence: 0.6 },
-    { category: "DNS", name: "Cloudflare", confidence: 0.85 },
-  ];
-}
 
 // ─── Live: Subdomain enumeration ─────────────────────────────────────────────
 
@@ -679,19 +570,16 @@ export async function runRecon(
   let llmAnalysis: string | null = null;
 
   if (dryRun) {
-    employees = generateDryRunEmployees(target.domain, maxEmployees);
-    subdomains = opts.huntSubdomains !== false ? generateDryRunSubdomains(target.domain) : [];
-    dnsRecords = opts.collectDNS !== false ? generateDryRunDNS(target.domain) : [];
-    whois = opts.collectWHOIS !== false ? generateDryRunWHOIS(target.domain) : null;
-    techStack = opts.detectTech !== false ? generateDryRunTechStack() : [];
-    breachHits = [];
-
-    const knownEmails = employees.map((e) => e.email ?? "").filter(Boolean);
-    const emailPatterns = inferEmailPatterns(knownEmails, target.domain);
+    employees = []
+    subdomains = []
+    dnsRecords = []
+    whois = null
+    techStack = []
+    breachHits = []
 
     const result: ReconResult = {
       target,
-      emailPatterns,
+      emailPatterns: [],
       employees,
       subdomains,
       dnsRecords,
@@ -701,13 +589,8 @@ export async function runRecon(
       llmAnalysis: null,
       dryRun: true,
       timestamp: new Date().toISOString(),
-    };
-
-    if (opts.llmAnalysis !== false) {
-      result.llmAnalysis = await runLLMAnalysis(result);
     }
-
-    return result;
+    return result
   }
 
   // ── LIVE MODE ──────────────────────────────────────────────────────────────

@@ -1,12 +1,37 @@
 /**
  * Unified live/dry-run option resolution for ARES modules.
- * CLI passes `{ live: true }`; modules may also accept explicit `dryRun`.
  */
+import * as fs from "node:fs"
+
+export function isKaliLinux(): boolean {
+  try {
+    return /kali/i.test(fs.readFileSync("/etc/os-release", "utf8"))
+  } catch {
+    return false
+  }
+}
+
+/** True when real execution is required (Kali, OURMINE_LIVE, --live, or explicit live). */
+export function resolveLiveMode(opts: { live?: boolean; dryRun?: boolean } = {}): boolean {
+  if (opts.dryRun === true) return false
+  if (opts.live === false) return false
+  if (opts.live === true) return true
+  const env = process.env.OURMINE_LIVE
+  if (env === "1" || env === "true") return true
+  if (process.argv.includes("--live")) return true
+  if (isKaliLinux()) return true
+  return false
+}
+
 export function resolveDryRun(opts: { live?: boolean; dryRun?: boolean } = {}): boolean {
   if (opts.dryRun !== undefined) return opts.dryRun
-  return !(opts.live ?? false)
+  return !resolveLiveMode(opts)
 }
 
 export function resolveLive(opts: { live?: boolean; dryRun?: boolean } = {}): boolean {
-  return !resolveDryRun(opts)
+  return resolveLiveMode(opts)
+}
+
+export function requireLiveMode(): boolean {
+  return process.env.OURMINE_REQUIRE_LIVE === "1" || isKaliLinux()
 }

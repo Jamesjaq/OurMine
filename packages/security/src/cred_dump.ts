@@ -439,35 +439,6 @@ function harvestWindowsCredentialManager(): CredentialArtifact[] {
   return artifacts
 }
 
-// ─── Simulated Results ────────────────────────────────────────────────────────
-
-function generateSimulatedArtifacts(method: string): { artifacts: CredentialArtifact[]; hashes: number; samples: string[] } {
-  const artifacts: CredentialArtifact[] = [
-    { type: 'hash', source: 'SAM', content: 'Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::', user: 'Administrator', notes: 'Empty NTLM hash (blank password)' },
-    { type: 'hash', source: 'SAM', content: 'krbtgt:502:aad3b435b51404eeaad3b435b51404ee:90b794101e403d15903b41d01192e2b3:::', user: 'krbtgt', domain: 'corp.local', notes: 'Kerberos TGT service account' },
-    { type: 'key', source: 'DPAPI', content: 'MasterKey GUID: {a1b2c3d4-e5f6-7890-abcd-ef1234567890}', notes: 'DPAPI master key (simulated)' },
-    { type: 'hash', source: 'SAM', content: 'john.doe:1001:aad3b435b51404eeaad3b435b51404ee:fc525c9683e8fe067095ba2ddc971889:::', user: 'john.doe', notes: 'Standard user NTLM hash' },
-  ]
-
-  if (method === 'dpapi') {
-    artifacts.push(
-      { type: 'token', source: 'Chrome Cookies', content: 'session=eyJhbGciOiJIUzI1NiJ9...(simulated)', notes: 'Browser session token' },
-      { type: 'config', source: '.aws/credentials', content: 'aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', notes: 'AWS credentials (simulated)' },
-    )
-  }
-
-  if (method === 'shadow') {
-    artifacts.push(
-      { type: 'shadow_entry', source: '/etc/shadow', content: 'root:$6$rounds=656000$simulatedhash:18000:0:99999:7:::', user: 'root', notes: 'SHA-512 shadow entry (simulated)' },
-      { type: 'shadow_entry', source: '/etc/shadow', content: 'deploy:$6$rounds=656000$anotherhash:18000:0:99999:7:::', user: 'deploy', notes: 'Service account shadow entry (simulated)' },
-    )
-  }
-
-  const hashes = artifacts.filter(a => a.type === 'hash' || a.type === 'shadow_entry').length
-  const samples = artifacts.map(a => `[${a.type}] ${a.content}`)
-  return { artifacts, hashes, samples }
-}
-
 // ─── Main Engine ──────────────────────────────────────────────────────────────
 
 export class CredentialDumpingEngine {
@@ -484,14 +455,13 @@ export class CredentialDumpingEngine {
     console.log(`[OurMine Security] Credential dump: method=${method} target=${target} dryRun=${isDryRun}`)
 
     if (isDryRun) {
-      const sim = generateSimulatedArtifacts(method)
       return {
         target,
         method,
-        extractedHashes: sim.hashes,
-        sampleArtifacts: sim.samples,
-        artifacts: sim.artifacts,
-        simulated: true,
+        extractedHashes: 0,
+        sampleArtifacts: [],
+        artifacts: [],
+        simulated: false,
         errors: [],
       }
     }

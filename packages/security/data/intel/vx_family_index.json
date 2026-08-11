@@ -1,0 +1,14 @@
+[
+  { "family": "PryntStealer", "platform": "Win32", "category": "stealer", "ruleset": "stealer", "vxPath": "Win32/Stealers" },
+  { "family": "Taurus", "platform": "Win32", "category": "stealer", "ruleset": "stealer", "vxPath": "Win32/Stealers" },
+  { "family": "Mirai", "platform": "Linux", "category": "botnet", "ruleset": "botnet", "vxPath": "Linux/Mirai-Family" },
+  { "family": "BotenaGo", "platform": "Linux", "category": "botnet", "ruleset": "botnet", "vxPath": "Linux/BotenaGo.go" },
+  { "family": "BPFDoor", "platform": "Linux", "category": "rootkit", "ruleset": "rootkit", "vxPath": "Linux/RedMenshenBPFDoor.c" },
+  { "family": "GwisinLocker", "platform": "Linux", "category": "ransomware", "ruleset": "ransomware", "vxPath": "Linux/Ransomware" },
+  { "family": "Sorry", "platform": "Linux", "category": "ransomware", "ruleset": "ransomware", "extension": ".sorry" },
+  { "family": "ENCFORGE", "platform": "Linux", "category": "ransomware", "ruleset": "agentic", "extension": ".locked" },
+  { "family": "LameHug", "platform": "Win32", "category": "agentic", "ruleset": "agentic", "vxPath": "Python" },
+  { "family": "CometRAT", "platform": "Win32", "category": "rat", "ruleset": "c2", "vxPath": "Win32/Botnets" },
+  { "family": "Zeus", "platform": "Win32", "category": "banker", "ruleset": "stealer", "vxPath": "Win32/Malware families" },
+  { "family": "R57", "platform": "PHP", "category": "webshell", "ruleset": "webshell", "vxPath": "Php" }
+]

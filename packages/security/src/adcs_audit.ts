@@ -190,109 +190,15 @@ function detectPKINITSupport(
   return (val & 0x1c) !== 0
 }
 
-// ---------------------------------------------------------------------------
-// Dry-run (simulated) audit
-// ---------------------------------------------------------------------------
-
-function generateDryRunResult(domain: string): ADCSAuditResult {
-  const templates = [
-    "WebServer-Custom",
-    "User",
-    "Machine",
-    "DomainController",
-    "RASAndIASServer",
-    "ExchangeServer",
-    "CEPEncryption",
-    "EnrollmentAgent",
-    "SmartcardLogon",
-    "SubCA",
-    "CA",
-    "WebServer",
-    "IPSECIntermediateOffline",
-    "SubCA-Offline",
-  ]
-
-  const vulns: ADCSVulnerability[] = [
-    {
-      id: "ESC1",
-      templateName: "WebServer-Custom",
-      severity: "CRITICAL",
-      title: "ENROLLEE_SUPPLIES_SAN Enabled",
-      description:
-        "Template allows requester to specify Subject Alternative Name (SAN), enabling Domain Admin impersonation. The msPKI-Certificate-Name-Flag includes ENROLLEE_SUPPLIES_SAN (0x1).",
-      remediation:
-        "Disable 'Supply in request' on the template or remove the ENROLLEE_SUPPLIES_SAN flag from msPKI-Certificate-Name-Flag. Use 'Supply in the request' only on templates restricted to enrollment agents.",
-    },
-    {
-      id: "ESC2",
-      templateName: "SubCA",
-      severity: "CRITICAL",
-      title: "Any Purpose EKU or No EKU Restriction",
-      description:
-        "Template does not restrict Extended Key Usage or includes 'Any Purpose' (OID 2.5.29.37.0), allowing authentication, code signing, and any other purpose.",
-      remediation:
-        "Restrict the template's EKU to only the intended purposes. Remove 'Any Purpose' if present.",
-    },
-    {
-      id: "ESC3",
-      templateName: "EnrollmentAgent",
-      severity: "HIGH",
-      title: "Enrollment Agent Without Restrictions",
-      description:
-        "Template with Enrollment Agent EKU (1.3.6.1.4.1.311.20.2.1) can be used to request certificates on behalf of other users.",
-      remediation:
-        "Restrict Enrollment Agent templates to only authorized enrollment agents. Limit enrollment permissions to specific groups.",
-    },
-    {
-      id: "ESC4",
-      templateName: "User",
-      severity: "MEDIUM",
-      title: "Vulnerable Template ACL – Low-Priv Enrollment",
-      description:
-        "Template ACL grants enrollment permissions to Domain Users or Authenticated Users, potentially allowing abuse of misconfigured EKU.",
-      remediation:
-        "Remove enrollment permissions for Domain Users / Authenticated Users. Restrict enrollment to specific high-privilege groups only.",
-    },
-    {
-      id: "ESC6",
-      templateName: "DomainController",
-      severity: "HIGH",
-      title: "CT_FLAG_ORIGINAL_SUBJECT_IN_SAN Flag Set",
-      description:
-        "Template includes CT_FLAG_ORIGINAL_SUBJECT_IN_SAN (msPKI-Enrollment-Flag) which, combined with SAN manipulation, can enable impersonation.",
-      remediation:
-        "Remove the CT_FLAG_ORIGINAL_SUBJECT_IN_SAN flag from msPKI-Enrollment-Flag unless explicitly required.",
-    },
-    {
-      id: "ESC8",
-      templateName: "CertSrv HTTP Interface",
-      severity: "HIGH",
-      title: "HTTP Enrollment Endpoint Lacks NTLM Protection",
-      description:
-        "AD CS Web Enrollment (/certsrv) HTTP endpoint is vulnerable to NTLM relay attacks (PetitPotam, ntlmrelayx). EPA is not enforced.",
-      remediation:
-        "Require HTTPS, enable Extended Protection for Authentication (EPA), disable NTLM authentication, or disable the HTTP enrollment endpoint entirely.",
-    },
-    {
-      id: "ESC11",
-      templateName: "N/A",
-      severity: "HIGH",
-      title: "NTLM Relay to AD CS RPC – EFSRPC / EFSOD",
-      description:
-        "DCOM/RPC endpoints (MS-EFSR / MS-EFSOD) are vulnerable to NTLM relay when EPA is not enforced, allowing certificate issuance.",
-      remediation:
-        "Enable EPA on the CA or disable NTLM relay-prone RPC endpoints. Consider deploying Windows Update KB5005413 (PetitPotam mitigation).",
-    },
-  ]
-
+function emptyDryRunResult(domain: string): ADCSAuditResult {
   return {
     domain,
-    templatesAudited: templates.length,
-    vulnerabilities: vulns,
-    shadowCredsEnabled: true,
-    pkinitSupported: true,
-    httpEndpointsExposed: detectPetitPotamTargets(domain),
-    publishedTemplates: templates,
+    templatesAudited: 0,
+    vulnerabilities: [],
+    shadowCredsEnabled: false,
+    pkinitSupported: false,
+    httpEndpointsExposed: [],
+    publishedTemplates: [],
     isDryRun: true,
   }
 }
@@ -563,7 +469,7 @@ export function auditADCS(
     options.dryRun !== undefined ? options.dryRun : !options.live
 
   if (isDryRun) {
-    return generateDryRunResult(config.domain)
+    return emptyDryRunResult(config.domain)
   }
 
   // Live mode – check for required tools
@@ -573,7 +479,7 @@ export function auditADCS(
   if (!ldapAvailable && !curlAvailable) {
     // Partial tooling: run what we can
     // Fall back to dry-run with a warning
-    const result = generateDryRunResult(config.domain)
+    const result = emptyDryRunResult(config.domain)
     result.vulnerabilities.push({
       id: "TOOL_MISSING",
       templateName: "N/A",
@@ -582,7 +488,7 @@ export function auditADCS(
       description:
         `ldapsearch: ${ldapAvailable ? "available" : "MISSING"}. ` +
         `curl: ${curlAvailable ? "available" : "MISSING"}. ` +
-        "Results are simulated. Install tools for accurate assessment.",
+        "Live assessment requires ldapsearch and/or curl. Install tools for full assessment.",
       remediation:
         "Install ldapsearch (apt install ldap-utils) and curl (apt install curl) for full live assessment.",
     })
@@ -595,13 +501,13 @@ export function auditADCS(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     // On error, return partial results with error info
-    const result = generateDryRunResult(config.domain)
+    const result = emptyDryRunResult(config.domain)
     result.vulnerabilities.push({
       id: "LIVE_ERROR",
       templateName: "N/A",
       severity: "LOW",
       title: "Live Assessment Error",
-      description: `Live audit encountered an error: ${msg}. Results are simulated.`,
+      description: `Live audit encountered an error: ${msg}.`,
       remediation: "Verify domain connectivity, credentials, and tool availability.",
     })
     result.isDryRun = true

@@ -80,14 +80,15 @@ Server posture: **${mode}** (Kali Linux auto-enables live execution).
 ## When the user gives a target
 
 1. Confirm scope in one short line (target, constraints, authorization assumed in lab).
-2. Call \`ares_ares_pentest_plan\` with the target to build a phased task tree.
-3. Execute with \`ares_ares_pentest_run\` for full autonomous campaign **or** drive phases manually:
-   - Recon: \`ares_ares_recon\`, \`ares_ares_bountyhunter\`, \`ares_ares_vuln_research\`
-   - Web/identity: \`ares_ares_strix_web\`, \`ares_ares_identity\`, \`ares_ares_ad_exploit\`
-   - Cloud/infra: \`ares_ares_cloud_token\`, \`ares_ares_container_escape\`, \`ares_ares_pivot_tunnel\`
-   - Post-ex: \`ares_ares_exfil\`, \`ares_ares_supply_chain\`, \`ares_ares_counter_intel\`
-4. After each phase, summarize findings with severity and next steps.
-5. Persist attack paths; escalate when graph recommends (AD → cloud → supply chain).
+2. **Intel pre-stage:** \`ares_intel_feed\` + \`ares_intel_watch\` for actor/CVE/campaign context.
+3. Call \`ares_pentest_plan\` with the target (profile selected from intel brief).
+4. Execute with \`ares_pentest_run\` for full autonomous campaign **or** drive phases manually:
+   - Recon: \`ares_recon\`, \`ares_bountyhunter\`, \`ares_vuln_research\`, \`ares_ai_surface\`, \`ares_intel_feed\`
+   - Web/identity: \`ares_strix_web\`, \`ares_identity\`, \`ares_ad_exploit\`, \`ares_idp_oauth_audit\`
+   - Cloud/infra: \`ares_cloud_token\`, \`ares_container_escape\`, \`ares_pivot_tunnel\`, \`ares_cicd_k8s_audit\`
+   - Post-ex: \`ares_exfil\`, \`ares_supply_chain\`, \`ares_counter_intel\`, \`ares_vx_lookup\` (metadata only)
+5. After each phase, summarize findings with severity and next steps.
+6. Persist attack paths; escalate when graph recommends (AD → cloud → supply chain).
 
 ## Rules
 
@@ -110,6 +111,7 @@ function mergeConfig(existing: Record<string, unknown>, live: boolean): { config
     command: mcpCommand(live),
     environment: {
       OURMINE_LIVE: live ? "1" : "0",
+      OURMINE_REQUIRE_LIVE: live ? "1" : "0",
       OURMINE_REPO: REPO_ROOT,
     },
   }

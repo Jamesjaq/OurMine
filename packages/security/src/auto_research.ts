@@ -94,21 +94,7 @@ const ZERO_DAY_INDICATORS: { regex: RegExp; indicator: string; confidence: numbe
   { regex: /\b(?:0xff|0xFFFF)\s*&/g, indicator: "16-bit truncation on potentially wider value", confidence: 0.4, category: "integer_overflow" },
 ];
 
-async function fetchNvdCve(cveId: string, dryRun = false): Promise<CveRecord | null> {
-  if (dryRun) {
-    return {
-      id: cveId,
-      description: `[DRY RUN] Simulated CVE record for ${cveId}`,
-      severity: "HIGH",
-      cvssScore: 8.5,
-      publishedDate: new Date().toISOString(),
-      lastModifiedDate: new Date().toISOString(),
-      references: [],
-      cpeMatch: [],
-      exploitAvailable: false,
-    };
-  }
-
+async function fetchNvdCve(cveId: string, _dryRun = false): Promise<CveRecord | null> {
   const url = `https://services.nvd.nist.gov/rest/json/cves/2.0?cveId=${cveId}`;
   try {
     const controller = new AbortController();
@@ -577,13 +563,6 @@ export async function researchCve(
     } catch {
       // Diff fetch failed
     }
-  } else if (target.repoUrl && target.patchCommitHash && dryRun) {
-    patchAnalysis = {
-      riskyPatterns: [{ pattern: "[DRY RUN] Simulated pattern", weight: 30, line: 42 }],
-      riskScore: 45,
-      classification: "buffer_overflow",
-      affectedLines: [],
-    };
   }
 
   const zeroDayHeuristics = generateZeroDayHeuristics(patchAnalysis, cveRecord);

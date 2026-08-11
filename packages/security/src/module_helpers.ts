@@ -1,5 +1,6 @@
 /**
  * Shared helpers for ARES module authors — dry-run gates, structured results, tool guards.
+ * REAL-ONLY: stubFinding removed from live paths; dry-run returns empty findings, never fakes.
  */
 import { resolveDryRun, resolveLive } from "./exec_options.ts"
 import { isToolAvailable } from "./tool_detection.ts"
@@ -21,6 +22,7 @@ export interface ModuleEnvelope<T = Record<string, unknown>> {
   findings: ModuleFinding[]
   data: T
   error?: string
+  skipped?: boolean
 }
 
 export function moduleEnvelope<T>(
@@ -36,24 +38,46 @@ export function moduleEnvelope<T>(
   }
 }
 
-export function requireToolOrDryRun(tool: string, dryRun: boolean): { ok: boolean; message?: string } {
-  if (dryRun) return { ok: true }
-  if (isToolAvailable(tool)) return { ok: true }
-  return { ok: false, message: `${tool} not on PATH — install or use dry-run mode` }
+/** Real finding from live execution evidence. */
+export function realFinding(
+  id: string,
+  title: string,
+  severity: ModuleFinding["severity"],
+  description: string,
+  mitreId?: string,
+  remediation?: string,
+): ModuleFinding {
+  return { id, title, severity, description, mitreId, remediation }
 }
 
+/** Dry-run envelope — no fake findings, marks skipped. */
+export function dryRunSkipped<T>(data: T, reason = "Pass live:true or run on Kali"): ModuleEnvelope<T> {
+  return {
+    dryRun: true,
+    skipped: true,
+    timestamp: new Date().toISOString(),
+    findings: [],
+    data: { ...data, skippedReason: reason },
+  }
+}
+
+/** @deprecated Use realFinding in live mode; dryRunSkipped when dry-run. */
 export function stubFinding(
   id: string,
   title: string,
   severity: ModuleFinding["severity"] = "info",
   mitreId?: string,
 ): ModuleFinding {
-  return {
-    id,
-    title,
-    severity,
-    description: `[DRY-RUN] Simulated finding for ${title}`,
-    mitreId,
-    remediation: "Verify in authorised lab scope with --live",
-  }
+  return realFinding(id, title, severity, `[skipped dry-run] ${title}`, mitreId, "Pass live:true to execute")
+}
+
+export function requireToolOrDryRun(tool: string, dryRun: boolean): { ok: boolean; message?: string } {
+  if (dryRun) return { ok: true, message: "dry-run skip" }
+  if (isToolAvailable(tool)) return { ok: true }
+  return { ok: false, message: `${tool} not on PATH — install or pass live:true on Kali` }
+}
+
+export function requireToolOrThrow(tool: string, dryRun: boolean): void {
+  const check = requireToolOrDryRun(tool, dryRun)
+  if (!check.ok) throw new Error(check.message ?? `${tool} unavailable`)
 }

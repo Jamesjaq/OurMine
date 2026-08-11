@@ -55,20 +55,7 @@ export async function kerberoast(opts: IdentityOptions = {}): Promise<KerberosHa
   const { live = false, domain = "CORP.LOCAL", dcIp = "10.0.0.1", username = "", password = "" } = opts;
 
   if (!live) {
-    return [
-      {
-        username: "svc_sql",
-        spn: "MSSQLSvc/sql01.corp.local:1433",
-        hashType: "krb5tgs",
-        hash: "$krb5tgs$23$*svc_sql$CORP.LOCAL$MSSQLSvc/sql01.corp.local:1433*$" + crypto.randomBytes(16).toString("hex"),
-      },
-      {
-        username: "svc_http",
-        spn: "HTTP/web01.corp.local",
-        hashType: "krb5tgs",
-        hash: "$krb5tgs$23$*svc_http$CORP.LOCAL$HTTP/web01.corp.local*$" + crypto.randomBytes(16).toString("hex"),
-      },
-    ];
+    return [];
   }
 
   const cred = opts.ntHash ? `-hashes :${opts.ntHash} ${username}@${dcIp}`
@@ -102,12 +89,7 @@ export async function asrepRoast(opts: IdentityOptions = {}): Promise<KerberosHa
   const { live = false, domain = "CORP.LOCAL", dcIp = "10.0.0.1" } = opts;
 
   if (!live) {
-    return [{
-      username: "nopreauth_user",
-      spn: "",
-      hashType: "krb5asrep",
-      hash: "$krb5asrep$23$nopreauth_user@CORP.LOCAL:$" + crypto.randomBytes(32).toString("hex"),
-    }];
+    return [];
   }
 
   const r = spawnSync(

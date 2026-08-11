@@ -107,35 +107,7 @@ export function parseAuthLog(
   const entries: AuthLogEntry[] = [];
 
   if (!logContent.trim()) {
-    if (entries.length === 0) {
-      // Return simulated entries for dry-run
-      return [
-        {
-          timestamp: new Date().toISOString(),
-          userId: "suspicious_user",
-          sourceIp: "192.168.1.100",
-          result: "failure",
-          service: "ssh",
-          method: "password",
-        },
-        {
-          timestamp: new Date().toISOString(),
-          userId: "suspicious_user",
-          sourceIp: "192.168.1.100",
-          result: "failure",
-          service: "ssh",
-          method: "password",
-        },
-        {
-          timestamp: new Date().toISOString(),
-          userId: "suspicious_user",
-          sourceIp: "10.0.0.55",
-          result: "success",
-          service: "ssh",
-          method: "key",
-        },
-      ];
-    }
+    return [];
   }
 
   for (const line of logContent.split("\n")) {
@@ -201,24 +173,7 @@ export function parseFileAccessLog(
   const entries: FileAccessLogEntry[] = [];
 
   if (!logContent.trim()) {
-    return [
-      {
-        timestamp: new Date().toISOString(),
-        userId: "suspicious_user",
-        filePath: "/confidential/financials.xlsx",
-        action: "copy",
-        bytesTransferred: 15_728_640,
-        processName: "cp",
-      },
-      {
-        timestamp: new Date().toISOString(),
-        userId: "suspicious_user",
-        filePath: "/confidential/financials.xlsx",
-        action: "read",
-        bytesTransferred: 15_728_640,
-        processName: "cat",
-      },
-    ];
+    return [];
   }
 
   for (const line of logContent.split("\n")) {
@@ -356,19 +311,6 @@ export function detectVolumeAnomalies(
     return e.volumeBytes > volumeThresholdBytes;
   });
 
-  if (dryRun && anomalies.length === 0 && events.length > 0) {
-    // Add a synthetic anomaly if none detected
-    return [{
-      userId: events[0]?.userId ?? "unknown",
-      action: "download",
-      volumeBytes: volumeThresholdBytes * 2,
-      timestamp: new Date().toISOString(),
-      riskWeight: 75,
-      source: "volume_detector",
-      targetResource: "/sensitive/data.tar.gz",
-    }];
-  }
-
   return anomalies;
 }
 
@@ -392,14 +334,6 @@ export function analyzeTimeOfDay(
     const hour = new Date(e.timestamp).getHours();
     return hour < timeOfDayStart || hour >= timeOfDayEnd;
   });
-
-  if (dryRun && offHours.length === 0 && events.length > 0) {
-    const offHourEvent = { ...events[0] };
-    offHourEvent.timestamp = new Date().setHours(2, 0, 0, 0).toString();
-    offHourEvent.riskWeight = (offHourEvent.riskWeight ?? 10) + 15;
-    offHourEvent.source = "time_of_day";
-    return [offHourEvent];
-  }
 
   return offHours;
 }
@@ -433,15 +367,6 @@ export function detectFrequencyAnomalies(
     if (Math.abs(deviation) > 0.5) {
       anomalies.push({ action, count, baselineAvg: normalizedBaseline, deviation });
     }
-  }
-
-  if (dryRun && anomalies.length === 0 && events.length > 0) {
-    anomalies.push({
-      action: "data_exfil",
-      count: 15,
-      baselineAvg: 2,
-      deviation: 6.5,
-    });
   }
 
   return anomalies;
@@ -552,24 +477,7 @@ export function startMonitoring(
   }
 
   if (dryRun) {
-    events = [
-      {
-        userId,
-        action: "download",
-        volumeBytes: 150 * 1024 * 1024,
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        riskWeight: 40,
-        source: "simulated",
-      },
-      {
-        userId,
-        action: "copy",
-        volumeBytes: 50 * 1024 * 1024,
-        timestamp: new Date(Date.now() - 1800000).toISOString(),
-        riskWeight: 25,
-        source: "simulated",
-      },
-    ];
+    events = [];
   }
 
   return {

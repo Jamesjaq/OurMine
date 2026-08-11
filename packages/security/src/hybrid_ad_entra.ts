@@ -96,58 +96,6 @@ function generateFakeLastLogon(): string {
   return d.toISOString();
 }
 
-// ─── Dry-Run Simulation ─────────────────────────────────────────────────────
-
-function simulatePHSAgent(): PHSAgentStatus {
-  return {
-    installed: true,
-    version: "2.0.4913.0",
-    lastSyncTime: new Date(Date.now() - 300000).toISOString(),
-    syncIntervalMinutes: 3,
-  };
-}
-
-function simulateSeamlessSSO(): SeamlessSSOStatus {
-  return {
-    enabled: true,
-    kerberosTicketPresent: true,
-    spnRegistered: true,
-    decryrptionKeyFound: false,
-  };
-}
-
-function simulateSyncAccounts(domain: string): SyncAccountInfo[] {
-  return [
-    {
-      samAccountName: generateFakeMSOLAccount(domain),
-      distinguishedName: generateFakeDN(domain, "MSOL_a1b2c3d4e5f6"),
-      userPrincipalName: generateFakeUPN(domain, "MSOL_a1b2c3d4e5f6"),
-      lastLogon: generateFakeLastLogon(),
-      passwordLastSet: generateFakeLastLogon(),
-      enabled: true,
-      cloudSynced: true,
-    },
-    {
-      samAccountName: "AAD_98efc1909065",
-      distinguishedName: generateFakeDN(domain, "AAD_98efc1909065"),
-      userPrincipalName: generateFakeUPN(domain, "aad_98efc1909065"),
-      lastLogon: generateFakeLastLogon(),
-      passwordLastSet: generateFakeLastLogon(),
-      enabled: true,
-      cloudSynced: true,
-    },
-    {
-      samAccountName: "OnPremSyncAdmin",
-      distinguishedName: generateFakeDN(domain, "OnPremSyncAdmin"),
-      userPrincipalName: generateFakeUPN(domain, "onpremsyncadmin"),
-      lastLogon: generateFakeLastLogon(),
-      passwordLastSet: generateFakeLastLogon(),
-      enabled: true,
-      cloudSynced: true,
-    },
-  ];
-}
-
 // ─── Live Implementation ────────────────────────────────────────────────────
 
 async function checkPHSAgentLive(): Promise<PHSAgentStatus> {
@@ -350,27 +298,17 @@ export async function hybridADAttackChain(
   const { dryRun = true, domain = "CORP.LOCAL", dcIp } = opts;
 
   if (dryRun) {
-    const syncAccounts = simulateSyncAccounts(domain);
-    const staleCheck = await checkStaleSyncAccounts(syncAccounts);
     return {
       domain,
       dryRun: true,
-      phsAgent: simulatePHSAgent(),
-      seamlessSSO: simulateSeamlessSSO(),
-      syncAccounts,
-      cloudOnlyAccounts: [
-        generateFakeUPN(domain, "CloudServiceAcct"),
-        generateFakeUPN(domain, "IntuneAdmin"),
-      ],
-      syncedAccounts: syncAccounts.map((a) => a.samAccountName),
-      msolAccountExtractable: true,
-      dcsyncPivotPossible: true,
-      attackPaths: [
-        "PHS credential extraction → on-prem DCSync pivot via MSOL_* account",
-        "Seamless SSO Kerberos ticket decryption → offline password cracking",
-        "Stale sync account abuse → undetected persistence",
-        "Cloud-only account compromise → bypass on-prem controls",
-      ],
+      phsAgent: { installed: false, version: null, lastSyncTime: null, syncIntervalMinutes: 0 },
+      seamlessSSO: { enabled: false, kerberosTicketPresent: false, spnRegistered: false, decryrptionKeyFound: false },
+      syncAccounts: [],
+      cloudOnlyAccounts: [],
+      syncedAccounts: [],
+      msolAccountExtractable: false,
+      dcsyncPivotPossible: false,
+      attackPaths: [],
     };
   }
 
@@ -432,7 +370,7 @@ export async function hybridADAttackChain(
  * Simulate or execute PHS account extraction attack.
  * Returns the MSOL account name and extraction details.
  */
-export async function simulatePasswordHashSyncAbuse(
+export async function abusePasswordHashSync(
   opts: HybridAttackOptions = {}
 ): Promise<HybridAttackResult> {
   const { dryRun = true, domain = "CORP.LOCAL" } = opts;
@@ -440,8 +378,8 @@ export async function simulatePasswordHashSyncAbuse(
   if (dryRun) {
     return {
       technique: "Azure AD Connect Password Hash Sync (PHS) Account Extraction",
-      targetAccount: generateFakeMSOLAccount(domain),
-      details: "[DRY-RUN] Simulated retrieval of MSOL_ account credentials with Directory Replication rights.",
+      targetAccount: "",
+      details: "[DRY-RUN] Skipped — pass dryRun:false for live MSOL account enumeration.",
       dryRun: true,
     };
   }
@@ -484,7 +422,7 @@ export async function simulatePasswordHashSyncAbuse(
  * Simulate or execute Seamless SSO exploitation.
  * Tests for Kerberos ticket presence and SPN registration.
  */
-export async function simulateSeamlessSSOAbuse(
+export async function abuseSeamlessSSO(
   opts: HybridAttackOptions = {}
 ): Promise<HybridAttackResult> {
   const { dryRun = true, domain = "CORP.LOCAL" } = opts;
@@ -492,8 +430,8 @@ export async function simulateSeamlessSSOAbuse(
   if (dryRun) {
     return {
       technique: "Azure AD Seamless SSO Kerberos Ticket Extraction",
-      targetAccount: "AZUREAD\\krbtgt_$AzureAD~76f2c70f-d9b2-470a-8a04-0e9e75f0b6e6",
-      details: "[DRY-RUN] Simulated extraction of AzureAD Kerberos ticket from browser cache for offline decryption.",
+      targetAccount: "",
+      details: "[DRY-RUN] Skipped — pass dryRun:false for live Kerberos/SPN checks.",
       dryRun: true,
     };
   }
@@ -534,12 +472,10 @@ export async function enumerateHybridAccounts(
   const { dryRun = true, domain = "CORP.LOCAL" } = opts;
 
   if (dryRun) {
-    const syncAccts = simulateSyncAccounts(domain);
-    const synced = syncAccts.map((a) => a.samAccountName).join(", ");
     return {
       technique: "Hybrid Account Enumeration (Cloud-Only vs Synced)",
       targetAccount: domain,
-      details: `[DRY-RUN] Simulated enumeration:\n  Synced: ${synced}\n  Cloud-Only: CloudServiceAcct@${domain.toLowerCase()}, IntuneAdmin@${domain.toLowerCase()}\n  Stale: 0 accounts`,
+      details: "[DRY-RUN] Skipped — pass dryRun:false for live LDAP sync account enumeration.",
       dryRun: true,
     };
   }
@@ -557,8 +493,15 @@ export async function enumerateHybridAccounts(
   };
 }
 
+/** @deprecated Use abusePasswordHashSync */
+export const simulatePasswordHashSyncAbuse = abusePasswordHashSync;
+/** @deprecated Use abuseSeamlessSSO */
+export const simulateSeamlessSSOAbuse = abuseSeamlessSSO;
+
 export default {
   hybridADAttackChain,
+  abusePasswordHashSync,
+  abuseSeamlessSSO,
   simulatePasswordHashSyncAbuse,
   simulateSeamlessSSOAbuse,
   enumerateHybridAccounts,

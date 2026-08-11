@@ -1,0 +1,10 @@
+[
+  {
+    "id": "cisa_apt",
+    "name": "CISA APT STIX (example)",
+    "baseUrl": "https://taxii.mitre.org/api/v21",
+    "collectionId": "95ecc380-afe9-11df-a3b3-001e4cfc1678",
+    "enabled": false,
+    "apiKeyEnv": "OURMINE_TAXII_KEY"
+  }
+]

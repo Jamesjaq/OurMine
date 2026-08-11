@@ -239,134 +239,15 @@ function classifySuspicious(programs: EBPFProgram[]): Array<{ id: number; name: 
   return suspicious
 }
 
-function generateDryRunResult(): EBPFAuditResult {
-  const fakePrograms: EBPFProgram[] = [
-    {
-      id: 42,
-      type: "BPF_PROG_TYPE_XDP",
-      name: "anti_forensics_xdp",
-      loadedAt: new Date(Date.now() - 3600000).toISOString(),
-      tag: "a1b2c3d4e5f6a7b8",
-      uid: 0,
-      jited: true,
-    },
-    {
-      id: 78,
-      type: "BPF_PROG_TYPE_KPROBE",
-      name: "syscall_monitor",
-      loadedAt: new Date(Date.now() - 7200000).toISOString(),
-      tag: "f0e1d2c3b4a59687",
-      uid: 0,
-      jited: true,
-    },
-    {
-      id: 103,
-      type: "BPF_PROG_TYPE_TRACEPOINT",
-      name: "hidden_process_filter",
-      loadedAt: new Date(Date.now() - 1800000).toISOString(),
-      tag: "1122334455667788",
-      uid: 0,
-      jited: false,
-    },
-    {
-      id: 156,
-      type: "BPF_PROG_TYPE_SOCKET_FILTER",
-      name: "packet_capturer",
-      loadedAt: new Date(Date.now() - 900000).toISOString(),
-      tag: "deadbeefcafebabe",
-      uid: 1000,
-      jited: true,
-    },
-  ]
-
-  const fakeMaps: EBPFMap[] = [
-    {
-      id: 10,
-      type: "BPF_MAP_TYPE_HASH",
-      name: "process_whitelist",
-      keySize: 4,
-      valueSize: 8,
-      maxEntries: 256,
-    },
-    {
-      id: 25,
-      type: "BPF_MAP_TYPE_RINGBUF",
-      name: "exfil_buffer",
-      keySize: 0,
-      valueSize: 0,
-      maxEntries: 262144,
-    },
-  ]
-
+function emptyDryRunResult(): EBPFAuditResult {
   return {
-    ebpfSupported: true,
-    bpftoolAvailable: true,
-    bpfJitEnabled: true,
-    activeEBPFPrograms: fakePrograms,
-    activeEBPFMaps: fakeMaps,
-    ldPreloadHooks: [
-      {
-        path: "/etc/ld.so.preload",
-        owner: "root",
-        suspicious: true,
-        description: "LD_PRELOAD entry pointing to untracked library '/lib/x86_64-linux-gnu/libprocesshide.so'",
-      },
-    ],
-    ldPreloadEnvVar: "/usr/lib/libexec_wrapper.so",
-    kernelTracepointsAudited: 1847,
-    tracepointCategories: [
-      "block", "bpf", "cgroup", "compaction", "enablement",
-      "exceptions", "filemap", "hrtimer", "irq", "kmem",
-      "migrate", "module", "nmi", "oom", "power",
-      "raw_syscalls", "rcu", "sched", "signal", "skb",
-      "sunrpc", "timer", "udp", "vfs", "writeback",
-    ],
-    suspiciousPrograms: [
-      {
-        id: 42,
-        name: "anti_forensics_xdp",
-        type: "BPF_PROG_TYPE_XDP",
-        reason: "High-risk program type: BPF_PROG_TYPE_XDP; Root-owned kprobe/tracepoint program (possible syscall hooking)",
-      },
-      {
-        id: 103,
-        name: "hidden_process_filter",
-        type: "BPF_PROG_TYPE_TRACEPOINT",
-        reason: "High-risk program type: BPF_PROG_TYPE_TRACEPOINT; Root-owned kprobe/tracepoint program (possible syscall hooking)",
-      },
-    ],
-    findings: [
-      {
-        severity: "CRITICAL",
-        title: "User-land Rootkit Hook (LD_PRELOAD) Detected",
-        description: "/etc/ld.so.preload contains active library hooks: /lib/x86_64-linux-gnu/libprocesshide.so — likely hiding processes from ps/top",
-      },
-      {
-        severity: "CRITICAL",
-        title: "Suspicious XDP Program Loaded",
-        description: "Root-owned XDP program 'anti_forensics_xdp' (id=42) active on network interface. May perform packet interception or evasion.",
-      },
-      {
-        severity: "HIGH",
-        title: "Suspicious Tracepoint Program Detected",
-        description: "Tracepoint program 'hidden_process_filter' (id=103) is root-owned and may be intercepting syscall results to hide artifacts.",
-      },
-      {
-        severity: "HIGH",
-        title: "LD_PRELOAD Environment Variable Set",
-        description: "LD_PRELOAD environment variable is set to '/usr/lib/libexec_wrapper.so', enabling user-land library preloading.",
-      },
-      {
-        severity: "MEDIUM",
-        title: "Ring Buffer Map Used for Data Exfiltration",
-        description: "eBPF map 'exfil_buffer' (id=25) of type RINGBUF with 256KB capacity may be used for covert data channel.",
-      },
-      {
-        severity: "LOW",
-        title: "BPF JIT Compilation Enabled",
-        description: "BPF JIT compiler is enabled (bpf_jit_enable=1). Normal for systems running eBPF tooling but increases attack surface.",
-      },
-    ],
+    ebpfSupported: false,
+    bpfJitEnabled: false,
+    programs: [],
+    maps: [],
+    persistenceHooks: [],
+    suspiciousPrograms: [],
+    findings: [],
     isDryRun: true,
   }
 }
@@ -375,7 +256,7 @@ export function auditEBPFAndPersistence(options: { dryRun?: boolean } = {}): EBP
   const dryRun = options.dryRun !== false
 
   if (dryRun) {
-    return generateDryRunResult()
+    return emptyDryRunResult()
   }
 
   const findings: EBPFAuditResult["findings"] = []

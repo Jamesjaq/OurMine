@@ -122,141 +122,7 @@ const DEFAULT_CREDENTIALS: Array<{ username: string; password: string }> = [
   { username: "root", password: "root" },
   { username: "user", password: "user" },
   { username: "manager", password: "manager" },
-]
-
-// ---------------------------------------------------------------------------
-// Dry-run simulation data
-// ---------------------------------------------------------------------------
-
-function generateSimulatedPorts(): NetworkPortInfo[] {
-  return [
-    { port: 22, protocol: "tcp", state: "open", service: "ssh", version: "OpenSSH 8.4p1" },
-    { port: 23, protocol: "tcp", state: "open", service: "telnet", version: "Cisco Telnet" },
-    { port: 80, protocol: "tcp", state: "open", service: "http", version: "Cisco IOS HTTP" },
-    { port: 161, protocol: "udp", state: "open", service: "snmp", version: "SNMPv2c" },
-    { port: 443, protocol: "tcp", state: "open", service: "https", version: "Cisco IOS HTTPS" },
-    { port: 1723, protocol: "tcp", state: "open", service: "pptp", version: "VPN" },
-  ]
-}
-
-function generateSimulatedMgmtInterfaces(): ManagementInterfaceInfo[] {
-  return [
-    { port: 22, service: "SSH", accessible: true, cleartextProtocol: false },
-    { port: 23, service: "Telnet", accessible: true, cleartextProtocol: true },
-    { port: 80, service: "HTTP Web UI", accessible: true, cleartextProtocol: true },
-    { port: 161, service: "SNMP", accessible: true, cleartextProtocol: true },
-    { port: 443, service: "HTTPS Web UI", accessible: true, cleartextProtocol: false },
-    { port: 8080, service: "HTTP Alt Config", accessible: true, cleartextProtocol: true },
-  ]
-}
-
-function generateSimulatedSSHConfig(): SSHConfigInfo {
-  return {
-    accessible: true,
-    version: "SSH-2.0-OpenSSH_8.4p1",
-    banner: "SSH-2.0-OpenSSH_8.4p1 Debian-5",
-    keyExchange: "diffie-hellman-group14-sha256, diffie-hellman-group16-sha512",
-    hostKeyAlgo: "ssh-rsa, rsa-sha2-256, rsa-sha2-512",
-    macAlgos: "hmac-sha2-256, hmac-sha2-512",
-    compression: true,
-    authMethods: ["publickey", "password"],
-  }
-}
-
-function generateSimulatedDefaultCreds(): DefaultCredentialResult[] {
-  return [
-    { username: "admin", password: "admin", success: true },
-    { username: "cisco", password: "cisco", success: true },
-  ]
-}
-
-function generateSimulatedFindings(): NetworkFinding[] {
-  return [
-    {
-      id: "NETDEV-01",
-      component: "SNMP",
-      severity: "CRITICAL",
-      title: "Default SNMP Community String 'public' Found",
-      description:
-        "The device responds to the default SNMP community string 'public' (read-only). This allows unauthenticated enumeration of device configuration, interfaces, routing tables, and ARP tables via MIB walking.",
-      remediation:
-        "Change the SNMP community string to a non-guessable value. Upgrade to SNMPv3 with authentication and encryption. Restrict SNMP access to a dedicated management VLAN.",
-    },
-    {
-      id: "NETDEV-02",
-      component: "SNMP",
-      severity: "CRITICAL",
-      title: "Default SNMP Community String 'private' Found",
-      description:
-        "The device responds to the default SNMP community string 'private' (read-write). An attacker can modify device configuration, disable interfaces, and extract credentials through write-access SNMP.",
-      remediation:
-        "Remove or change the 'private' community string immediately. Upgrade to SNMPv3 with USM authentication and encryption. Apply SNMP access control lists (ACLs).",
-    },
-    {
-      id: "NETDEV-03",
-      component: "Management Interface",
-      severity: "CRITICAL",
-      title: "Telnet Service Exposed on Port 23",
-      description:
-        "Telnet is accessible and transmits all data, including credentials, in cleartext. An attacker on the same network segment can intercept administrative credentials via passive sniffing.",
-      remediation:
-        "Disable Telnet immediately. Migrate all CLI management to SSH. Configure SSH with key-based authentication and disable password authentication.",
-    },
-    {
-      id: "NETDEV-04",
-      component: "Management Interface",
-      severity: "HIGH",
-      title: "HTTP Management Interface Exposed",
-      description:
-        "An HTTP-based web management interface is accessible on port 80. All management traffic including authentication credentials is transmitted in cleartext.",
-      remediation:
-        "Disable HTTP management. Enforce HTTPS-only access. Redirect port 80 to 443 with HSTS headers enabled.",
-    },
-    {
-      id: "NETDEV-05",
-      component: "SSH",
-      severity: "MEDIUM",
-      title: "SSH Server Allows Password Authentication",
-      description:
-        "The SSH server permits password-based authentication in addition to public key authentication. Password auth is susceptible to brute-force and credential stuffing attacks.",
-      remediation:
-        "Disable PasswordAuthentication in sshd_config. Enforce public key authentication only. Implement login rate limiting and account lockout policies.",
-    },
-    {
-      id: "NETDEV-06",
-      component: "Default Credentials",
-      severity: "CRITICAL",
-      title: "Default Administrative Credentials Active",
-      description:
-        "The device accepts default factory credentials (admin/admin). These are publicly documented in vendor manuals and are the first credentials tested by attackers.",
-      remediation:
-        "Change all default passwords immediately. Implement a password policy requiring complexity and rotation. Use TACACS+ or RADIUS for centralized authentication.",
-    },
-    {
-      id: "NETDEV-07",
-      component: "SNMP",
-      severity: "HIGH",
-      title: "SNMPv1/v2c Community String Sent in Cleartext",
-      description:
-        "The device uses SNMPv1 or SNMPv2c, which transmit community strings as cleartext in every request/response. Network sniffers can capture and replay these strings.",
-      remediation:
-        "Upgrade to SNMPv3 which provides authentication (USM) and encryption (DES/AES). If SNMPv2c must be used, restrict SNMP access via network-level ACLs to trusted management stations only.",
-    },
-    {
-      id: "NETDEV-08",
-      component: "Management Interface",
-      severity: "MEDIUM",
-      title: "Multiple Management Services Exposed",
-      description:
-        "The device exposes 6+ management interfaces simultaneously (SSH, Telnet, HTTP, HTTPS, SNMP). Each additional service increases the attack surface.",
-      remediation:
-        "Minimize the number of management interfaces. Disable unused services (Telnet, HTTP). Restrict remaining services to a dedicated out-of-band management network.",
-    },
-  ]
-}
-
-// ---------------------------------------------------------------------------
-// Live audit implementation
+]// Live audit implementation
 // ---------------------------------------------------------------------------
 
 function snmpEnumerate(host: string): {
@@ -664,15 +530,15 @@ export function auditNetworkDevice(
   if (dryRun) {
     return {
       ip: host,
-      vendor: "cisco",
-      snmpCommunity: "public (DRY-RUN)",
-      snmpVersion: "2c (DRY-RUN)",
-      snmpSystemInfo: "Cisco IOS Software, C2960 Software (C2960LANBASEK9-M), Version 15.0(2)SE (DRY-RUN)",
-      openPorts: generateSimulatedPorts(),
-      managementInterfaces: generateSimulatedMgmtInterfaces(),
-      sshConfig: generateSimulatedSSHConfig(),
-      defaultCredentialCheck: generateSimulatedDefaultCreds(),
-      vulnerabilities: generateSimulatedFindings(),
+      vendor: "unknown",
+      snmpCommunity: null,
+      snmpVersion: null,
+      snmpSystemInfo: null,
+      openPorts: [],
+      managementInterfaces: [],
+      sshConfig: null,
+      defaultCredentialCheck: [],
+      vulnerabilities: [],
       dryRun: true,
     }
   }

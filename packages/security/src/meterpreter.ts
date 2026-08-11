@@ -197,25 +197,7 @@ export function dispatchCommand(
   const { dryRun = true } = opts;
 
   if (dryRun) {
-    const responses: Record<number, Buffer> = {
-      [COMMAND_SYSINFO]: buildTlvPacket(0x01000001, JSON.stringify({
-        Computer: "DESKTOP-DRYRUN",
-        OS: "Windows 10 Build 19045 x64",
-        Architecture: "x64",
-        SystemLanguage: "en-US",
-        Domain: "WORKGROUP",
-        LoggedOnUsers: "DRYRUN\\operator",
-      })),
-      [COMMAND_GETUID]: buildTlvPacket(0x01000001, "DRYRUN\\operator"),
-      [COMMAND_HASHDUMP]: buildTlvPacket(0x01000001,
-        "Administrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::\n" +
-        "Guest:501:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::\n"),
-      [COMMAND_SCREENSHOT]: buildTlvPacket(0x01000001, JSON.stringify({
-        width: 1920, height: 1080, format: "png",
-        data: crypto.randomBytes(256).toString("base64"),
-      })),
-    };
-    return responses[commandId] ?? buildTlvPacket(0x01000001, `DRY-RUN: unknown command 0x${commandId.toString(16)}`);
+    return buildTlvPacket(0x01000001, "");
   }
 
   // Live: send command over socket — placeholder
@@ -233,12 +215,12 @@ export function sysinfo(sessionId: number, opts: MeterpreterOptions = {}): Sysin
 
   if (dryRun) {
     return {
-      computer: "DESKTOP-DRYRUN",
-      os: "Windows 10 Build 19045 x64",
-      architecture: "x64",
-      systemLanguage: "en-US",
-      domain: "WORKGROUP",
-      loggedUsers: "DRYRUN\\operator",
+      computer: "",
+      os: "",
+      architecture: "",
+      systemLanguage: "",
+      domain: "",
+      loggedUsers: "",
       dryRun: true,
     };
   }
@@ -282,12 +264,7 @@ export function getuid(sessionId: number, opts: MeterpreterOptions = {}): UidRes
   const { dryRun = true } = opts;
 
   if (dryRun) {
-    return {
-      username: "DRYRUN\\operator",
-      sessionId: String(sessionId),
-      arch: "x64",
-      dryRun: true,
-    };
+    return { username: "", sessionId: String(sessionId), arch: "", dryRun: true };
   }
 
   const response = dispatchCommand(COMMAND_GETUID, sessionId, { dryRun: false });
@@ -311,34 +288,7 @@ export function getuid(sessionId: number, opts: MeterpreterOptions = {}): UidRes
 export function hashdump(sessionId: number, opts: MeterpreterOptions = {}): HashdumpEntry[] {
   const { dryRun = true } = opts;
 
-  if (dryRun) {
-    return [
-      {
-        username: "Administrator",
-        uid: 500,
-        gid: 513,
-        lmHash: "aad3b435b51404eeaad3b435b51404ee",
-        ntHash: crypto.randomBytes(16).toString("hex"),
-        dryRun: true,
-      },
-      {
-        username: "Guest",
-        uid: 501,
-        gid: 513,
-        lmHash: "aad3b435b51404eeaad3b435b51404ee",
-        ntHash: "31d6cfe0d16ae931b73c59d7e0c089c0",
-        dryRun: true,
-      },
-      {
-        username: "DefaultAccount",
-        uid: 503,
-        gid: 513,
-        lmHash: "aad3b435b51404eeaad3b435b51404ee",
-        ntHash: crypto.randomBytes(16).toString("hex"),
-        dryRun: true,
-      },
-    ];
-  }
+  if (dryRun) return [];
 
   const response = dispatchCommand(COMMAND_HASHDUMP, sessionId, { dryRun: false });
   const parsed = parseTlvPackets(response);

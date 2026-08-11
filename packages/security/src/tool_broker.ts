@@ -35,8 +35,10 @@ const DEFAULT_POLICY: ExecPolicy = {
     // Local enumeration (LotL)
     "find", "grep", "id", "whoami", "hostname", "uname", "ip", "ifconfig", "arp", "ps", "cat", "ls",
     "sudo", "getcap", "strings", "file",
+    // Package / wallet / crypto
+    "apt-get", "apt", "dpkg", "monero-wallet-cli", "monerod", "bitcoin-cli", "electrum", "tor",
     // Infra / cloud / containers
-    "kubectl", "docker", "python3", "git", "yara", "snmpwalk", "tcpdump", "tshark",
+    "kubectl", "docker", "python3", "pip", "pip3", "npm", "node", "git", "yara", "snmpwalk", "tcpdump", "tshark",
   ]),
   blockedSubcommands: new Set([
     "rm -rf /", "mkfs", "dd", ":(){ :|:& };:", "-c import", "-e eval"

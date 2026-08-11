@@ -157,21 +157,7 @@ const DEPENDENCY_CONFUSION_INDICATORS: { test: (pkg: RegistryPackageInfo, scope?
 ];
 
 async function fetchNpmPackageInfo(packageName: string, dryRun = false): Promise<RegistryPackageInfo | null> {
-  if (dryRun) {
-    return {
-      name: packageName,
-      version: "1.0.0",
-      description: `[DRY RUN] Simulated package info for ${packageName}`,
-      maintainers: [{ name: "dryrun-user" }],
-      created: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-      modified: new Date().toISOString(),
-      downloads: { daily: 1000, weekly: 7000, monthly: 30000 },
-      versions: { "1.0.0": {} },
-      scripts: {},
-      dependencies: {},
-      dist: { tarball: `https://registry.npmjs.org/${packageName}/-/${packageName}-1.0.0.tgz`, unpackedSize: 10240 },
-    };
-  }
+  if (dryRun) return null
 
   try {
     const url = `https://registry.npmjs.org/${encodeURIComponent(packageName)}`;
@@ -223,21 +209,7 @@ async function fetchNpmPackageInfo(packageName: string, dryRun = false): Promise
 }
 
 async function fetchPypiPackageInfo(packageName: string, dryRun = false): Promise<RegistryPackageInfo | null> {
-  if (dryRun) {
-    return {
-      name: packageName,
-      version: "1.0.0",
-      description: `[DRY RUN] Simulated PyPI package info for ${packageName}`,
-      maintainers: [{ name: "dryrun-user" }],
-      created: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-      modified: new Date().toISOString(),
-      downloads: { daily: 500, weekly: 3500, monthly: 15000 },
-      versions: { "1.0.0": {} },
-      scripts: {},
-      dependencies: {},
-      dist: { tarball: `https://files.pythonhosted.org/packages/source/${packageName[0]}/${packageName}/${packageName}-1.0.0.tar.gz`, unpackedSize: 10240 },
-    };
-  }
+  if (dryRun) return null
 
   try {
     const url = `https://pypi.org/pypi/${encodeURIComponent(packageName)}/json`;
@@ -404,11 +376,18 @@ export async function auditPackage(
     ? await fetchNpmPackageInfo(name, dryRun)
     : await fetchPypiPackageInfo(name, dryRun);
 
+  const typosquat = detectTyposquatting(name);
+
   if (!pkgInfo) {
+    const issues: SupplyChainIssue[] = dryRun
+      ? (typosquat.isTyposquat
+        ? [{ severity: "critical", category: "typosquatting", description: "Package name resembles known popular packages (local heuristic)", evidence: typosquat.matches.join(", ") }]
+        : [{ severity: "info", category: "registry", description: "Dry-run: registry fetch skipped — set live:true for full audit" }])
+      : [{ severity: "medium", category: "registry", description: "Package not found in registry" }];
     return {
       packageName: name,
-      isTyposquat: false,
-      typosquatMatches: [],
+      isTyposquat: typosquat.isTyposquat,
+      typosquatMatches: typosquat.matches,
       dependencyConfusionRisk: false,
       suspiciousInstallScripts: false,
       installScripts: [],
@@ -416,11 +395,11 @@ export async function auditPackage(
       downloadCountRatio: 1,
       registryAge: "unknown",
       maintainers: [],
-      issues: [{ severity: "medium", category: "registry", description: "Package not found in registry" }],
+      issues,
     };
   }
 
-  const typosquat = detectTyposquatting(name);
+  // pkgInfo available — full audit
 
   const installScripts = analyzeInstallScripts(pkgInfo.scripts);
   const suspiciousInstallScripts = installScripts.some((s) => s.riskLevel === "high" || s.riskLevel === "critical");

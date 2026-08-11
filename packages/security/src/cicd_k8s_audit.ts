@@ -570,106 +570,6 @@ function checkClusterRoles(kubeConfig?: string): CICDK8sFinding[] {
   return findings
 }
 
-// ─── Simulated Audit ──────────────────────────────────────────────────────────
-
-function simulateAudit(target: string): CICDK8sAuditResult {
-  findingCounter = 0
-
-  const findings: CICDK8sFinding[] = [
-    makeFinding(
-      ".github/workflows/build.yml",
-      "CRITICAL",
-      "Untrusted PR Trigger with Secret Exposure",
-      "Workflow triggered on 'pull_request_target' checks out head branch code while sharing GITHUB_TOKEN.",
-      "Switch trigger to standard 'pull_request' or remove secret access from untrusted workflow steps.",
-    ),
-    makeFinding(
-      ".github/workflows/deploy.yml",
-      "HIGH",
-      "Hardcoded AWS credentials in workflow",
-      "Workflow contains hardcoded AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY instead of using GitHub secrets.",
-      "Move credentials to GitHub encrypted secrets and reference via ${{ secrets.AWS_ACCESS_KEY_ID }}.",
-    ),
-    makeFinding(
-      ".github/workflows/release.yml",
-      "MEDIUM",
-      "Overly broad workflow permissions",
-      "Workflow grants 'contents: write' permissions allowing direct code pushes bypassing branch protection.",
-      "Use 'contents: read' and create a separate workflow with limited write permissions for releases.",
-    ),
-    makeFinding(
-      ".github/workflows/ci.yml",
-      "HIGH",
-      "Dangerous workflow trigger: workflow_dispatch",
-      "Workflow allows manual dispatch which can be triggered by any collaborator with write access.",
-      "Restrict workflow_dispatch to specific branches or add conditions to limit execution scope.",
-    ),
-    makeFinding(
-      "ServiceAccount: default/deployment-sa",
-      "CRITICAL",
-      "Over-Privileged Kubernetes ClusterRole Binding",
-      "ServiceAccount bound to ClusterRole allowing wildcard '*' permissions across secrets and pods.",
-      "Apply least privilege principle by specifying exact verbs (get, list) on explicit resource groups.",
-    ),
-    makeFinding(
-      "ServiceAccount: kube-system/replicaset-controller",
-      "HIGH",
-      "ServiceAccount can read secrets",
-      "ServiceAccount has get/list access to secrets in all namespaces, risking credential exposure.",
-      "Scope RBAC to specific secret names using resourceNames in Role rules.",
-    ),
-    makeFinding(
-      "Pod: production/nginx-proxy",
-      "CRITICAL",
-      "Privileged container detected",
-      "Container 'nginx-proxy' runs in privileged mode with full host access.",
-      "Remove privileged: true. Use specific capabilities instead.",
-    ),
-    makeFinding(
-      "Pod: monitoring/prometheus-exporter",
-      "HIGH",
-      "Dangerous hostPath volume mount",
-      "Volume 'proc-mount' mounts host path '/proc' into the pod, enabling host process inspection.",
-      "Remove hostPath volume mount. Use node exporter with restricted access.",
-    ),
-    makeFinding(
-      "ClusterRoleBinding: admin-binding",
-      "CRITICAL",
-      "cluster-admin granted to anonymous users",
-      "ClusterRoleBinding 'admin-binding' grants cluster-admin to system:anonymous.",
-      "Remove the binding immediately.",
-    ),
-    makeFinding(
-      "Pod: default/debug-pod",
-      "HIGH",
-      "Dangerous capabilities added to container",
-      "Container 'debug' has elevated capabilities: SYS_ADMIN, NET_ADMIN, SYS_PTRACE.",
-      "Remove unnecessary capabilities. Use PodSecurityStandards to enforce restrictions.",
-    ),
-    makeFinding(
-      ".github/workflows/test.yml",
-      "MEDIUM",
-      "Sensitive files in artifact upload",
-      "Workflow uploads artifacts that may contain .env files and credentials.",
-      "Exclude sensitive paths from artifact uploads.",
-    ),
-    makeFinding(
-      "ServiceAccount: staging/ci-deployer",
-      "HIGH",
-      "ServiceAccount can create pods",
-      "ServiceAccount 'ci-deployer' can create pods, enabling arbitrary code execution in the cluster.",
-      "Restrict pod creation. If CI needs to deploy, use a controlled Deployment or Helm process.",
-    ),
-  ]
-
-  return {
-    target,
-    workflowsAudited: 8,
-    k8sServiceAccountsChecked: 15,
-    findings,
-    isDryRun: true,
-  }
-}
 
 // ─── Main Entry Point ─────────────────────────────────────────────────────────
 
@@ -682,7 +582,33 @@ export function auditCICDAndK8s(
   const kubeConfig = config.kubeConfig
 
   if (isDryRun) {
-    return simulateAudit(target)
+    findingCounter = 0
+    const findings: CICDK8sFinding[] = []
+    let workflowsAudited = 0
+    try {
+      const workflowFiles = findWorkflowFiles(repoPath)
+      workflowsAudited = workflowFiles.length
+      for (const wf of workflowFiles) {
+        findings.push(...auditWorkflow(wf))
+      }
+    } catch (err) {
+      findings.push(
+        makeFinding(
+          repoPath,
+          "MEDIUM",
+          "CI/CD local audit error",
+          `Failed to audit workflows: ${err instanceof Error ? err.message : String(err)}`,
+          "Ensure repo path contains .github/workflows/",
+        ),
+      )
+    }
+    return {
+      target,
+      workflowsAudited,
+      k8sServiceAccountsChecked: 0,
+      findings,
+      isDryRun: true,
+    }
   }
 
   // ── Live mode ──────────────────────────────────────────────────────────────

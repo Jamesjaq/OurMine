@@ -60,18 +60,27 @@ export class BrowserSession {
     this.live = opts.live ?? false;
   }
 
+  /** Restore cookies from persisted session. */
+  loadCookies(cookies: Record<string, string>): void {
+    this.cookies = { ...this.cookies, ...cookies }
+  }
+
+  getCookies(): Record<string, string> {
+    return { ...this.cookies }
+  }
+
   /** Fetch a page. Uses CDP when available, else plain HTTP fetch. */
   async navigate(url: string): Promise<PageResult> {
     if (!this.live) {
       return {
         url,
         finalUrl: url,
-        status: 200,
-        headers: { "content-type": "text/html" },
-        body: `<html><head><title>DRY-RUN ${url}</title></head><body>Simulated page</body></html>`,
-        title: `DRY-RUN ${url}`,
+        status: 0,
+        headers: {},
+        body: "",
+        title: "",
         cookies: {},
-      };
+      }
     }
 
     if (await this._cdpAvailable()) {
@@ -115,12 +124,15 @@ export class BrowserSession {
   }
 
   private async _navigateCDP(url: string): Promise<PageResult> {
+    const { CdpClient } = await import("./cdp_client.ts")
+    const cdp = new CdpClient({ cdpUrl: this.cdpUrl, timeout: this.timeout, userAgent: this.userAgent })
     try {
-      const r = await fetch(`${this.cdpUrl}/json/new?${url}`, { signal: AbortSignal.timeout(5000) });
-      if (!r.ok) throw new Error(`CDP new tab failed: ${r.status}`);
-      // Would use WebSocket CDP protocol here — fallback to HTTP for now
-    } catch {/* fall through */}
-    return this._navigateHTTP(url);
+      const page = await cdp.navigate(url, this.cookies)
+      this.cookies = { ...this.cookies, ...page.cookies }
+      return page
+    } finally {
+      await cdp.disconnect()
+    }
   }
 
   /** Submit a form via POST. */
@@ -133,9 +145,9 @@ export class BrowserSession {
       return {
         url,
         finalUrl: url,
-        status: 200,
+        status: 0,
         headers: {},
-        body: "[DRY-RUN] form submitted",
+        body: "",
         title: "",
         cookies: {},
       };
@@ -306,15 +318,50 @@ export class StrixCoordinator {
       case "csrf_test": {
         const page = await this.browser.navigate(job.target);
         const forms = this.browser.extractForms(page);
-        return { forms, csrf_tokens: forms.flatMap((f) => f.fields.filter((f2) => /csrf|token/i.test(f2))) };
+        let caidoRequests: unknown[] = []
+        if (await this.caido.isAvailable()) {
+          try {
+            caidoRequests = await this.caido.recentRequests(10)
+          } catch { /* caido optional */ }
+        }
+        return { forms, csrf_tokens: forms.flatMap((f) => f.fields.filter((f2) => /csrf|token/i.test(f2))), caidoRequests };
+      }
+      case "sqli_probe": {
+        const probes = ["'", "1' OR '1'='1", "1; SELECT 1--"];
+        const results = []
+        for (const p of probes) {
+          const sep = job.target.includes("?") ? "&" : "?"
+          const page = await this.browser.navigate(`${job.target}${sep}id=${encodeURIComponent(p)}`)
+          results.push({ probe: p, status: page.status, error: /sql|syntax|mysql|postgres|oracle/i.test(page.body.slice(0, 1000)) })
+        }
+        return results
+      }
+      case "auth_bypass": {
+        const { AuthenticatedBrowser } = await import("./strix_session.ts")
+        const auth = new AuthenticatedBrowser({ live: this.live, sessionId: `job_${job.id}` })
+        const crawl = await auth.authenticatedCrawl(job.target, { maxDepth: 1, maxPages: 5 })
+        return { pages: crawl.length, authenticated: crawl.some((c) => c.authenticated) }
       }
       case "form_fuzz": {
         const page = await this.browser.navigate(job.target);
         return this.browser.extractForms(page);
       }
       default:
-        return { note: `job type ${job.type} stubbed` };
+        return { note: `unsupported job type ${job.type}` };
     }
+  }
+
+  /** Authenticated crawl with session persistence. */
+  async authenticatedCrawl(
+    startUrl: string,
+    opts: { username?: string; password?: string; loginUrl?: string; maxDepth?: number } = {},
+  ): Promise<unknown> {
+    const { AuthenticatedBrowser } = await import("./strix_session.ts")
+    const auth = new AuthenticatedBrowser({ live: this.live })
+    if (opts.username && opts.password && opts.loginUrl) {
+      await auth.login(opts.loginUrl, { username: opts.username, password: opts.password })
+    }
+    return auth.authenticatedCrawl(startUrl, { maxDepth: opts.maxDepth ?? 2 })
   }
 
   getJobs(): AttackJob[] { return [...this.jobs.values()]; }

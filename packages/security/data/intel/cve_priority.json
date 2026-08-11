@@ -1,0 +1,9 @@
+[
+  { "cve": "CVE-2025-3248", "product": "Langflow", "cvss": 9.8, "tools": ["ai_surface_scan", "web_exploit", "container_audit"], "nucleiTags": ["langflow"] },
+  { "cve": "CVE-2026-41940", "product": "cPanel/WHM", "cvss": 9.8, "tools": ["cpanel_audit", "web_exploit", "yara_scan"], "nucleiTags": ["cpanel"] },
+  { "cve": "CVE-2025-53770", "product": "SharePoint", "cvss": 9.0, "tools": ["web_exploit", "nuclei_scan"], "nucleiTags": ["sharepoint"] },
+  { "cve": "CVE-2025-61882", "product": "Oracle EBS", "cvss": 9.8, "tools": ["web_exploit", "nuclei_scan"], "nucleiTags": ["oracle-ebs"] },
+  { "cve": "CVE-2024-40766", "product": "SonicWall VPN", "cvss": 9.3, "tools": ["edge_audit", "nmap_scan", "web_exploit"], "nucleiTags": ["sonicwall"] },
+  { "cve": "CVE-2021-29441", "product": "Alibaba Nacos", "cvss": 9.8, "tools": ["ai_surface_scan", "web_exploit"], "nucleiTags": ["nacos"] },
+  { "cve": "CVE-2021-44228", "product": "Log4j", "cvss": 10.0, "tools": ["nuclei_scan", "web_exploit"], "nucleiTags": ["log4j"] }
+]

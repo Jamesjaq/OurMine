@@ -101,125 +101,6 @@ function parseBool(val: string | null): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Dry-run simulation data
-// ---------------------------------------------------------------------------
-
-function generateSimulatedTLS(): TLSInfo {
-  return {
-    protocol: "TLSv1.2",
-    cipher: "ECDHE-RSA-AES256-GCM-SHA384",
-    cipherIsWeak: false,
-    certificateIssuer: "DigiCert SHA2 Secure Server CA",
-    certificateSubject: "CN=edge-gw.corp.example.com",
-    certificateExpiry: "2026-11-15T23:59:59Z",
-    certificateExpired: false,
-    certificateSelfSigned: false,
-    daysUntilExpiry: 96,
-    supportsTLS10: true,
-    supportsTLS11: true,
-    supportsTLS12: true,
-    supportsTLS13: false,
-    sessionTicketsExposed: true,
-  }
-}
-
-function generateSimulatedVPNLeaks(): VPNLeakIndicator[] {
-  return [
-    { type: "stale_session", detail: "VPN session ID 0xA3F7 from 192.168.1.45 has been inactive for 72h but socket remains open" },
-    { type: "open_socket", detail: "UDP port 500 (IKE) has 14 entries in TIME_WAIT state from terminated sessions" },
-    { type: "memory_fragment", detail: "Process ipsec IKEv2 daemon reported RSS 487MB — elevated above baseline 210MB" },
-  ]
-}
-
-function generateSimulatedFirmware(): FirmwareCheck {
-  return {
-    hashAlgorithm: "SHA256",
-    hashValue: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
-    verified: false,
-    notes: "Running firmware hash does not match vendor-signed reference image v4.2.1. Device may be running modified or unsigned firmware.",
-  }
-}
-
-function generateSimulatedMgmtInterfaces(): ManagementInterface[] {
-  return [
-    { port: 443, service: "HTTPS Admin Panel", accessible: true },
-    { port: 22, service: "SSH", accessible: true },
-    { port: 80, service: "HTTP Redirect", accessible: true },
-    { port: 161, service: "SNMP", accessible: true },
-    { port: 8080, service: "HTTP Proxy/Config", accessible: true },
-  ]
-}
-
-function generateSimulatedFindings(): EdgeApplianceFinding[] {
-  return [
-    {
-      id: "EDGE-01",
-      component: "SSL/TLS Engine",
-      severity: "HIGH",
-      title: "Unencrypted TLS Session Tickets in RAM",
-      description: "Session tickets stored in memory lack forward secrecy key rotation, permitting session hijacking if memory is dumped.",
-      remediation: "Enable TLS 1.3 session ticket encryption key rotation and force PFS ciphers.",
-    },
-    {
-      id: "EDGE-02",
-      component: "Appliance Firmware",
-      severity: "CRITICAL",
-      title: "Firmware Image Hash Mismatch",
-      description: "Perimeter gateway running non-vendor signed kernel/firmware binary image. This indicates potential tampering or unauthorized modification.",
-      remediation: "Re-flash device with official vendor firmware and enforce secure boot image verification.",
-    },
-    {
-      id: "EDGE-03",
-      component: "SSL/TLS Protocol",
-      severity: "MEDIUM",
-      title: "TLS 1.0 and TLS 1.1 Enabled",
-      description: "The appliance still accepts TLS 1.0 and TLS 1.1 connections, which have known cryptographic weaknesses (BEAST, POODLE) and are deprecated by RFC 8996.",
-      remediation: "Disable TLS 1.0 and TLS 1.1 on the appliance. Enforce TLS 1.2 as minimum with TLS 1.3 preferred.",
-    },
-    {
-      id: "EDGE-04",
-      component: "Certificate",
-      severity: "MEDIUM",
-      title: "Certificate Nearing Expiration (<90 days)",
-      description: "The TLS certificate will expire within 90 days. Expired certificates cause client connection failures and undermine trust.",
-      remediation: "Renew the certificate immediately and configure automated renewal (e.g., ACME/Let's Encrypt) for perimeter devices.",
-    },
-    {
-      id: "EDGE-05",
-      component: "VPN Memory",
-      severity: "HIGH",
-      title: "Stale VPN Sessions with Open Sockets",
-      description: "Multiple terminated VPN sessions have sockets remaining in TIME_WAIT or CLOSE_WAIT state, leaking kernel memory and potentially exposing session data.",
-      remediation: "Restart the VPN daemon to flush stale sessions. Configure TCP keepalive timeouts and monitor IKE daemon memory usage.",
-    },
-    {
-      id: "EDGE-06",
-      component: "Management Interface",
-      severity: "HIGH",
-      title: "SNMP Service Exposed on Public Interface",
-      description: "SNMP (port 161) is accessible on the management interface. SNMPv1/v2c sends community strings in cleartext, enabling device enumeration and configuration extraction.",
-      remediation: "Disable SNMP or upgrade to SNMPv3 with authentication and encryption. Restrict SNMP access to dedicated management VLAN.",
-    },
-    {
-      id: "EDGE-07",
-      component: "Management Interface",
-      severity: "MEDIUM",
-      title: "HTTP Configuration Portal Accessible",
-      description: "An HTTP-based configuration portal (port 8080) is accessible, transmitting management traffic in cleartext.",
-      remediation: "Disable HTTP management interfaces. Enforce HTTPS-only access with certificate pinning.",
-    },
-    {
-      id: "EDGE-08",
-      component: "SSL/TLS Cipher",
-      severity: "LOW",
-      title: "TLS 1.3 Not Supported",
-      description: "The appliance does not support TLS 1.3, missing improvements in handshake speed, cipher suite strength, and forward secrecy by default.",
-      remediation: "Upgrade appliance firmware to a version supporting TLS 1.3 and enable it alongside TLS 1.2.",
-    },
-  ]
-}
-
-// ---------------------------------------------------------------------------
 // Live audit implementation
 // ---------------------------------------------------------------------------
 
@@ -718,13 +599,13 @@ export function auditEdgeAppliance(
     return {
       target: config.target,
       firmwareIntegrityValid: false,
-      sslSessionTicketsExposed: true,
-      vpnMemoryLeaksDetected: true,
-      tlsInfo: generateSimulatedTLS(),
-      vpnLeakIndicators: generateSimulatedVPNLeaks(),
-      firmwareCheck: generateSimulatedFirmware(),
-      managementInterfaces: generateSimulatedMgmtInterfaces(),
-      findings: generateSimulatedFindings(),
+      sslSessionTicketsExposed: false,
+      vpnMemoryLeaksDetected: false,
+      tlsInfo: null,
+      vpnLeakIndicators: [],
+      firmwareCheck: null,
+      managementInterfaces: [],
+      findings: [],
       isDryRun: true,
     }
   }

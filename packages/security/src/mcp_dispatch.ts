@@ -1,8 +1,8 @@
 /**
- * MCP tool dispatch layer — maps MCP handler calls to module functions with unified dry-run/live gates.
+ * MCP tool dispatch — all handlers delegate to real module functions (no stub findings).
  */
 import * as security from "./index.ts"
-import { resolveDryRun, moduleEnvelope, stubFinding } from "./module_helpers.ts"
+import { resolveDryRun, moduleEnvelope, dryRunSkipped } from "./module_helpers.ts"
 
 type LiveOpts = { live?: boolean; dryRun?: boolean }
 
@@ -34,13 +34,16 @@ export async function c2Execute(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
+  const op = new security.c2.Operator({ live: !dryRun })
+  const agents = op.getAgents()
   return moduleEnvelope(dryRun, {
     action: req.action,
     channel: req.channel ?? "https",
-    beacons: 0,
-    status: dryRun ? "simulated" : "no_active_beacons",
+    beacons: agents.length,
+    status: agents.length ? "active" : "no_active_beacons",
+    agents,
     payload: req.payload ?? "",
-  }, [stubFinding("c2-status", `C2 ${req.action} via ${req.channel}`, "info", "T1071")])
+  })
 }
 
 export async function strixExecute(
@@ -59,9 +62,16 @@ export async function strixExecute(
   }
   coord.queue(req.url, typeMap[req.attack] ?? "form_fuzz")
   const jobs = await coord.runAll()
-  return moduleEnvelope(dryRun, { jobs, payload: req.payload }, [
-    stubFinding(`strix-${req.attack}`, `Strix ${req.attack} against ${req.url}`, "medium", "T1189"),
-  ])
+  const findings = jobs.map((j) =>
+    security.module_helpers.realFinding(
+      `strix-${j.type}`,
+      `Strix ${j.type} on ${req.url}`,
+      j.result ? "high" : "info",
+      JSON.stringify(j.result ?? {}).slice(0, 500),
+      "T1189",
+    ),
+  )
+  return moduleEnvelope(dryRun, { jobs, payload: req.payload }, findings)
 }
 
 export async function vulnResearch(
@@ -79,13 +89,11 @@ export async function autoResearch(
 ) {
   const dryRun = resolveDryRun(opts)
   if (req.strategy === "cve" || !req.strategy) {
-    const result = await security.auto_research.researchCve(
-      { cveId: req.target },
-      { dryRun },
-    )
+    const result = await security.auto_research.researchCve({ cveId: req.target }, { dryRun })
     return moduleEnvelope(dryRun, result)
   }
-  return moduleEnvelope(dryRun, { target: req.target, strategy: req.strategy, note: "Strategy simulated in dry-run" })
+  const intel = await security.intel_feeds.enrichTarget(req.target, { live: !dryRun })
+  return moduleEnvelope(dryRun, { target: req.target, strategy: req.strategy, intel })
 }
 
 export async function hybridAdEntraExecute(
@@ -93,11 +101,17 @@ export async function hybridAdEntraExecute(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, {
-    domain: req.domain,
-    tenantId: req.tenantId ?? "",
-    technique: req.technique ?? "ssso_token",
-  }, [stubFinding("hybrid-ad", `Hybrid AD/Entra ${req.technique}`, "high", "T1556")])
+  const technique = req.technique ?? "ssso_token"
+  if (technique === "phs_abuse") {
+    const result = await security.hybrid_ad_entra.simulatePasswordHashSyncAbuse({ domain: req.domain, dryRun })
+    return moduleEnvelope(dryRun, result)
+  }
+  if (technique === "ssso_token" || technique === "seamless_sso") {
+    const result = await security.hybrid_ad_entra.simulateSeamlessSSOAbuse({ domain: req.domain, dryRun })
+    return moduleEnvelope(dryRun, result)
+  }
+  const chain = await security.hybrid_ad_entra.hybridADAttackChain({ domain: req.domain, dryRun })
+  return moduleEnvelope(dryRun, chain)
 }
 
 export async function oauthChainExecute(
@@ -105,7 +119,9 @@ export async function oauthChainExecute(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  const audit = security.oauth_chain.auditOAuthChain(req.target, { dryRun })
+  const audit = dryRun
+    ? security.oauth_chain.auditOAuthChain(req.target, { dryRun, clientId: req.clientId })
+    : await security.oauth_chain.auditOAuthChainAsync(req.target, { dryRun, clientId: req.clientId })
   return moduleEnvelope(dryRun, { ...audit, technique: req.technique, clientId: req.clientId })
 }
 
@@ -114,10 +130,8 @@ export async function webmailExploitExecute(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, {
-    target: req.target,
-    technique: req.technique,
-  }, [stubFinding("webmail", `Webmail ${req.technique}`, "high", "T1110")])
+  const result = await security.webmail_exploit.simulateInboxRulePersistence(req.target, !dryRun)
+  return moduleEnvelope(dryRun, { target: req.target, technique: req.technique, audit: result })
 }
 
 export async function exfiltrate(
@@ -138,12 +152,7 @@ export async function pivotTunnelExecute(
   const dryRun = resolveDryRun(opts)
   const type = req.method === "chisel" ? "chisel" : req.method === "ssh" ? "port_forward" : "socks5"
   return security.pivot_tunnel.createPortForwarder(
-    {
-      type,
-      localPort: req.lport ?? 1080,
-      remoteHost: req.rhost ?? "127.0.0.1",
-      remotePort: req.rport ?? 22,
-    },
+    { type, localPort: req.lport ?? 1080, remoteHost: req.rhost ?? "127.0.0.1", remotePort: req.rport ?? 22 },
     !dryRun,
   )
 }
@@ -154,13 +163,9 @@ export async function socialEngGenerate(
 ) {
   const dryRun = resolveDryRun(opts)
   const template = (["it_password_reset", "hr_benefits", "ceo_wire", "sharepoint_file", "mfa_verify"].includes(req.lure ?? "")
-    ? req.lure
-    : "it_password_reset") as "it_password_reset" | "hr_benefits" | "ceo_wire" | "sharepoint_file" | "mfa_verify"
+    ? req.lure : "it_password_reset") as "it_password_reset" | "hr_benefits" | "ceo_wire" | "sharepoint_file" | "mfa_verify"
   const email = security.social_eng.generatePhishingEmail(template, {
-    dryRun,
-    targetCompany: req.targetCompany,
-    targetName: req.targetName,
-    targetEmail: req.targetEmail,
+    dryRun, targetCompany: req.targetCompany, targetName: req.targetName, targetEmail: req.targetEmail,
   })
   return moduleEnvelope(dryRun, { email, method: req.method ?? "email" })
 }
@@ -184,11 +189,24 @@ export async function malwareDevExecute(
 }
 
 export async function iotScadaExecute(
-  req: { host: string; protocol?: string; action?: string },
+  req: { host: string; protocol?: string; action?: string; port?: number; unitId?: number; address?: number; quantity?: number; value?: number | boolean },
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, req, [stubFinding("iot", `IoT/SCADA ${req.protocol} on ${req.host}`, "medium", "T0889")])
+  const result = await security.iot_scada.executeScadaAction(
+    {
+      host: req.host,
+      protocol: req.protocol,
+      action: req.action,
+      port: req.port,
+      unitId: req.unitId,
+      address: req.address,
+      quantity: req.quantity,
+      value: req.value,
+    },
+    { dryRun, live: !dryRun },
+  )
+  return moduleEnvelope(dryRun, result)
 }
 
 export async function mobileExecute(
@@ -196,7 +214,8 @@ export async function mobileExecute(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, req, [stubFinding("mobile", `Mobile ${req.action}`, "medium", "T1406")])
+  const devices = security.mobile.listADBDevices(!dryRun)
+  return moduleEnvelope(dryRun, { ...req, devices })
 }
 
 export async function firmwareAnalyze(
@@ -212,7 +231,21 @@ export async function calderaTtpExecute(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, { techniqueId: req.techniqueId, profile: req.profile, note: "Caldera ability execution simulated" })
+  const ability = {
+    ability_id: req.techniqueId,
+    name: req.techniqueId,
+    description: `TTP ${req.techniqueId}`,
+    tactic: "execution",
+    technique_id: req.techniqueId,
+    technique_name: req.techniqueId,
+    executors: [{ name: "sh", platform: "linux", command: "id", cleanup: [], parsers: [], timeout: 30, payloads: [], uploads: [] }],
+    requirements: [],
+    privilege: "user",
+    repeatable: true,
+    buckets: [],
+  }
+  const result = await security.caldera_ttp.executeAbility(ability, { live: !dryRun })
+  return moduleEnvelope(dryRun, result)
 }
 
 export async function atlasArsenalExecute(
@@ -229,17 +262,77 @@ export async function devTargetExecute(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, req, [stubFinding("dev-target", `Dev target ${req.technique}`, "low", "T1195")])
+  const secrets = security.dev_target.auditLocalDevEnvironment()
+  return moduleEnvelope(dryRun, { ...req, secrets })
 }
 
-export async function campaignPlan(
-  req: { target: string; objective?: string; phases?: string[] },
+export async function supplyChainExecute(
+  req: { package: string; ecosystem?: string; mode?: string },
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, {
-    target: req.target,
-    objective: req.objective ?? "recon",
-    phases: req.phases ?? ["recon", "initial_access", "impact"],
-  }, [stubFinding("campaign", `Campaign plan for ${req.target}`, "info", "T1595")])
+  return security.supply_chain.analyze(
+    { package: req.package, ecosystem: (req.ecosystem ?? "npm") as "npm" | "pypi", mode: (req.mode ?? "detect") as "detect" | "audit" },
+    { live: !dryRun },
+  )
+}
+
+export async function campaignExecute(
+  req: { target: string; objective?: string; phases?: string[]; profileId?: string },
+  opts: LiveOpts = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  if (dryRun) {
+    const campaign = new security.campaign.RedTeamCampaign(
+      req.profileId ?? "intel_campaign",
+      req.target,
+      { objective: req.objective, profileId: req.profileId },
+    )
+    return moduleEnvelope(true, { plan: campaign.getSummary(), executed: false })
+  }
+  const result = await security.campaign.runCampaign(req.target, {
+    objective: req.objective,
+    profileId: req.profileId,
+    live: true,
+    maxStepsPerPhase: 5,
+  })
+  return moduleEnvelope(false, result)
+}
+
+export async function raasCampaignExecute(
+  req: {
+    targetDir: string
+    esxiHost?: string
+    smbTargets?: string[]
+    domain?: string
+    forceLive?: boolean
+    family?: string
+  },
+  opts: LiveOpts = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  const forceLive = req.forceLive === true || process.argv.includes("--force-live")
+  const report = await security.raas_engine.runRaasCampaign({
+    targetDir: req.targetDir,
+    live: !dryRun,
+    forceLive,
+    esxiHost: req.esxiHost,
+    smbTargets: req.smbTargets,
+    domain: req.domain,
+    familyName: req.family ?? "OURMINE-RAAS",
+  })
+  return moduleEnvelope(dryRun || report.dryRun, report)
+}
+
+export async function campaignPlan(
+  req: { target: string; objective?: string; phases?: string[]; profileId?: string },
+  opts: LiveOpts = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  const campaign = new security.campaign.RedTeamCampaign(
+    req.profileId ?? "intel_campaign",
+    req.target,
+    { objective: req.objective, profileId: req.profileId },
+  )
+  return moduleEnvelope(dryRun, campaign.getSummary())
 }

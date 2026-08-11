@@ -1,0 +1,12 @@
+[
+  { "id": "qilin", "name": "Qilin", "aliases": ["Agenda", "Medusa"], "focus": ["healthcare", "volume"], "tools": ["nmap_scan", "nuclei_scan", "postex_harvest", "ransomware_assess"], "techniques": ["T1486", "T1490"] },
+  { "id": "the_gentlemen", "name": "The Gentlemen", "focus": ["volume", "global"], "tools": ["recon", "nmap_scan", "masscan_scan"], "techniques": ["T1486"] },
+  { "id": "akira", "name": "Akira", "focus": ["fast_escalation"], "tools": ["nmap_scan", "cred_spray", "lateral_move"], "techniques": ["T1486", "T1021"] },
+  { "id": "cl0p", "name": "Cl0p", "focus": ["mass_exploit", "oracle"], "tools": ["web_exploit", "nuclei_scan"], "techniques": ["T1190", "T1486"] },
+  { "id": "lockbit5", "name": "LockBit 5.0", "aliases": ["LockBit Black"], "tools": ["postex_harvest", "lateral_move", "esxi_audit"], "techniques": ["T1486"] },
+  { "id": "dragonforce", "name": "DragonForce", "focus": ["raas", "white_label"], "tools": ["ransomware_assess", "postex_harvest"], "techniques": ["T1486"] },
+  { "id": "storm_0501", "name": "Storm-0501", "focus": ["cloud_native"], "tools": ["cloud_enum", "idp_audit", "cloud_token"], "techniques": ["T1486", "T1530"] },
+  { "id": "warlock", "name": "Warlock", "focus": ["sharepoint"], "tools": ["web_exploit", "nuclei_scan"], "techniques": ["T1190"] },
+  { "id": "sorry_ransom", "name": "Sorry/.sorry", "focus": ["cpanel"], "tools": ["cpanel_audit", "yara_scan"], "techniques": ["T1486"] },
+  { "id": "jadepuffer", "name": "JADEPUFFER", "focus": ["agentic", "ml_stack"], "tools": ["ai_surface_scan", "ai_agent_audit", "container_audit"], "techniques": ["T1190", "T1486"] }
+]

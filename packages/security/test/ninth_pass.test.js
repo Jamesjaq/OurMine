@@ -75,9 +75,10 @@ test("State Machine — SUSPECTED → CONFIRMED is ILLEGAL", () => {
 
 // ─── 3. State Machine: Terminal states are final ──────────────────────────────
 
-test("State Machine — CONFIRMED has no further transitions", () => {
+test("State Machine — CONFIRMED can retest or remediate", () => {
   const sm = new FindingStateMachine("CONFIRMED")
-  assert.deepStrictEqual([...sm.transitions], [])
+  assert.ok(sm.canTransitionTo("RETEST_PENDING"))
+  assert.ok(sm.canTransitionTo("REMEDIATED"))
   assert.throws(() => sm.transition("SUSPECTED", "going back"))
 })
 

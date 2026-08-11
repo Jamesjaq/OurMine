@@ -42,6 +42,9 @@ export interface DeviceCodeAbuseResult {
   pollEndpoint: string;
   phishingUrl: string;
   dryRun: boolean;
+  pollStatus?: "authorized" | "pending" | "expired" | "declined" | "not_polled";
+  pollAttempts?: number;
+  tokenType?: string;
 }
 
 export interface CsrfBypassResult {
@@ -267,42 +270,163 @@ export function testCsrfBypass(opts: OAuthChainOptions = {}): CsrfBypassResult {
 // ─── Device Code Flow Abuse ───────────────────────────────────────────────────
 
 /**
- * Simulate a device code flow abuse scenario where an attacker obtains a device code
- * and tricks a victim into completing the authorization.
- * DRY-RUN: generates synthetic device code data without hitting any endpoint.
+ * Live OAuth device code flow — real HTTP to authorization endpoint (MSAL/Azure-compatible).
+ * DRY-RUN: returns empty result without network requests.
  */
-export function simulateDeviceCodeAbuse(
-  targetAuthEndpoint = "https://auth.target.com/device/code",
-  opts: OAuthChainOptions = {},
-): DeviceCodeAbuseResult {
+export async function performDeviceCodeFlow(
+  targetAuthEndpoint?: string,
+  opts: OAuthChainOptions & { tenant?: string; poll?: boolean } = {},
+): Promise<DeviceCodeAbuseResult> {
   const { dryRun = true } = opts;
-  const deviceCode = crypto.randomBytes(16).toString("hex");
-  const interval = 5;
-  const expiresIn = 600;
+  const tenant = opts.tenant ?? "common";
+  const clientId = opts.clientId ?? "1950a258-227b-4e31-a9cf-717495945fc2";
+  const deviceUrl =
+    targetAuthEndpoint ??
+    opts.authEndpoint ??
+    `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/devicecode`;
+  const tokenUrl = deviceUrl.replace(/devicecode\/?$/i, "token");
 
   if (dryRun) {
     return {
-      deviceCode,
-      interval,
-      verificationUri: "https://auth.target.com/activate",
-      expiresIn,
-      pollEndpoint: targetAuthEndpoint,
-      phishingUrl:
-        `https://auth.target.com/device/success?user_code=` +
-        crypto.randomBytes(3).toString("hex").toUpperCase().replace(/(.{3})/, "$1-"),
+      deviceCode: "",
+      interval: 0,
+      verificationUri: "",
+      expiresIn: 0,
+      pollEndpoint: deviceUrl,
+      phishingUrl: "",
       dryRun: true,
     };
   }
 
-  return {
-    deviceCode,
-    interval,
-    verificationUri: "https://auth.target.com/activate",
-    expiresIn,
-    pollEndpoint: targetAuthEndpoint,
-    phishingUrl: "",
-    dryRun: false,
-  };
+  const body = new URLSearchParams({
+    client_id: clientId,
+    scope: opts.scope ?? "https://graph.microsoft.com/.default offline_access",
+  });
+
+  try {
+    const res = await fetch(deviceUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (!res.ok) {
+      return {
+        deviceCode: "",
+        interval: 5,
+        verificationUri: "",
+        expiresIn: 0,
+        pollEndpoint: deviceUrl,
+        phishingUrl: "",
+        dryRun: false,
+      };
+    }
+    const data = (await res.json()) as {
+      device_code?: string;
+      user_code?: string;
+      verification_uri?: string;
+      interval?: number;
+      expires_in?: number;
+      message?: string;
+    };
+
+    let pollStatus: DeviceCodeAbuseResult["pollStatus"] = "not_polled";
+    let pollAttempts = 0;
+    let tokenType: string | undefined;
+
+    if (opts.poll !== false && data.device_code) {
+      const intervalMs = (data.interval ?? 5) * 1000;
+      const maxAttempts = Math.min(Math.floor((data.expires_in ?? 900) / (data.interval ?? 5)), 3);
+      for (let i = 0; i < maxAttempts; i++) {
+        pollAttempts++
+        await new Promise((r) => setTimeout(r, intervalMs))
+        const pollBody = new URLSearchParams({
+          grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+          client_id: clientId,
+          device_code: data.device_code,
+        })
+        const pollRes = await fetch(tokenUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: pollBody.toString(),
+          signal: AbortSignal.timeout(15000),
+        })
+        const pollText = await pollRes.text()
+        try {
+          const pollJson = JSON.parse(pollText) as {
+            access_token?: string
+            token_type?: string
+            error?: string
+            error_description?: string
+          }
+          if (pollJson.access_token) {
+            pollStatus = "authorized"
+            tokenType = pollJson.token_type
+            break
+          }
+          if (pollJson.error === "authorization_pending") {
+            pollStatus = "pending"
+            continue
+          }
+          if (pollJson.error === "expired_token") {
+            pollStatus = "expired"
+            break
+          }
+          if (pollJson.error === "access_denied") {
+            pollStatus = "declined"
+            break
+          }
+        } catch {
+          pollStatus = "pending"
+        }
+      }
+    }
+
+    return {
+      deviceCode: data.device_code ?? "",
+      interval: data.interval ?? 5,
+      verificationUri: data.verification_uri ?? "",
+      expiresIn: data.expires_in ?? 900,
+      pollEndpoint: tokenUrl,
+      phishingUrl: data.user_code
+        ? `${data.verification_uri ?? deviceUrl}?user_code=${data.user_code}`
+        : "",
+      dryRun: false,
+      pollStatus,
+      pollAttempts,
+      tokenType,
+    };
+  } catch {
+    return {
+      deviceCode: "",
+      interval: 5,
+      verificationUri: "",
+      expiresIn: 0,
+      pollEndpoint: deviceUrl,
+      phishingUrl: "",
+      dryRun: false,
+    };
+  }
+}
+
+/** @deprecated Use performDeviceCodeFlow — kept for backward compat. */
+export function deviceCodeAbuseCheck(
+  targetAuthEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/devicecode",
+  opts: OAuthChainOptions = {},
+): DeviceCodeAbuseResult {
+  const { dryRun = true } = opts;
+  if (dryRun) {
+    return {
+      deviceCode: "",
+      interval: 0,
+      verificationUri: "",
+      expiresIn: 0,
+      pollEndpoint: targetAuthEndpoint,
+      phishingUrl: "",
+      dryRun: true,
+    };
+  }
+  throw new Error("Use performDeviceCodeFlow() for live device code requests");
 }
 
 // ─── Full OAuth Chain Audit ───────────────────────────────────────────────────
@@ -339,7 +463,7 @@ export function auditOAuthChain(
   const redirectBypass = checkOAuthRedirectBypass(redirectUri, { dryRun });
   const pkceDowngrade = testPkceDowngrade({ dryRun });
   const csrfBypass = testCsrfBypass({ dryRun });
-  const deviceCodeAbuse = simulateDeviceCodeAbuse(undefined, { dryRun });
+  const deviceCodeAbuse = deviceCodeAbuseCheck(undefined, { dryRun });
 
   const findings = [redirectBypass, pkceDowngrade.vulnerable, csrfBypass.vulnerable, deviceCodeAbuse.deviceCode ? true : false];
   const criticalCount = findings.filter(Boolean).length;
@@ -372,11 +496,48 @@ export function auditOAuthChain(
   };
 }
 
+export async function auditOAuthChainAsync(
+  redirectUriOrOpts: string | { targetUrl?: string; redirectUri?: string; dryRun?: boolean },
+  opts: OAuthChainOptions = {},
+): Promise<OAuthAuditResult> {
+  const base = auditOAuthChain(redirectUriOrOpts, opts);
+  const mergedOpts: OAuthChainOptions =
+    typeof redirectUriOrOpts === "object" && redirectUriOrOpts.dryRun !== undefined
+      ? { ...opts, dryRun: redirectUriOrOpts.dryRun }
+      : opts;
+  const { dryRun = true } = mergedOpts;
+  if (dryRun) return base;
+
+  const deviceCodeAbuse = await performDeviceCodeFlow(undefined, { ...mergedOpts, dryRun: false, poll: true });
+  const hasDeviceFlow = Boolean(deviceCodeAbuse.deviceCode || deviceCodeAbuse.verificationUri);
+  let overallRisk = base.overallRisk;
+  if (hasDeviceFlow && overallRisk === "low") overallRisk = "medium";
+
+  return {
+    ...base,
+    deviceCodeAbuse,
+    overallRisk,
+    dryRun: false,
+    vulnerabilities: [
+      ...base.vulnerabilities,
+      ...(hasDeviceFlow
+        ? [{ vector: "Device Code Flow", severity: "medium" as const, description: "Live device code endpoint reachable", pocUrl: deviceCodeAbuse.phishingUrl, dryRun: false }]
+        : []),
+    ],
+  };
+}
+
+/** @deprecated Use deviceCodeAbuseCheck */
+export const simulateDeviceCodeAbuse = deviceCodeAbuseCheck;
+
 export default {
   checkOAuthRedirectBypass,
   testPkceDowngrade,
   generatePkcePair,
   testCsrfBypass,
+  deviceCodeAbuseCheck,
   simulateDeviceCodeAbuse,
+  performDeviceCodeFlow,
   auditOAuthChain,
+  auditOAuthChainAsync,
 };

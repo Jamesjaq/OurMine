@@ -563,18 +563,18 @@ export class AntiForensicsEngine {
       );
     }
 
-    // --- Dry-run / Simulated results ---
+    // --- Dry-run: empty assessment, no fabricated artifacts ---
     if (!liveMode) {
       return {
         os: osName,
-        clearedArtifacts: SIMULATED_ARTIFACTS[osName] || SIMULATED_ARTIFACTS.linux,
-        timestompedFiles: SIMULATED_TIMESTOMP[osName] || SIMULATED_TIMESTOMP.linux,
-        dnsCleared: true,
-        tempCleared: ["/tmp (simulated)", "/var/tmp (simulated)", `${os.tmpdir()} (simulated)`],
-        swapCleared: true,
-        freeSpaceWiped: ["/tmp (simulated wipe)", "/var/tmp (simulated wipe)"],
+        clearedArtifacts: [],
+        timestompedFiles: [],
+        dnsCleared: false,
+        tempCleared: [],
+        swapCleared: false,
+        freeSpaceWiped: [],
         errors: [],
-        simulated: true,
+        simulated: false,
       };
     }
 
