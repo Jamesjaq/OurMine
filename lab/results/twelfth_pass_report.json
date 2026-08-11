@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-11T04:44:51.980Z",
+  "timestamp": "2026-08-11T04:47:46.292Z",
   "classification": "SECURITY AUTOMATION PLATFORM",
   "empirical_metrics": {
     "services_discovered": "6 / 6",
@@ -47,9 +47,9 @@
     }
   },
   "graph_summary": {
-    "sessionId": "70ace956-b83f-4c72-a386-a1e061e9eb73",
+    "sessionId": "ab6c3df9-a367-4030-a30f-8016be969252",
     "target": "127.0.0.1",
-    "startedAt": "2026-08-11T04:44:51.714Z",
+    "startedAt": "2026-08-11T04:47:46.012Z",
     "assets": 1,
     "services": 6,
     "openPorts": [
@@ -86,7 +86,7 @@
   },
   "attack_paths": [
     {
-      "id": "ec004b85-03d1-40b5-8f6e-c6ad30b97830",
+      "id": "533ecdda-5c1d-4b49-a712-305cf0af46e9",
       "label": "Admin/Privileged Endpoints Exposed (1)",
       "steps": [
         "127.0.0.1/admin"

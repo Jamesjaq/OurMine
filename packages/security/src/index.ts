@@ -104,3 +104,4 @@ export * as attack_surface from "./attack_surface.ts";
 export * as finding_lifecycle from "./finding_lifecycle.ts";
 export * as validation_planner from "./validation_planner.ts";
 export * as validation_engine from "./validation_engine.ts";
+export * as parameter_analyzer from "./parameter_analyzer.ts";
