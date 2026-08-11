@@ -1,0 +1,321 @@
+{
+  "timestamp": "2026-08-11T19:34:15.414Z",
+  "mode": "live",
+  "l4Flow": {
+    "proven": true,
+    "level": "L4",
+    "idorProven": false,
+    "summary": "L4 controlled impact proven for flow 'l4-canary-chain'"
+  },
+  "validation": {
+    "strategy": "L4_CONTROLLED_IMPACT",
+    "validated": true,
+    "outcome": "VALIDATION_SUCCESS"
+  },
+  "tier1Validation": {
+    "idor": {
+      "proven": false,
+      "userAStatus": 403,
+      "userBStatus": 403,
+      "crossAccess": false,
+      "evidence": "[{\"step\":\"user_a_login\",\"status\":401,\"passed\":true},{\"step\":\"user_b_login\",\"status\":401,\"passed\":true},{\"step\":\"user_a_own_resource\",\"status\":403,\"passed\":true},{\"step\":\"user_a_cross_resource\",\"status\":403,\"passed\":true}]",
+      "validationLevel": "L3"
+    },
+    "privesc": {
+      "proven": false,
+      "method": "read_flag",
+      "evidence": "[ToolBroker Policy Denial]: Forbidden shell metacharacters detected (; & | ` $)",
+      "validationLevel": "L3"
+    },
+    "replay": {
+      "replayId": "c3d18c67-cabc-45dc-b704-4d2663dbd9c5",
+      "rolledBack": true,
+      "steps": [
+        {
+          "name": "snapshot_pre",
+          "success": true,
+          "detail": ""
+        },
+        {
+          "name": "exploit_probe",
+          "success": true,
+          "detail": "[{\"id\":1,\"name\":\"admin\",\"role\":\"administrator\",\"secret\":\"CONFIDENTIAL\"}]"
+        },
+        {
+          "name": "verify_post",
+          "success": true,
+          "detail": ""
+        }
+      ],
+      "validationLevel": "L4"
+    },
+    "fuzz": {
+      "flowId": "75c679a7-8ce2-4315-8889-2048815b390e",
+      "flowName": "l4-canary-chain",
+      "steps": [
+        {
+          "step": "canary_probe",
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-powered-by": "Log4j/2.14.1",
+            "date": "Tue, 11 Aug 2026 19:33:28 GMT",
+            "connection": "keep-alive",
+            "keep-alive": "timeout=5",
+            "transfer-encoding": "chunked"
+          },
+          "bodySnippet": "[{\"id\":1,\"name\":\"admin\",\"role\":\"administrator\",\"secret\":\"CONFIDENTIAL\"}]",
+          "extracted": {},
+          "passed": true,
+          "detail": "step expectations met"
+        },
+        {
+          "step": "admin_data",
+          "status": 200,
+          "headers": {
+            "content-type": "text/html",
+            "date": "Tue, 11 Aug 2026 19:33:28 GMT",
+            "connection": "keep-alive",
+            "keep-alive": "timeout=5",
+            "transfer-encoding": "chunked"
+          },
+          "bodySnippet": "{\"error\":\"invalid\"}",
+          "extracted": {},
+          "passed": true,
+          "detail": "step expectations met"
+        },
+        {
+          "step": "backup_probe",
+          "status": 404,
+          "headers": {
+            "date": "Tue, 11 Aug 2026 19:33:28 GMT",
+            "connection": "keep-alive",
+            "keep-alive": "timeout=5",
+            "transfer-encoding": "chunked"
+          },
+          "bodySnippet": "not found",
+          "extracted": {},
+          "passed": true,
+          "detail": "step expectations met"
+        }
+      ],
+      "fuzzHits": [],
+      "l3BypassProven": false,
+      "l4ImpactProven": true,
+      "l4Evidence": "[{\"id\":1,\"name\":\"admin\",\"role\":\"administrator\",\"secret\":\"CONFIDENTIAL\"}]",
+      "validationLevel": "L4",
+      "summary": "L4 controlled impact proven for flow 'l4-canary-chain'"
+    }
+  },
+  "segmentTunnels": {},
+  "campaign": {
+    "phases": [
+      {
+        "phase": "bloodhound_replay",
+        "success": false,
+        "detail": "0 paths, 0 successful replays"
+      },
+      {
+        "phase": "segment_tunnel_orchestration",
+        "success": true,
+        "detail": "Orchestrated 1 live segment tunnel(s) across 2 segment(s)"
+      },
+      {
+        "phase": "autonomous_pivot",
+        "success": true,
+        "detail": "Autonomous pivot gained 2 host(s): 127.0.0.1, 127.0.0.2"
+      }
+    ],
+    "hostsCompromised": [
+      "127.0.0.1",
+      "127.0.0.2"
+    ],
+    "tunnels": [
+      {
+        "method": "port_forward",
+        "localPort": 1081
+      }
+    ],
+    "objectiveMet": false,
+    "summary": "Campaign loop complete — 2 host(s), 2/3 phases ok"
+  },
+  "autonomousPivot": {
+    "summary": "Autonomous pivot gained 2 host(s): 127.0.0.1, 127.0.0.2",
+    "hostsGained": [
+      "127.0.0.1",
+      "127.0.0.2"
+    ]
+  },
+  "edrFeedbackLoop": {
+    "iterations": [
+      {
+        "edrDetected": [],
+        "selectedChannel": "dns-covert",
+        "reason": "Ranked dns-covert (priority=8, edrRisk=low)",
+        "evasionScore": 8
+      },
+      {
+        "edrDetected": [],
+        "selectedChannel": "dns-covert",
+        "reason": "Ranked dns-covert (priority=8, edrRisk=low)",
+        "evasionScore": 8
+      }
+    ],
+    "finalChannel": "dns-covert",
+    "edrPresent": false,
+    "summary": "EDR feedback loop: 2 iteration(s), final channel 'dns-covert'"
+  },
+  "privescChains": {
+    "steps": [
+      {
+        "name": "SUID: /opt/google/chrome/chrome-sandbox",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /opt/google/chrome/chrome-sandbox (check GTFOBins)",
+        "mitreId": "T1548.001"
+      },
+      {
+        "name": "SUID: /usr/sbin/mount.nfs",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /usr/sbin/mount.nfs (check GTFOBins)",
+        "mitreId": "T1548.001"
+      },
+      {
+        "name": "SUID: /usr/sbin/mount.cifs",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /usr/sbin/mount.cifs (check GTFOBins)",
+        "mitreId": "T1548.001"
+      },
+      {
+        "name": "SUID: /usr/sbin/pppd",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /usr/sbin/pppd (check GTFOBins)",
+        "mitreId": "T1548.001"
+      },
+      {
+        "name": "SUID: /usr/lib/dbus-1.0/dbus-daemon-launch-helper",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /usr/lib/dbus-1.0/dbus-daemon-launch-helper (check GTFOBins)",
+        "mitreId": "T1548.001"
+      },
+      {
+        "name": "SUID: /usr/lib/virtualbox/VBoxNetDHCP",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /usr/lib/virtualbox/VBoxNetDHCP (check GTFOBins)",
+        "mitreId": "T1548.001"
+      },
+      {
+        "name": "SUID: /usr/lib/virtualbox/VirtualBoxVM",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /usr/lib/virtualbox/VirtualBoxVM (check GTFOBins)",
+        "mitreId": "T1548.001"
+      },
+      {
+        "name": "SUID: /usr/lib/virtualbox/VBoxNetNAT",
+        "category": "suid",
+        "success": false,
+        "detail": "SUID binary: /usr/lib/virtualbox/VBoxNetNAT (check GTFOBins)",
+        "mitreId": "T1548.001"
+      }
+    ],
+    "proven": false,
+    "validationLevel": "L3",
+    "summary": "Privesc enumeration: 8 probes executed"
+  },
+  "multiCloudAsm": {
+    "assets": [
+      {
+        "provider": "aws",
+        "assetType": "imds",
+        "identifier": "169.254.169.254/aws",
+        "exposure": "metadata",
+        "detail": "Blocked by sandbox network policy\nDestination: 169.254.169.254:80\nReason: not on allow list\n"
+      },
+      {
+        "provider": "gcp",
+        "assetType": "imds",
+        "identifier": "169.254.169.254/gcp",
+        "exposure": "metadata",
+        "detail": "Blocked by sandbox network policy\nDestination: 169.254.169.254:80\nReason: not on allow list\n"
+      },
+      {
+        "provider": "azure",
+        "assetType": "imds",
+        "identifier": "169.254.169.254/azure",
+        "exposure": "metadata",
+        "detail": "Blocked by sandbox network policy\nDestination: 169.254.169.254:80\nReason: not on allow list\n"
+      }
+    ],
+    "fusedCount": 3,
+    "providers": [
+      "aws",
+      "gcp",
+      "azure"
+    ],
+    "summary": "Fused 3 cloud asset(s) from 3 provider(s)"
+  },
+  "dwellSchedule": {
+    "ticks": [
+      {
+        "tick": 1,
+        "timestamp": "2026-08-11T19:34:08.989Z",
+        "tasksCompleted": 0,
+        "channel": "dns-covert"
+      },
+      {
+        "tick": 2,
+        "timestamp": "2026-08-11T19:34:10.993Z",
+        "tasksCompleted": 0,
+        "channel": "dns-covert"
+      },
+      {
+        "tick": 3,
+        "timestamp": "2026-08-11T19:34:12.995Z",
+        "tasksCompleted": 0,
+        "channel": "dns-covert"
+      }
+    ],
+    "dwellHours": 168,
+    "totalTasks": 0,
+    "edrLoop": {
+      "iterations": [
+        {
+          "edrDetected": [],
+          "selectedChannel": "dns-covert",
+          "reason": "Ranked dns-covert (priority=8, edrRisk=low)",
+          "evasionScore": 8
+        },
+        {
+          "edrDetected": [],
+          "selectedChannel": "dns-covert",
+          "reason": "Ranked dns-covert (priority=8, edrRisk=low)",
+          "evasionScore": 8
+        }
+      ],
+      "finalChannel": "dns-covert",
+      "edrPresent": false,
+      "summary": "EDR feedback loop: 2 iteration(s), final channel 'dns-covert'"
+    },
+    "summary": "Dwell schedule: 3 tick(s), 0 task(s) over simulated 168h window"
+  },
+  "esxiLabEncrypt": {
+    "targetDir": "/home/spnxr/Documents/raven/OurMine/lab/results/esxi_lab_target",
+    "encryptedFiles": 1,
+    "recovered": true,
+    "keyId": "lab_1786476852996",
+    "markerPath": "/home/spnxr/Documents/raven/OurMine/lab/results/esxi_lab_target/ourmine_esxi.marker",
+    "summary": "Lab ESXi encrypt+recovery proof succeeded"
+  },
+  "operationalDepth": {
+    "overall": 9.6,
+    "tier": "tier1_ready"
+  },
+  "workflowPct": 80,
+  "multiHostAssets": 5
+}

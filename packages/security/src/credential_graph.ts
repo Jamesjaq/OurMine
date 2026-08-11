@@ -2,7 +2,15 @@
  * @module credential_graph
  * Credential vault + pivot chain engine — harvests feed graph edges for lateral movement.
  */
+import * as fs from "node:fs"
+import * as path from "node:path"
+import { fileURLToPath } from "node:url"
 import type { AttackSurfaceGraph } from "./attack_surface.ts"
+
+const DEFAULT_CRED_GRAPH_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../../.ourmine/agent/credential_graph.json",
+)
 
 export type CredentialType = "password" | "nthash" | "ticket" | "token" | "key" | "cookie"
 
@@ -194,6 +202,25 @@ export class CredentialGraph {
         this.recordPivot({ from: "local", to: host, method: result.method ?? "lateral", credentialId: credId, success: true })
       }
     } catch { /* ignore */ }
+  }
+
+  /** Persist credential graph to disk for cross-session engagement continuity. */
+  save(filePath?: string): string {
+    const fp = filePath ?? DEFAULT_CRED_GRAPH_PATH
+    fs.mkdirSync(path.dirname(fp), { recursive: true })
+    fs.writeFileSync(fp, JSON.stringify(this.toJSON(), null, 2))
+    return fp
+  }
+
+  /** Load credential graph from disk. */
+  static load(filePath?: string): CredentialGraph {
+    const fp = filePath ?? DEFAULT_CRED_GRAPH_PATH
+    if (!fs.existsSync(fp)) return new CredentialGraph()
+    try {
+      return CredentialGraph.fromJSON(JSON.parse(fs.readFileSync(fp, "utf8")))
+    } catch {
+      return new CredentialGraph()
+    }
   }
 }
 

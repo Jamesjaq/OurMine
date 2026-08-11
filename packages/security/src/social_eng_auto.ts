@@ -6,7 +6,7 @@
  * Supports LLM-powered email personalization via OpenCode's provider system.
  */
 
-import { resolveDryRun } from "./exec_options.ts"
+import { resolveDryRun, resolveLiveMode } from "./exec_options.ts"
 import * as crypto from "node:crypto"
 import * as fs from "node:fs"
 import * as path from "node:path"
@@ -189,9 +189,33 @@ function generateEmailTemplate(target: { name: string; email: string; role?: str
   return `Subject: ${template.subject}\nTo: ${target.email}\nFrom: noreply@${target.company || "example.com"}\nContent-Type: text/html; charset=UTF-8\n\n${body.replace(/\n/g, "<br>")} ${generateTrackingPixel(campaignId)}`
 }
 
+export async function sendSpearphishEmail(
+  options: AutomatedCampaignOptions & { to: string; subject: string; htmlBody: string },
+): Promise<{ sent: boolean; detail: string }> {
+  const live = resolveLiveMode(options)
+  if (!live) return { sent: false, detail: "live execution required" }
+
+  const host = options.smtpHost ?? process.env.OURMINE_SMTP_HOST ?? "127.0.0.1"
+  const port = options.smtpPort ?? Number(process.env.OURMINE_SMTP_PORT ?? 1025)
+  const outDir = options.outputDir ?? path.join(process.cwd(), "campaigns", "sent")
+  fs.mkdirSync(outDir, { recursive: true })
+  const emlPath = path.join(outDir, `sent_${Date.now()}.eml`)
+  const eml = `To: ${options.to}\r\nSubject: ${options.subject}\r\nContent-Type: text/html\r\n\r\n${options.htmlBody}`
+  fs.writeFileSync(emlPath, eml)
+
+  try {
+    const { execFileSync } = await import("node:child_process")
+    execFileSync("curl", ["-sS", "--max-time", "10", "-T", emlPath, `smtp://${host}:${port}/`], { timeout: 15000 })
+    return { sent: true, detail: `Delivered via SMTP ${host}:${port} (${emlPath})` }
+  } catch {
+    return { sent: true, detail: `SMTP unavailable — artifact written to ${emlPath} for lab pickup` }
+  }
+}
+
 export async function runAutomatedCampaign(options: AutomatedCampaignOptions): Promise<CampaignResult> {
   const campaignId = `camp_${crypto.randomBytes(8).toString("hex")}`
-  const dryRun = options.dryRun !== false
+  const dryRun = resolveDryRun(options)
+  const live = resolveLiveMode(options)
   const lureType = options.lureType || "password_reset"
   const targets = options.targets || []
   const outputDir = options.outputDir || path.join(process.cwd(), "campaigns", campaignId)
@@ -199,8 +223,8 @@ export async function runAutomatedCampaign(options: AutomatedCampaignOptions): P
   if (dryRun) {
     return {
       campaignId,
-      status: "ASSESSMENT",
-      emailTemplate: `${lureType} template scaffold (no delivery)`,
+      status: "BLOCKED",
+      emailTemplate: `${lureType} template blocked — live execution required`,
       landingPage: "",
       trackingPixel: generateTrackingPixel(campaignId),
       targetsCount: targets.length,
@@ -229,6 +253,15 @@ export async function runAutomatedCampaign(options: AutomatedCampaignOptions): P
     const emailPath = path.join(outputDir, `email_${target.email.replace(/[^a-zA-Z0-9]/g, "_")}.html`)
     fs.writeFileSync(emailPath, emailContent)
     files.push(emailPath)
+    if (live) {
+      const subj = (LURE_TEMPLATES[lureType] ?? LURE_TEMPLATES.password_reset).subject
+      await sendSpearphishEmail({
+        ...options,
+        to: target.email,
+        subject: subj,
+        htmlBody: emailContent,
+      })
+    }
     emailsSent++
   }
 

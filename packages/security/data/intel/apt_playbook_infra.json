@@ -1,0 +1,47 @@
+[
+  {
+    "profileId": "apt28",
+    "vertical": "government",
+    "dwellHoursMin": 72,
+    "dwellHoursMax": 720,
+    "infra": ["redirector_vps", "domain_front_cdn", "dead_drop_dns_txt"],
+    "timing": { "beaconJitterSec": [300, 900], "activeHoursUtc": [6, 18] },
+    "fallbackChain": ["web_exploit", "identity_attack", "cloud_enum"]
+  },
+  {
+    "profileId": "scattered_spider",
+    "vertical": "identity",
+    "dwellHoursMin": 24,
+    "dwellHoursMax": 168,
+    "infra": ["aitm_proxy", "evilginx_lab", "voip_vishing"],
+    "timing": { "beaconJitterSec": [60, 300], "activeHoursUtc": [14, 22] },
+    "fallbackChain": ["identity_chain", "mfa_fatigue", "vishing_playbook", "lateral_move"]
+  },
+  {
+    "profileId": "unc4899",
+    "vertical": "devops",
+    "dwellHoursMin": 48,
+    "dwellHoursMax": 336,
+    "infra": ["npm_typosquat", "cicd_token", "cloud_lotc"],
+    "timing": { "beaconJitterSec": [120, 600], "activeHoursUtc": [0, 24] },
+    "fallbackChain": ["supply_chain_exec", "container_audit", "cred_spray"]
+  },
+  {
+    "profileId": "medusa",
+    "vertical": "ransomware",
+    "dwellHoursMin": 12,
+    "dwellHoursMax": 72,
+    "infra": ["tor_payment", "exfil_staging", "backup_discovery"],
+    "timing": { "beaconJitterSec": [30, 120], "activeHoursUtc": [22, 6] },
+    "fallbackChain": ["ransomware_assess", "esxi_audit", "lateral_move"]
+  },
+  {
+    "profileId": "salt_typhoon",
+    "vertical": "telecom",
+    "dwellHoursMin": 168,
+    "dwellHoursMax": 2160,
+    "infra": ["edge_implant", "telecom_audit", "covert_c2"],
+    "timing": { "beaconJitterSec": [600, 3600], "activeHoursUtc": [0, 24] },
+    "fallbackChain": ["edge_audit", "telecom_audit", "ot_scan"]
+  }
+]

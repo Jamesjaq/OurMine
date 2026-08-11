@@ -33,7 +33,7 @@ const DEFAULT_POLICY: ExecPolicy = {
     // Exploitation / post-ex
     "msfvenom", "msfconsole", "openssl", "ssh", "nc", "netcat", "ncat", "socat", "ftp",
     // Local enumeration (LotL)
-    "find", "grep", "id", "whoami", "hostname", "uname", "ip", "ifconfig", "arp", "ps", "cat", "ls",
+    "find", "grep", "id", "whoami", "hostname", "uname", "ip", "ifconfig", "arp", "ps", "cat", "ls", "head", "test",
     "sudo", "getcap", "strings", "file",
     // Package / wallet / crypto
     "apt-get", "apt", "dpkg", "monero-wallet-cli", "monerod", "bitcoin-cli", "electrum", "tor",
@@ -43,7 +43,7 @@ const DEFAULT_POLICY: ExecPolicy = {
   blockedSubcommands: new Set([
     "rm -rf /", "mkfs", "dd", ":(){ :|:& };:", "-c import", "-e eval"
   ]),
-  maxExecutionTimeMs: 300000,
+  maxExecutionTimeMs: 30_000,
 }
 
 export class ToolBroker {
@@ -58,6 +58,37 @@ export class ToolBroker {
   }
 
   /**
+   * Parse command string respecting single/double quoted segments.
+   */
+  private parseCommandParts(trimmed: string): string[] {
+    const parts: string[] = []
+    let current = ""
+    let quote: "'" | "\"" | null = null
+    for (let i = 0; i < trimmed.length; i++) {
+      const c = trimmed[i]!
+      if (quote) {
+        if (c === quote) quote = null
+        else current += c
+        continue
+      }
+      if (c === "'" || c === "\"") {
+        quote = c
+        continue
+      }
+      if (/\s/.test(c)) {
+        if (current) {
+          parts.push(current)
+          current = ""
+        }
+        continue
+      }
+      current += c
+    }
+    if (current) parts.push(current)
+    return parts
+  }
+
+  /**
    * Sanitizes and validates a proposed command string.
    */
   public validateCommand(commandStr: string): { valid: boolean; binary: string; args: string[]; reason?: string } {
@@ -66,7 +97,7 @@ export class ToolBroker {
       return { valid: false, binary: "", args: [], reason: "Empty command string" }
     }
 
-    // Check against blocked dangerous patterns and shell metacharacters
+    // Check against blocked dangerous patterns and shell metacharacters (outside quotes)
     const metacharRegex = /[;&|`$]/
     if (metacharRegex.test(trimmed)) {
       return { valid: false, binary: "", args: [], reason: "Forbidden shell metacharacters detected (; & | ` $)" }
@@ -78,9 +109,8 @@ export class ToolBroker {
       }
     }
 
-    // Simple shell parsing to extract base binary name
-    const parts = trimmed.split(/\s+/)
-    const rawBinary = parts[0]
+    const parts = this.parseCommandParts(trimmed)
+    const rawBinary = parts[0] ?? ""
     const binaryName = path.basename(rawBinary)
 
     if (!this.policy.allowedBinaries.has(binaryName)) {

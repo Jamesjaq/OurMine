@@ -34,7 +34,8 @@ const C = {
 
 const SECURITY_COMMANDS = new Set([
   "recon", "audit", "pentest", "yara", "c2", "modules",
-  "security", "sec", "serve", "agent", "toolcheck", "watch", "retest", "topcut",
+  "security", "sec", "serve", "agent", "toolcheck", "watch", "retest", "topcut", "depth",
+  "tier1", "tier1bench",
 ])
 
 // ─── Security-only help addendum ──────────────────────────────────────────────
@@ -54,7 +55,9 @@ ${C.bold}${C.orange}OurMine Security Commands (ARES Suite):${C.reset}
   ourmine watch <target> --daemon    Run scheduled watch daemon (interval from [min] or 60)
   ourmine retest <target> <id> Retest a finding for remediation status
   ourmine topcut                 Score readiness vs enterprise BAS platforms
-  ourmine modules              List all 77+ ARES security modules
+  ourmine depth                  Operational depth score (tier-1 capability)
+  ourmine tier1 [target]         Run tier-1 orchestrator + depth metrics (set OURMINE_TIER1=1)
+  ourmine tier1bench             Lab benchmark for tier-1 capabilities
   ourmine security list        Same as 'modules'
 
 ${C.bold}Security Flags:${C.reset}
@@ -312,6 +315,31 @@ async function cmdTopCut() {
   if (!report.meetsTopCut) process.exitCode = 1
 }
 
+async function cmdDepth() {
+  const { assessOperationalDepth, formatDepthReport } = await import("../packages/security/src/operational_depth_score.ts")
+  const report = await assessOperationalDepth()
+  console.log(formatDepthReport(report))
+  console.log()
+}
+
+async function cmdTier1(target: string, isLive: boolean) {
+  process.env.OURMINE_TIER1 = "1"
+  const { enableTier1Mode } = await import("../packages/security/src/tier1_config.ts")
+  enableTier1Mode()
+  const { AttackSurfaceGraph } = await import("../packages/security/src/attack_surface.ts")
+  const { runTier1Orchestrator } = await import("../packages/security/src/tier1_orchestrator.ts")
+  const { assessOperationalDepth, formatDepthReport } = await import("../packages/security/src/operational_depth_score.ts")
+  const graph = new AttackSurfaceGraph(target)
+  console.log(`\n${C.bold}${C.orange}Tier-1 APT Orchestrator${C.reset}`)
+  console.log(`${C.grey}Target: ${target} | Mode: ${isLive ? "LIVE" : "DRY-RUN"} | OURMINE_TIER1=1${C.reset}\n`)
+  const result = await runTier1Orchestrator({ target, graph, live: isLive })
+  console.log(result.summary)
+  console.log()
+  const depth = await assessOperationalDepth()
+  console.log(formatDepthReport(depth))
+  console.log()
+}
+
 async function cmdRetest(target: string, findingId: string, isLive: boolean) {
   const { retestFinding } = await import("../packages/security/src/engagement_watch.ts")
   console.log(`\n${C.bold}${C.orange}Finding Retest${C.reset}`)
@@ -419,6 +447,15 @@ async function main() {
       }
       case "topcut":
         await cmdTopCut()
+        break
+      case "depth":
+        await cmdDepth()
+        break
+      case "tier1":
+        await cmdTier1(target, isLive)
+        break
+      case "tier1bench":
+        await import("../lab/tier1_benchmark.ts").then((m) => m.runTier1Benchmark())
         break
       case "retest": {
         const findingId = rest[1]

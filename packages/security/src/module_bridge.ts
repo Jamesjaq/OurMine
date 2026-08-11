@@ -3,6 +3,7 @@
  * Wires unwired security modules into the agent tool dispatch surface.
  */
 import * as crypto from "node:crypto"
+import * as path from "node:path"
 import type { AgentToolContext, ToolRunResult } from "./agent_tools.ts"
 import { hostFromTarget } from "./agent_tools.ts"
 
@@ -351,6 +352,235 @@ export const MODULE_BRIDGE: Record<
     const opts = { live: ctx.live, forceLive: Boolean(params.forceLive) }
     const r = params.all ? wipeAllWallets(opts) : wipeWallet(String(params.wallet_id ?? ""), opts)
     return result("raas_wallet_wipe", params.all ? "wipeAllWallets" : "wipeWallet", ctx, r, Boolean((r as { wiped?: boolean }).wiped ?? (r as { count?: number }).count))
+  },
+  http_state_fuzz: async (ctx, params) => {
+    const { runStateMachineFlow, defaultAuthBypassFlow, defaultSessionFlow } = await import("./http_state_fuzzer.ts")
+    const url = String(params.target_url ?? params.url ?? `http://${hostFromTarget(ctx.target)}:8080`)
+    const flowName = String(params.flow ?? "session")
+    const flow = flowName === "auth-bypass" ? defaultAuthBypassFlow(url) : defaultSessionFlow(url)
+    const r = await runStateMachineFlow(flow, { live: ctx.live })
+    return result("http_state_fuzz", "runStateMachineFlow", ctx, r, r.steps.some((s) => s.passed))
+  },
+  autonomous_pivot: async (ctx, params) => {
+    const { runAutonomousPivot } = await import("./autonomous_pivot.ts")
+    const { CredentialGraph } = await import("./credential_graph.ts")
+    const credGraph = CredentialGraph.load()
+    if (process.env.OURMINE_LAB_AUTONOMOUS === "1") process.env.OURMINE_AUTONOMOUS_PIVOT = "1"
+    const r = await runAutonomousPivot({
+      graph: ctx.graph,
+      credGraph,
+      live: ctx.live,
+      extraHosts: (params.extra_hosts as string[]) ?? [],
+      objective: (params.objective as import("./autonomous_pivot.ts").PivotObjective) ?? "recon_only",
+    })
+    credGraph.save()
+    return result("autonomous_pivot", "runAutonomousPivot", ctx, r, r.hostsGained.length > 0 || !ctx.live)
+  },
+  apt_playbook: async (ctx, params) => {
+    const { loadPlaybook, nextPlaybookNode, markNodeDone } = await import("./apt_playbook.ts")
+    const profileId = String(params.profile_id ?? "scattered_spider")
+    const playbook = loadPlaybook(profileId)
+    if (!playbook) return result("apt_playbook", "loadPlaybook", ctx, { error: "unknown profile" }, false)
+    const { CredentialGraph } = await import("./credential_graph.ts")
+    const credGraph = CredentialGraph.load()
+    const node = nextPlaybookNode(playbook, {
+      currentPhase: String(params.phase ?? "recon") as import("./pentestgpt_agent.ts").Phase,
+      graph: ctx.graph,
+      credCount: credGraph.listCredentials().length,
+      availableTools: new Set(["recon", "nmap_scan", "web_exploit", "lateral_move"]),
+    })
+    if (node && params.execute === true) {
+      const toolResult = await import("./agent_tools.ts").then((m) => m.executeAgentTool(ctx, node.tool, node.params ?? {}))
+      markNodeDone(playbook, node.id, toolResult.success, toolResult.output.slice(0, 200))
+    }
+    return result("apt_playbook", "nextPlaybookNode", ctx, { profileId, next: node, playbook })
+  },
+  c2_autonomous: async (ctx, params) => {
+    const { LegitC2Server } = await import("./c2_platform.ts")
+    const { runAutonomousC2Pump } = await import("./c2_autonomous.ts")
+    const server = new LegitC2Server({ checkpointPath: String(params.checkpoint ?? ".ourmine/c2/checkpoint.jsonl") })
+    const scopeHosts = [hostFromTarget(ctx.target), ...Object.keys((ctx.graph.toJSON() as { assets?: Record<string, unknown> }).assets ?? {})]
+    const r = await runAutonomousC2Pump({ server, graph: ctx.graph, scopeHosts, maxTasksPerPump: Number(params.max_tasks ?? 5) })
+    return result("c2_autonomous", "runAutonomousC2Pump", ctx, r)
+  },
+  exploit_adapter: async (ctx, params) => {
+    const { recommendAndRun, listExploitModules } = await import("./exploit_adapter.ts")
+    if (params.list === true) {
+      return result("exploit_adapter", "listExploitModules", ctx, listExploitModules({ service: params.service as string, cve: params.cve as string }))
+    }
+    const target = String(params.target ?? ctx.target)
+    const r = await recommendAndRun(target, { service: params.service as string, cve: params.cve as string }, { live: ctx.live })
+    return result("exploit_adapter", "recommendAndRun", ctx, r ?? { note: "no module matched" })
+  },
+  identity_chain: async (ctx, params) => {
+    const { runIdentityChain } = await import("./identity_chain.ts")
+    const target = String(params.target ?? ctx.target)
+    const r = await runIdentityChain(target, { live: ctx.live })
+    return result("identity_chain", "runIdentityChain", ctx, r, r.steps.some((s) => s.success))
+  },
+  runtime_capability: async (ctx) => {
+    const { assessRuntimeCapabilities, resolveScanCommand } = await import("./runtime_capability.ts")
+    const host = hostFromTarget(ctx.target)
+    const scan = resolveScanCommand(host, 8080)
+    const report = await assessRuntimeCapabilities()
+    return result("runtime_capability", "assessRuntimeCapabilities", ctx, { ...report, recommendedScan: scan })
+  },
+  c2_rotation: async (ctx, params) => {
+    const { selectC2Channel } = await import("./c2_rotation.ts")
+    const { InMemoryTransport } = await import("./c2_platform.ts")
+    const channels = [
+      { name: "in-memory", transport: new InMemoryTransport(), priority: 10, edrRisk: "low" as const },
+      { name: "http-webhook", transport: new InMemoryTransport(), priority: 5, edrRisk: "medium" as const },
+    ]
+    const r = await selectC2Channel(channels, { live: ctx.live, previousChannel: params.previous as string | undefined })
+    return result("c2_rotation", "selectC2Channel", ctx, r)
+  },
+  supply_chain_exec: async (ctx, params) => {
+    const { executeSupplyChainChain } = await import("./supply_chain_exec.ts")
+    const r = await executeSupplyChainChain({
+      package: String(params.package ?? "lodash"),
+      ecosystem: String(params.registry ?? "npm"),
+      projectDir: String(params.project_dir ?? process.cwd()),
+      live: ctx.live,
+    })
+    return result("supply_chain_exec", "executeSupplyChainChain", ctx, r, r.compromiseIndicators.length > 0 || !ctx.live)
+  },
+  engagement_memory: async (ctx, params) => {
+    const { EngagementMemory } = await import("./engagement_memory.ts")
+    const mem = EngagementMemory.loadForTarget(ctx.target)
+    if (params.phase) mem.setPhase(String(params.phase))
+    if (params.record_host) mem.recordHost(String(params.record_host))
+    if (params.record_failure) {
+      mem.recordFailedAttempt(String(params.tool ?? "unknown"), ctx.target, String(params.reason ?? ""))
+    }
+    const throttle = mem.shouldThrottleTool(String(params.check_tool ?? "cred_spray"))
+    return result("engagement_memory", "EngagementMemory.snapshot", ctx, { snapshot: mem.snapshot(), throttle })
+  },
+  tier1_validation: async (ctx, params) => {
+    const { runTier1ValidationSuite } = await import("./tier1_validation.ts")
+    const url = String(params.target_url ?? params.url ?? `http://${hostFromTarget(ctx.target)}:8080`)
+    const r = await runTier1ValidationSuite(url, { live: ctx.live })
+    return result("tier1_validation", "runTier1ValidationSuite", ctx, r, r.idor.proven || r.fuzz.l3BypassProven || !ctx.live)
+  },
+  campaign_loop: async (ctx, params) => {
+    const { runCampaignLoop } = await import("./campaign_loop.ts")
+    const { CredentialGraph } = await import("./credential_graph.ts")
+    const { EngagementMemory } = await import("./engagement_memory.ts")
+    const credGraph = CredentialGraph.load()
+    const mem = EngagementMemory.loadForTarget(ctx.target)
+    if (process.env.OURMINE_TIER1 === "1") process.env.OURMINE_AUTONOMOUS_PIVOT = "1"
+    const r = await runCampaignLoop({
+      graph: ctx.graph,
+      credGraph,
+      target: hostFromTarget(ctx.target),
+      live: ctx.live,
+      engagementMem: mem,
+      objective: params.objective ? { type: String(params.objective) as import("./autonomous_pivot.ts").PivotObjective, maxHosts: 10, maxSteps: 15 } : undefined,
+    })
+    return result("campaign_loop", "runCampaignLoop", ctx, r, r.objectiveMet || r.phases.some((p) => p.success))
+  },
+  identity_playbooks: async (ctx, params) => {
+    const { runFullIdentityPlaybook, runAiAgentAbuseChain } = await import("./identity_playbooks.ts")
+    const target = String(params.target ?? ctx.target)
+    if (params.playbook === "ai_agent") {
+      const r = await runAiAgentAbuseChain(target, { live: ctx.live })
+      return result("identity_playbooks", "runAiAgentAbuseChain", ctx, r, r.findings.length > 0 || !ctx.live)
+    }
+    const r = await runFullIdentityPlaybook(target, { live: ctx.live })
+    return result("identity_playbooks", "runFullIdentityPlaybook", ctx, r, r.chain.steps.some((s) => s.success) || !ctx.live)
+  },
+  exploit_synthesis: async (ctx, params) => {
+    const { synthesizeFromIndicator, adaptiveModuleRank } = await import("./exploit_synthesis.ts")
+    if (params.rank === true) {
+      return result("exploit_synthesis", "adaptiveModuleRank", ctx, adaptiveModuleRank())
+    }
+    const indicator = String(params.indicator ?? params.error_body ?? "java.lang.NullPointerException")
+    const r = await synthesizeFromIndicator(String(params.target ?? ctx.target), indicator, { live: ctx.live })
+    return result("exploit_synthesis", "synthesizeFromIndicator", ctx, r, r.errorHints.length > 0)
+  },
+  c2_dwell_ops: async (ctx, params) => {
+    const { runC2DwellOps } = await import("./c2_dwell_ops.ts")
+    const scopeHosts = [hostFromTarget(ctx.target), ...Object.keys((ctx.graph.toJSON() as { assets?: Record<string, unknown> }).assets ?? {})]
+    const r = await runC2DwellOps({ graph: ctx.graph, scopeHosts, live: ctx.live, dwellHours: Number(params.dwell_hours ?? 168) })
+    return result("c2_dwell_ops", "runC2DwellOps", ctx, r, !!r.c2Pump || !ctx.live)
+  },
+  collection_engine: async (ctx, params) => {
+    const { stageCollection } = await import("./collection_engine.ts")
+    const dir = String(params.scan_dir ?? params.target_dir ?? process.cwd())
+    const r = await stageCollection(dir, { live: ctx.live, maxFiles: Number(params.max_files ?? 100) })
+    return result("collection_engine", "stageCollection", ctx, r, r.artifacts.length > 0 || !ctx.live)
+  },
+  cred_access_auto: async (ctx, params) => {
+    const { runAutonomousCredAccess } = await import("./cred_access_auto.ts")
+    const { CredentialGraph } = await import("./credential_graph.ts")
+    const credGraph = CredentialGraph.load()
+    if (process.env.OURMINE_TIER1 === "1") process.env.OURMINE_AUTONOMOUS_PIVOT = "1"
+    const r = await runAutonomousCredAccess({
+      target: hostFromTarget(ctx.target),
+      domain: params.domain as string | undefined,
+      live: ctx.live,
+      credGraph,
+      methods: params.methods as string[] | undefined,
+    })
+    return result("cred_access_auto", "runAutonomousCredAccess", ctx, r, r.some((x) => x.success) || !ctx.live)
+  },
+  dry_run_simulator: async (ctx, params) => {
+    const { simulateEngagement } = await import("./dry_run_simulator.ts")
+    const r = await simulateEngagement(ctx.target, { profileId: params.profile_id as string | undefined, graph: ctx.graph })
+    return result("dry_run_simulator", "simulateEngagement", ctx, r)
+  },
+  tier1_orchestrator: async (ctx, params) => {
+    const { runTier1Orchestrator } = await import("./tier1_orchestrator.ts")
+    const { CredentialGraph } = await import("./credential_graph.ts")
+    if (!ctx.live && process.env.OURMINE_TIER1 !== "1") {
+      return result("tier1_orchestrator", "runTier1Orchestrator", ctx, { error: "live execution required" }, false)
+    }
+    process.env.OURMINE_TIER1 = "1"
+    const r = await runTier1Orchestrator({
+      target: ctx.target,
+      graph: ctx.graph,
+      credGraph: CredentialGraph.load(),
+      live: true,
+      profileId: params.profile_id as string | undefined,
+    })
+    return result("tier1_orchestrator", "runTier1Orchestrator", ctx, r, r.live)
+  },
+  tier1_depth: async (ctx) => {
+    const { collectTier1Metrics, formatTier1Metrics } = await import("./tier1_depth_metrics.ts")
+    const m = await collectTier1Metrics()
+    return result("tier1_depth", "collectTier1Metrics", ctx, { metrics: m, formatted: formatTier1Metrics(m) })
+  },
+  segment_tunnel: async (ctx) => {
+    const { orchestrateSegmentTunnels } = await import("./segment_tunnel_orchestrator.ts")
+    const r = await orchestrateSegmentTunnels(ctx.graph, { live: ctx.live })
+    return result("segment_tunnel", "orchestrateSegmentTunnels", ctx, r, r.tunnels.some((t) => t.live))
+  },
+  edr_feedback_loop: async (ctx) => {
+    const { runEdrFeedbackLoop } = await import("./edr_feedback_loop.ts")
+    const r = await runEdrFeedbackLoop({ live: ctx.live })
+    return result("edr_feedback_loop", "runEdrFeedbackLoop", ctx, r, r.iterations.length > 0)
+  },
+  privesc_chains: async (ctx, params) => {
+    const { runPrivescChains } = await import("./privesc_chains.ts")
+    const r = await runPrivescChains({ live: ctx.live, domain: params.domain as string | undefined, dc: params.dc as string | undefined })
+    return result("privesc_chains", "runPrivescChains", ctx, r, r.proven || r.steps.length > 0)
+  },
+  multi_cloud_asm: async (ctx, params) => {
+    const { fuseMultiCloudAsm } = await import("./multi_cloud_asm.ts")
+    const r = await fuseMultiCloudAsm(ctx.graph, { live: ctx.live, target: String(params.target ?? ctx.target) })
+    return result("multi_cloud_asm", "fuseMultiCloudAsm", ctx, r, r.fusedCount >= 0)
+  },
+  c2_dwell_scheduler: async (ctx, params) => {
+    const { runDwellSchedule } = await import("./c2_dwell_scheduler.ts")
+    const scopeHosts = [hostFromTarget(ctx.target), ...Object.keys((ctx.graph.toJSON() as { assets?: Record<string, unknown> }).assets ?? {})]
+    const r = await runDwellSchedule({ graph: ctx.graph, scopeHosts, live: ctx.live, dwellHours: Number(params.dwell_hours ?? 168), maxTicks: Number(params.max_ticks ?? 3) })
+    return result("c2_dwell_scheduler", "runDwellSchedule", ctx, r, r.ticks.length > 0 || !ctx.live)
+  },
+  esxi_lab_encrypt: async (ctx, params) => {
+    const { runLabEsxiEncryptWithRecovery } = await import("./raas_advanced.ts")
+    const dir = String(params.target_dir ?? path.join(process.cwd(), ".ourmine/lab/esxi"))
+    const r = runLabEsxiEncryptWithRecovery(dir, String(params.key_id ?? `lab_${Date.now()}`))
+    return result("esxi_lab_encrypt", "runLabEsxiEncryptWithRecovery", ctx, r, r.recovered)
   },
 }
 

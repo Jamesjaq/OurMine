@@ -146,18 +146,31 @@ export class DnsTxtDrop implements DropTransport {
   }
 
   async fetchRaw(): Promise<string> {
-    // Node has no built-in TXT resolver; attempt a plain A lookup as a
-    // reachability probe and clearly flag the missing TXT capability.
-    try {
-      const { lookup } = await import("node:dns/promises");
-      await lookup(this.domain);
-    } catch (exc) {
-      throw new Error(`TXT lookup failed: ${exc instanceof Error ? exc.message : String(exc)}`);
+    const { execFileSync } = await import("node:child_process")
+    const { isToolAvailable } = await import("./tool_detection.ts")
+    if (isToolAvailable("dig")) {
+      try {
+        const out = execFileSync("dig", ["+short", "TXT", this.domain], {
+          encoding: "utf8",
+          timeout: 8000,
+        }).trim()
+        if (out) {
+          const txt = out.replace(/^"|"$/g, "").replace(/"\s+"/g, "")
+          if (txt.length > 0) return txt
+        }
+      } catch (exc) {
+        throw new Error(`TXT lookup via dig failed: ${exc instanceof Error ? exc.message : String(exc)}`)
+      }
     }
-    throw new Error(
-      "no TXT resolver in Node stdlib; cannot read TXT records (A lookup ok). " +
-        "Provide a custom DropTransport for live DNS TXT drops",
-    );
+    try {
+      const { resolveTxt } = await import("node:dns/promises")
+      const records = await resolveTxt(this.domain)
+      const flat = records.flat().join("")
+      if (flat.length > 0) return flat
+    } catch (exc) {
+      throw new Error(`TXT lookup failed: ${exc instanceof Error ? exc.message : String(exc)}`)
+    }
+    throw new Error(`no TXT records for ${this.domain}`)
   }
 }
 

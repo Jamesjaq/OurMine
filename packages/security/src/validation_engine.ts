@@ -163,6 +163,16 @@ export class ValidationEngine {
         return this.hostInspect(plan, t0)
       case "DNS_PROBE":
         return this.shellProbe(plan, t0)
+      case "HTTP_STATE_FUZZ":
+      case "L3_BYPASS":
+      case "L4_CONTROLLED_IMPACT":
+        return this.stateFuzzProbe(plan, ip, port, t0)
+      case "IDOR_BOLA":
+        return this.idorBolaProbe(plan, ip, port, t0)
+      case "PRIVESC_PROOF":
+        return this.privescProbe(plan, t0)
+      case "EXPLOIT_REPLAY":
+        return this.exploitReplayProbe(plan, ip, port, t0)
       default:
         return {
           planId:      plan.planId,
@@ -274,6 +284,100 @@ export class ValidationEngine {
   }
 
   // ── Host inspect: read-only local filesystem ──────────────────────────────
+
+  private static async stateFuzzProbe(
+    plan: ValidationPlan,
+    ip: string,
+    port: number,
+    t0: number,
+  ): Promise<ValidationResult> {
+    const { runStateMachineFlow, defaultAuthBypassFlow, defaultSessionFlow, defaultL4CanaryFlow } =
+      await import("./http_state_fuzzer.ts")
+    const { ImpactDemonstrationEngine } = await import("./impact_engine.ts")
+    const protocol = port === 443 || port === 8443 ? "https" : "http"
+    const baseUrl = `${protocol}://${ip}:${port}`
+    const flow = plan.stateFuzzFlowId === "l4-canary-chain"
+      ? defaultL4CanaryFlow(baseUrl)
+      : plan.stateFuzzFlowId === "auth-bypass-chain"
+        ? defaultAuthBypassFlow(baseUrl)
+        : defaultSessionFlow(baseUrl)
+
+    if (plan.strategy === "L3_BYPASS") {
+      flow.l3Proof = { stepName: "admin_probe", indicator: "admin", maxImpact: plan.l3SafetyEnvelope ?? "read_only" }
+    }
+
+    try {
+      const result = await runStateMachineFlow(flow, { broker, live: true })
+      const l4 = result.l4ImpactProven || result.validationLevel === "L4"
+      const l3 = result.l3BypassProven || result.validationLevel === "L3"
+      const success = l4 || l3 || (result.steps.length > 0 && result.steps.some((s) => s.passed))
+
+      let impactProof = null
+      if (l4 && result.l4Evidence) {
+        impactProof = ImpactDemonstrationEngine.demonstrateImpact(
+          { id: plan.findingId, title: plan.capabilityId } as import("./attack_surface.ts").VulnNode,
+          baseUrl,
+          result.l4Evidence,
+        )
+      }
+
+      const evidence = JSON.stringify({
+        flowId: result.flowId,
+        validationLevel: result.validationLevel,
+        l3BypassProven: result.l3BypassProven,
+        l4ImpactProven: result.l4ImpactProven,
+        impactProof,
+        fuzzHits: result.fuzzHits.length,
+        steps: result.steps.map((s) => ({ step: s.step, status: s.status, passed: s.passed })),
+      }).slice(0, 4000)
+
+      const levelTag = l4 ? " [L4]" : l3 ? " [L3]" : " [L2]"
+      return buildResult(plan, t0,
+        success ? "VALIDATION_SUCCESS" : "VALIDATION_NEGATIVE",
+        evidence,
+        result.summary + levelTag,
+      )
+    } catch (err: unknown) {
+      return buildResult(plan, t0, "VALIDATION_FAILED", String((err as Error).message),
+        `State fuzz error: ${(err as Error).message}`)
+    }
+  }
+
+  private static async idorBolaProbe(plan: ValidationPlan, ip: string, port: number, t0: number): Promise<ValidationResult> {
+    const { proveIdorBola } = await import("./tier1_validation.ts")
+    const baseUrl = `${port === 443 ? "https" : "http"}://${ip}:${port}`
+    try {
+      const r = await proveIdorBola(baseUrl, { live: true })
+      return buildResult(plan, t0, r.proven ? "VALIDATION_SUCCESS" : "VALIDATION_NEGATIVE",
+        r.evidence, `IDOR/BOLA ${r.validationLevel}: crossAccess=${r.crossAccess}`)
+    } catch (err: unknown) {
+      return buildResult(plan, t0, "VALIDATION_FAILED", String((err as Error).message), "IDOR/BOLA probe failed")
+    }
+  }
+
+  private static async privescProbe(plan: ValidationPlan, t0: number): Promise<ValidationResult> {
+    const { proveControlledPrivesc } = await import("./tier1_validation.ts")
+    try {
+      const r = await proveControlledPrivesc("local", { live: true })
+      return buildResult(plan, t0, r.proven ? "VALIDATION_SUCCESS" : "VALIDATION_NEGATIVE",
+        r.evidence, `Privesc proof ${r.validationLevel}`)
+    } catch (err: unknown) {
+      return buildResult(plan, t0, "VALIDATION_FAILED", String((err as Error).message), "Privesc probe failed")
+    }
+  }
+
+  private static async exploitReplayProbe(plan: ValidationPlan, ip: string, port: number, t0: number): Promise<ValidationResult> {
+    const { replayExploitWithRollback } = await import("./tier1_validation.ts")
+    const baseUrl = `${port === 443 ? "https" : "http"}://${ip}:${port}`
+    try {
+      const r = await replayExploitWithRollback(baseUrl, "/api/v1/users", { live: true })
+      const ok = r.steps.some((s) => s.name === "exploit_probe" && s.success)
+      return buildResult(plan, t0, ok ? "VALIDATION_SUCCESS" : "VALIDATION_NEGATIVE",
+        JSON.stringify(r), `Exploit replay ${r.validationLevel} rolledBack=${r.rolledBack}`)
+    } catch (err: unknown) {
+      return buildResult(plan, t0, "VALIDATION_FAILED", String((err as Error).message), "Exploit replay failed")
+    }
+  }
 
   private static hostInspect(plan: ValidationPlan, t0: number): ValidationResult {
     try {

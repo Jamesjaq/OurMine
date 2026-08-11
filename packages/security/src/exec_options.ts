@@ -11,13 +11,16 @@ export function isKaliLinux(): boolean {
   }
 }
 
-/** True when real execution is required (Kali, OURMINE_LIVE, --live, or explicit live). */
+/** True when real execution is required (Kali, OURMINE_LIVE, --live, tier-1, or explicit live). */
 export function resolveLiveMode(opts: { live?: boolean; dryRun?: boolean } = {}): boolean {
   if (opts.dryRun === true) return false
   if (opts.live === false) return false
   if (opts.live === true) return true
+  if (process.env.OURMINE_ALLOW_DRY_RUN === "1") return false
   const env = process.env.OURMINE_LIVE
   if (env === "1" || env === "true") return true
+  if (process.env.OURMINE_TIER1 === "1" || process.env.OURMINE_TIER1 === "true") return true
+  if (process.env.OURMINE_LAB_AUTONOMOUS === "1") return true
   if (process.argv.includes("--live")) return true
   if (isKaliLinux()) return true
   return false

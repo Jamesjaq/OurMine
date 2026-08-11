@@ -68,6 +68,7 @@ export async function lateralSpread(opts: {
   topology: TopologyGraph;
   credentialStore: CredentialStore;
   approve?: (prompt: string) => boolean;
+  autonomousMode?: boolean;
   maxSteps?: number;
   targetFilter?: Record<string, string>;
   methods?: string[];
@@ -75,10 +76,11 @@ export async function lateralSpread(opts: {
   authFn?: AuthFn;
 }): Promise<Record<string, unknown>> {
   const {
-    topology, credentialStore, approve, maxSteps = 10,
+    topology, credentialStore, approve, autonomousMode, maxSteps = 10,
     targetFilter, live = false, authFn,
   } = opts;
   const tryAuth: AuthFn = authFn ?? tryAuthDefault;
+  const effectiveApprove = autonomousMode ? undefined : approve;
   const actions: Array<Record<string, unknown>> = [];
   const hostsGained = new Set<string>();
   let steps = 0;
@@ -101,7 +103,7 @@ export async function lateralSpread(opts: {
       if (!hostIp || hostsGained.has(hostIp)) continue;
       for (const cred of creds) {
         const { username, secret, cred_type: credType } = cred;
-        if (approve && !approve(`Lateral movement: use ${credType} credential '${username}' against ${hostIp}?`)) {
+        if (effectiveApprove && !effectiveApprove(`Lateral movement: use ${credType} credential '${username}' against ${hostIp}?`)) {
           actions.push({ cycle, action: "denied", host: hostIp, credential: username });
           continue;
         }

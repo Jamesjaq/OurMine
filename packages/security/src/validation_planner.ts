@@ -18,6 +18,12 @@ export type ValidationStrategy =
   | "HOST_INSPECT"      // Read-only local filesystem/sysfs check
   | "NMAP_SCRIPT"       // Bounded nmap --script probe
   | "DNS_PROBE"         // DNS query → response check
+  | "HTTP_STATE_FUZZ"   // Session-aware multi-step HTTP state machine fuzz
+  | "L3_BYPASS"         // L3 control-bypass proof within safety envelope
+  | "L4_CONTROLLED_IMPACT" // L4 bounded canary/impact proof (non-destructive)
+  | "IDOR_BOLA"           // Multi-user IDOR/BOLA proof
+  | "PRIVESC_PROOF"       // Controlled privesc flag read
+  | "EXPLOIT_REPLAY"      // Exploit replay with rollback envelope
 
 export type ValidationRisk = "none" | "low" | "medium"
 
@@ -50,6 +56,8 @@ export interface ValidationPlan {
     expectedBodyContains?: string
     expectedBodyAbsent?: string
   }
+  stateFuzzFlowId?: string         // for HTTP_STATE_FUZZ / L3_BYPASS
+  l3SafetyEnvelope?: "read_only" | "metadata_only"
   tlsOptions?: {                   // for TLS_PROBE
     minTlsVersion?: string
     checkCert?: boolean
@@ -215,6 +223,75 @@ const CAPABILITY_REGISTRY: ValidationCapability[] = [
     supportedProtocols: ["http", "https"],
     timeoutMs:          5_000,
   },
+  // ── HTTP state machine fuzz (L2→L3) ───────────────────────────────────────
+  {
+    id:                 "http-state-fuzz",
+    name:               "HTTP API State Machine Fuzzer",
+    strategy:           "HTTP_STATE_FUZZ",
+    matchPatterns:      ["api", "session", "oauth", "jwt", "rest", "graphql", "business-logic"],
+    requiredTool:       "curl",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          15_000,
+  },
+  // ── L3 control bypass proof ───────────────────────────────────────────────
+  {
+    id:                 "l3-bypass-proof",
+    name:               "L3 Control Bypass Proof",
+    strategy:           "L3_BYPASS",
+    matchPatterns:      ["auth-bypass", "idor", "bola", "privilege-escalation", "access-control"],
+    requiredTool:       "curl",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          20_000,
+  },
+  // ── L4 controlled impact (canary read / bounded proof) ────────────────────
+  {
+    id:                 "l4-canary-impact",
+    name:               "L4 Controlled Impact Proof",
+    strategy:           "L4_CONTROLLED_IMPACT",
+    matchPatterns:      ["rce", "critical", "data-exposure", "sql-injection", "ssrf", "confirmed", "impact"],
+    requiredTool:       "curl",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          25_000,
+  },
+  {
+    id:                 "idor-bola-proof",
+    name:               "IDOR/BOLA Multi-User Proof",
+    strategy:           "IDOR_BOLA",
+    matchPatterns:      ["idor", "bola", "access-control", "object-level", "broken-access"],
+    requiredTool:       "curl",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          20_000,
+  },
+  {
+    id:                 "privesc-flag-proof",
+    name:               "Controlled Privesc Flag Proof",
+    strategy:           "PRIVESC_PROOF",
+    matchPatterns:      ["privesc", "privilege-escalation", "local-escalation", "sudo"],
+    requiredTool:       "local-fs",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["host"],
+    timeoutMs:          10_000,
+  },
+  {
+    id:                 "exploit-replay-envelope",
+    name:               "Exploit Replay Rollback Envelope",
+    strategy:           "EXPLOIT_REPLAY",
+    matchPatterns:      ["rce", "exploit", "injection", "deserialization"],
+    requiredTool:       "curl",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          20_000,
+  },
 ]
 
 // ─── ValidationPlanner ───────────────────────────────────────────────────────
@@ -229,12 +306,18 @@ export class ValidationPlanner {
     service: string,
     templateId: string,
   ): ValidationCapability | null {
-    const search = [service.toLowerCase(), templateId.toLowerCase()].join(" ")
-    return (
-      CAPABILITY_REGISTRY.find(cap =>
-        cap.matchPatterns.some(p => search.includes(p.toLowerCase()))
-      ) ?? null
+    const search = [service.toLowerCase(), templateId.toLowerCase(), findingId.toLowerCase()].join(" ")
+    const priority = ["L4_CONTROLLED_IMPACT", "L3_BYPASS", "IDOR_BOLA", "EXPLOIT_REPLAY", "PRIVESC_PROOF", "HTTP_STATE_FUZZ", "NMAP_SCRIPT", "HTTP_PROBE"]
+    const matches = CAPABILITY_REGISTRY.filter(cap =>
+      cap.matchPatterns.some(p => search.includes(p.toLowerCase())),
     )
+    if (!matches.length) return null
+    matches.sort((a, b) => {
+      const ai = priority.indexOf(a.strategy)
+      const bi = priority.indexOf(b.strategy)
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
+    })
+    return matches[0] ?? null
   }
 
   /**
@@ -316,6 +399,25 @@ export class ValidationPlanner {
       plan.command = undefined  // handled entirely by ValidationEngine local file reads
     } else if (cap.strategy === "DNS_PROBE") {
       plan.command = `dig AXFR @${ip} ${opts.authorizedScope} 2>&1`
+    } else if (cap.strategy === "HTTP_STATE_FUZZ" || cap.strategy === "L3_BYPASS") {
+      plan.stateFuzzFlowId = cap.strategy === "L3_BYPASS" ? "auth-bypass-chain" : "session-chain"
+      plan.l3SafetyEnvelope = "read_only"
+      plan.httpOptions = { method: "GET", path: "/" }
+    } else if (cap.strategy === "L4_CONTROLLED_IMPACT") {
+      plan.stateFuzzFlowId = "l4-canary-chain"
+      plan.l3SafetyEnvelope = "read_only"
+      plan.httpOptions = { method: "GET", path: "/api/v1/users" }
+    } else if (cap.strategy === "IDOR_BOLA") {
+      plan.stateFuzzFlowId = "idor-bola-multi-user"
+      plan.l3SafetyEnvelope = "read_only"
+      plan.httpOptions = { method: "GET", path: "/api/v1/users/1" }
+    } else if (cap.strategy === "PRIVESC_PROOF") {
+      plan.command = undefined
+      plan.l3SafetyEnvelope = "read_only"
+    } else if (cap.strategy === "EXPLOIT_REPLAY") {
+      plan.stateFuzzFlowId = "exploit-replay"
+      plan.l3SafetyEnvelope = "read_only"
+      plan.httpOptions = { method: "POST", path: "/api/v1/users" }
     }
 
     return { plan, capability: cap }

