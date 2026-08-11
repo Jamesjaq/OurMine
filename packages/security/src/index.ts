@@ -101,3 +101,6 @@ export * as capability_policy from "./capability_policy.ts";
 export * as policy_daemon from "./policy_daemon.ts";
 export * as sandbox_runner from "./sandbox_runner.ts";
 export * as attack_surface from "./attack_surface.ts";
+export * as finding_lifecycle from "./finding_lifecycle.ts";
+export * as validation_planner from "./validation_planner.ts";
+export * as validation_engine from "./validation_engine.ts";

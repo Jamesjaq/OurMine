@@ -115,14 +115,44 @@ export function parseNessusCsv(csvContent: string): ParsedVulnerability[] {
   return results
 }
 
-export function parse(format: "nmap" | "masscan" | "nuclei" | "nessus", content: string): any {
+export interface ParsedEndpoint {
+  path:    string
+  status:  number
+  size?:   number
+  method:  string
+}
+
+/**
+ * Parses Gobuster dir output into structured endpoint list.
+ * Handles both standard and `--no-progress` formats:
+ *   /admin (Status: 200) [Size: 1234]
+ *   /.git/ (Status: 301) [Size: 0] [--> /.git//]
+ */
+export function parseGobusterOutput(output: string): ParsedEndpoint[] {
+  const results: ParsedEndpoint[] = []
+  for (const line of output.split("\n")) {
+    const m = line.match(/^(\/[^\s]*)[\s\t]+\(Status:\s*(\d+)\)(?:\s+\[Size:\s*(\d+)\])?/)
+    if (!m) continue
+    results.push({
+      path:   m[1]!,
+      status: parseInt(m[2]!, 10),
+      size:   m[3] ? parseInt(m[3], 10) : undefined,
+      method: "GET",
+    })
+  }
+  return results
+}
+
+export function parse(format: "nmap" | "masscan" | "nuclei" | "nessus" | "gobuster", content: string): any {
   switch (format) {
-    case "masscan": return parseMasscanJson(content)
-    case "nuclei":  return parseNucleiJson(content)
-    case "nmap":    return parseNmapOutput(content)
-    case "nessus":  return parseNessusCsv(content)
-    default:        return []
+    case "masscan":  return parseMasscanJson(content)
+    case "nuclei":   return parseNucleiJson(content)
+    case "nmap":     return parseNmapOutput(content)
+    case "nessus":   return parseNessusCsv(content)
+    case "gobuster": return parseGobusterOutput(content)
+    default:         return []
   }
 }
 
-export default { parseMasscanJson, parseNucleiJson, parseNmapOutput, parseNessusCsv, parse }
+export default { parseMasscanJson, parseNucleiJson, parseNmapOutput, parseNessusCsv, parseGobusterOutput, parse }
+
