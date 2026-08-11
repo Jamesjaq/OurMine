@@ -476,8 +476,14 @@ const tools: McpTool[] = [
       },
       required: ["path"],
     },
-    async handler({ path, ruleset }) {
-      return security.yara.scanFile(String(path), String(ruleset ?? "all") as any)
+    async handler({ path: filePath }) {
+      try {
+        const text = await fs.promises.readFile(String(filePath), "utf8")
+        const matches = security.yara.scanText(text)
+        return { matches, count: matches.length, engine: "fallback" }
+      } catch (e: any) {
+        return { matches: [], count: 0, error: e?.message }
+      }
     },
   },
 

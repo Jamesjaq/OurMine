@@ -230,9 +230,15 @@ async function main() {
         break
       case "yara": {
         display.emit({ type: "tool_start", label: "yara.scan", detail: target })
-        const r = security.yara.scanFile(target)
-        display.emit({ type: "tool_done", label: "yara.scan", detail: `${r.matches?.length ?? 0} matches` })
-        r.matches?.forEach(m => display.emit({ type: "finding", label: m.ruleName ?? "match", severity: "high", detail: m.description }))
+        try {
+          const fs = await import("node:fs")
+          const text = fs.readFileSync(target, "utf8")
+          const matches = security.yara.scanText(text)
+          display.emit({ type: "tool_done", label: "yara.scan", detail: `${matches.length} matches` })
+          matches.forEach(m => display.emit({ type: "finding", label: m.rule ?? "match", severity: "high", detail: m.description }))
+        } catch (e: any) {
+          display.emit({ type: "tool_done", label: "yara.scan", detail: `Error: ${e?.message}` })
+        }
         break
       }
       case "c2": {
