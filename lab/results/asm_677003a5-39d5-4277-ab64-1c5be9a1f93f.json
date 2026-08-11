@@ -1,0 +1,382 @@
+{
+  "sessionId": "677003a5-39d5-4277-ab64-1c5be9a1f93f",
+  "target": "127.0.0.1",
+  "startedAt": "2026-08-11T05:28:56.155Z",
+  "assets": {
+    "127.0.0.1": {
+      "ip": "127.0.0.1",
+      "hostname": "127.0.0.1",
+      "services": {
+        "8080": {
+          "port": 8080,
+          "protocol": "tcp",
+          "state": "open",
+          "service": "http",
+          "version": "Apache httpd 2.4.29",
+          "evidence": [
+            {
+              "id": "37d878e9-2e7e-42f4-8c5d-79bd2b2916c9",
+              "tool": "nmap",
+              "command": "nmap -sV -p 8080 127.0.0.1",
+              "rawOutput": "/usr/bin/nmap: 8: exec: /usr/lib/nmap/nmap: Operation not permitted\n",
+              "parsedAt": "2026-08-11T05:28:56.170Z",
+              "executionMs": 1200
+            }
+          ],
+          "vulns": [
+            {
+              "id": "log4j-version-probe",
+              "title": "Apache Log4j Vulnerable Header",
+              "severity": "critical",
+              "confidence": "suspected",
+              "state": "UNVERIFIED",
+              "capLevel": 2,
+              "evidence": [
+                {
+                  "id": "e164efa8-a7d1-4398-83d2-29bf3a056e8b",
+                  "tool": "nuclei",
+                  "command": "nuclei -u http://127.0.0.1:8080/ -json",
+                  "rawOutput": "{\"template-id\":\"log4j-version-probe\",\"info\":{\"name\":\"Apache Log4j Vulnerable Header\",\"severity\":\"critical\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+                  "parsedAt": "2026-08-11T05:28:56.466Z",
+                  "executionMs": 1500
+                },
+                {
+                  "id": "314e2bc2-3509-442e-9818-592502b1b2d8",
+                  "tool": "http-200-probe",
+                  "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+                  "rawOutput": "[ToolBroker Policy Denial]: Forbidden shell metacharacters detected (; & | ` $)",
+                  "parsedAt": "2026-08-11T05:28:56.469Z",
+                  "executionMs": 1
+                }
+              ],
+              "stateMachine": {
+                "state": "UNVERIFIED",
+                "history": [
+                  {
+                    "from": "SUSPECTED",
+                    "to": "VALIDATION_PENDING",
+                    "reason": "plan=c612633f-e720-4bfd-a6e4-29474ab3ac6d cap=http-200-probe",
+                    "ts": "2026-08-11T05:28:56.468Z"
+                  },
+                  {
+                    "from": "VALIDATION_PENDING",
+                    "to": "VALIDATING",
+                    "reason": "executing HTTP_PROBE",
+                    "ts": "2026-08-11T05:28:56.468Z"
+                  },
+                  {
+                    "from": "VALIDATING",
+                    "to": "UNVERIFIED",
+                    "reason": "VALIDATION_FAILED: curl execution error: [ToolBroker Policy Denial]: Forbidden shell metacharacters detected (; & | ` $)",
+                    "ts": "2026-08-11T05:28:56.469Z"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "http-admin-path",
+              "title": "Exposed Nonexistent Admin",
+              "severity": "medium",
+              "confidence": "false_positive",
+              "state": "FALSE_POSITIVE",
+              "capLevel": 2,
+              "evidence": [
+                {
+                  "id": "bf2c65cd-22f7-4a21-999d-de39e35d772b",
+                  "tool": "nuclei",
+                  "command": "nuclei probe",
+                  "rawOutput": "{\"template-id\":\"http-admin-path\",\"info\":{\"name\":\"Exposed Nonexistent Admin\",\"severity\":\"medium\"},\"matched-at\":\"http://127.0.0.1:8080/nonexistent_admin_999\"}",
+                  "parsedAt": "2026-08-11T05:28:56.470Z",
+                  "executionMs": 1000
+                },
+                {
+                  "id": "a98504ca-79c8-4d65-bf88-71a5124cc9c0",
+                  "tool": "curl",
+                  "command": "curl -sv http://127.0.0.1:8080/nonexistent_admin_999",
+                  "rawOutput": "HTTP/1.1 404 Not Found",
+                  "parsedAt": "2026-08-11T05:28:56.470Z",
+                  "executionMs": 200
+                }
+              ],
+              "falsePositiveReason": "Path returned HTTP 404"
+            },
+            {
+              "id": "unknown-custom-proto-vuln",
+              "title": "Unknown Protocol Finding",
+              "severity": "low",
+              "confidence": "suspected",
+              "state": "UNVERIFIED",
+              "capLevel": 2,
+              "evidence": [
+                {
+                  "id": "5808ce5d-ba4a-4c84-90b2-83aef08b599f",
+                  "tool": "nuclei",
+                  "command": "nuclei probe",
+                  "rawOutput": "{\"template-id\":\"unknown-custom-proto-vuln\",\"info\":{\"name\":\"Unknown Protocol Finding\",\"severity\":\"low\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+                  "parsedAt": "2026-08-11T05:28:56.470Z",
+                  "executionMs": 1000
+                },
+                {
+                  "id": "bf00ffd1-0848-4e67-a673-d387fd02e51a",
+                  "tool": "http-200-probe",
+                  "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+                  "rawOutput": "[ToolBroker Policy Denial]: Forbidden shell metacharacters detected (; & | ` $)",
+                  "parsedAt": "2026-08-11T05:28:56.471Z",
+                  "executionMs": 0
+                }
+              ],
+              "stateMachine": {
+                "state": "UNVERIFIED",
+                "history": [
+                  {
+                    "from": "SUSPECTED",
+                    "to": "VALIDATION_PENDING",
+                    "reason": "plan=c54c6260-143d-4121-a687-e497b9fd6c5a cap=http-200-probe",
+                    "ts": "2026-08-11T05:28:56.471Z"
+                  },
+                  {
+                    "from": "VALIDATION_PENDING",
+                    "to": "VALIDATING",
+                    "reason": "executing HTTP_PROBE",
+                    "ts": "2026-08-11T05:28:56.471Z"
+                  },
+                  {
+                    "from": "VALIDATING",
+                    "to": "UNVERIFIED",
+                    "reason": "VALIDATION_FAILED: curl execution error: [ToolBroker Policy Denial]: Forbidden shell metacharacters detected (; & | ` $)",
+                    "ts": "2026-08-11T05:28:56.471Z"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "endpoints": [
+        {
+          "path": "/login",
+          "status": 200,
+          "size": 67,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T05:28:56.465Z",
+          "evidence": [
+            {
+              "id": "dd28c767-790e-4c40-ab8b-8679ea14c6e6",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\napi/v1               (Status: 200) [Size: 33]\nbackup.sql           (Status: 200) [Size: 68]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T05:28:56.464Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "auth"
+        },
+        {
+          "path": "/api/v1",
+          "status": 200,
+          "size": 33,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T05:28:56.465Z",
+          "evidence": [
+            {
+              "id": "dd28c767-790e-4c40-ab8b-8679ea14c6e6",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\napi/v1               (Status: 200) [Size: 33]\nbackup.sql           (Status: 200) [Size: 68]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T05:28:56.464Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "api"
+        },
+        {
+          "path": "/backup.sql",
+          "status": 200,
+          "size": 68,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T05:28:56.465Z",
+          "evidence": [
+            {
+              "id": "dd28c767-790e-4c40-ab8b-8679ea14c6e6",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\napi/v1               (Status: 200) [Size: 33]\nbackup.sql           (Status: 200) [Size: 68]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T05:28:56.464Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "backup"
+        },
+        {
+          "path": "/admin",
+          "status": 301,
+          "size": 22,
+          "method": "GET",
+          "source": "gobuster",
+          "timestamp": "2026-08-11T05:28:56.465Z",
+          "evidence": [
+            {
+              "id": "dd28c767-790e-4c40-ab8b-8679ea14c6e6",
+              "tool": "gobuster",
+              "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+              "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\napi/v1               (Status: 200) [Size: 33]\nbackup.sql           (Status: 200) [Size: 68]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\n===============================================================\nFinished\n===============================================================\n\n",
+              "parsedAt": "2026-08-11T05:28:56.464Z",
+              "executionMs": 2500
+            }
+          ],
+          "heuristic": "admin"
+        }
+      ],
+      "notes": [],
+      "evidence": [
+        {
+          "id": "37d878e9-2e7e-42f4-8c5d-79bd2b2916c9",
+          "tool": "nmap",
+          "command": "nmap -sV -p 8080 127.0.0.1",
+          "rawOutput": "/usr/bin/nmap: 8: exec: /usr/lib/nmap/nmap: Operation not permitted\n",
+          "parsedAt": "2026-08-11T05:28:56.170Z",
+          "executionMs": 1200
+        },
+        {
+          "id": "dd28c767-790e-4c40-ab8b-8679ea14c6e6",
+          "tool": "gobuster",
+          "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+          "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\napi/v1               (Status: 200) [Size: 33]\nbackup.sql           (Status: 200) [Size: 68]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\n===============================================================\nFinished\n===============================================================\n\n",
+          "parsedAt": "2026-08-11T05:28:56.464Z",
+          "executionMs": 2500
+        },
+        {
+          "id": "e164efa8-a7d1-4398-83d2-29bf3a056e8b",
+          "tool": "nuclei",
+          "command": "nuclei -u http://127.0.0.1:8080/ -json",
+          "rawOutput": "{\"template-id\":\"log4j-version-probe\",\"info\":{\"name\":\"Apache Log4j Vulnerable Header\",\"severity\":\"critical\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+          "parsedAt": "2026-08-11T05:28:56.466Z",
+          "executionMs": 1500
+        },
+        {
+          "id": "bf2c65cd-22f7-4a21-999d-de39e35d772b",
+          "tool": "nuclei",
+          "command": "nuclei probe",
+          "rawOutput": "{\"template-id\":\"http-admin-path\",\"info\":{\"name\":\"Exposed Nonexistent Admin\",\"severity\":\"medium\"},\"matched-at\":\"http://127.0.0.1:8080/nonexistent_admin_999\"}",
+          "parsedAt": "2026-08-11T05:28:56.470Z",
+          "executionMs": 1000
+        },
+        {
+          "id": "5808ce5d-ba4a-4c84-90b2-83aef08b599f",
+          "tool": "nuclei",
+          "command": "nuclei probe",
+          "rawOutput": "{\"template-id\":\"unknown-custom-proto-vuln\",\"info\":{\"name\":\"Unknown Protocol Finding\",\"severity\":\"low\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+          "parsedAt": "2026-08-11T05:28:56.470Z",
+          "executionMs": 1000
+        }
+      ]
+    }
+  },
+  "services": 1,
+  "openPorts": [
+    8080
+  ],
+  "endpoints": {
+    "total": 4,
+    "admin": 1,
+    "api": 1,
+    "auth": 1
+  },
+  "vulns": {
+    "total": 3,
+    "confirmed": 0,
+    "suspected": 0,
+    "validating": 0,
+    "falsePos": 1,
+    "unverified": 2,
+    "bySeverity": {
+      "critical": 1,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "info": 0
+    }
+  },
+  "attackPaths": 1,
+  "toolCalls": 8,
+  "paths": [
+    {
+      "id": "87a9950c-afb7-4cba-a7af-af25a8be63c6",
+      "label": "Admin/Privileged Endpoints Exposed (1)",
+      "steps": [
+        "127.0.0.1/admin"
+      ],
+      "severity": "medium",
+      "narrative": "Enumeration found 1 admin/privileged endpoint(s) on 127.0.0.1: /admin. These are heuristic candidates, not confirmed vulnerabilities."
+    }
+  ],
+  "toolLog": [
+    {
+      "id": "37d878e9-2e7e-42f4-8c5d-79bd2b2916c9",
+      "tool": "nmap",
+      "command": "nmap -sV -p 8080 127.0.0.1",
+      "rawOutput": "/usr/bin/nmap: 8: exec: /usr/lib/nmap/nmap: Operation not permitted\n",
+      "parsedAt": "2026-08-11T05:28:56.170Z",
+      "executionMs": 1200
+    },
+    {
+      "id": "dd28c767-790e-4c40-ab8b-8679ea14c6e6",
+      "tool": "gobuster",
+      "command": "gobuster dir -u http://127.0.0.1:8080/ -w lab/wordlist.txt",
+      "rawOutput": "===============================================================\nGobuster v3.8.2\nby OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)\n===============================================================\n[+] Url:                     http://127.0.0.1:8080/\n[+] Method:                  GET\n[+] Threads:                 10\n[+] Wordlist:                /home/spnxr/Documents/raven/OurMine/lab/wordlist.txt\n[+] Negative Status codes:   404\n[+] User Agent:              gobuster/3.8.2\n[+] Timeout:                 10s\n===============================================================\nStarting gobuster in directory enumeration mode\n===============================================================\nlogin                (Status: 200) [Size: 67]\napi/v1               (Status: 200) [Size: 33]\nbackup.sql           (Status: 200) [Size: 68]\nadmin                (Status: 301) [Size: 22] [--> /admin/]\n===============================================================\nFinished\n===============================================================\n\n",
+      "parsedAt": "2026-08-11T05:28:56.464Z",
+      "executionMs": 2500
+    },
+    {
+      "id": "e164efa8-a7d1-4398-83d2-29bf3a056e8b",
+      "tool": "nuclei",
+      "command": "nuclei -u http://127.0.0.1:8080/ -json",
+      "rawOutput": "{\"template-id\":\"log4j-version-probe\",\"info\":{\"name\":\"Apache Log4j Vulnerable Header\",\"severity\":\"critical\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+      "parsedAt": "2026-08-11T05:28:56.466Z",
+      "executionMs": 1500
+    },
+    {
+      "id": "314e2bc2-3509-442e-9818-592502b1b2d8",
+      "tool": "http-200-probe",
+      "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+      "rawOutput": "[ToolBroker Policy Denial]: Forbidden shell metacharacters detected (; & | ` $)",
+      "parsedAt": "2026-08-11T05:28:56.469Z",
+      "executionMs": 1
+    },
+    {
+      "id": "bf2c65cd-22f7-4a21-999d-de39e35d772b",
+      "tool": "nuclei",
+      "command": "nuclei probe",
+      "rawOutput": "{\"template-id\":\"http-admin-path\",\"info\":{\"name\":\"Exposed Nonexistent Admin\",\"severity\":\"medium\"},\"matched-at\":\"http://127.0.0.1:8080/nonexistent_admin_999\"}",
+      "parsedAt": "2026-08-11T05:28:56.470Z",
+      "executionMs": 1000
+    },
+    {
+      "id": "a98504ca-79c8-4d65-bf88-71a5124cc9c0",
+      "tool": "curl",
+      "command": "curl -sv http://127.0.0.1:8080/nonexistent_admin_999",
+      "rawOutput": "HTTP/1.1 404 Not Found",
+      "parsedAt": "2026-08-11T05:28:56.470Z",
+      "executionMs": 200
+    },
+    {
+      "id": "5808ce5d-ba4a-4c84-90b2-83aef08b599f",
+      "tool": "nuclei",
+      "command": "nuclei probe",
+      "rawOutput": "{\"template-id\":\"unknown-custom-proto-vuln\",\"info\":{\"name\":\"Unknown Protocol Finding\",\"severity\":\"low\"},\"matched-at\":\"http://127.0.0.1:8080/\"}",
+      "parsedAt": "2026-08-11T05:28:56.470Z",
+      "executionMs": 1000
+    },
+    {
+      "id": "bf00ffd1-0848-4e67-a673-d387fd02e51a",
+      "tool": "http-200-probe",
+      "command": "curl -sv --max-time 5 -o /dev/null -w \"%{http_code} %{size_download}\" http://127.0.0.1:8080/ 2>&1",
+      "rawOutput": "[ToolBroker Policy Denial]: Forbidden shell metacharacters detected (; & | ` $)",
+      "parsedAt": "2026-08-11T05:28:56.471Z",
+      "executionMs": 0
+    }
+  ]
+}

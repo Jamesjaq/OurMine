@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-11T05:06:06.058Z",
+  "timestamp": "2026-08-11T05:28:56.152Z",
   "target": "127.0.0.1",
   "lab_status": "READY",
   "toolchain": {
@@ -32,9 +32,9 @@
     "confirmed_findings": false
   },
   "graph_summary": {
-    "sessionId": "4cf81fff-c936-4c69-b65c-8ca54663d9ae",
+    "sessionId": "677003a5-39d5-4277-ab64-1c5be9a1f93f",
     "target": "127.0.0.1",
-    "startedAt": "2026-08-11T05:06:06.060Z",
+    "startedAt": "2026-08-11T05:28:56.155Z",
     "assets": 1,
     "services": 1,
     "openPorts": [
@@ -66,7 +66,7 @@
   },
   "attack_paths": [
     {
-      "id": "39c0b526-f20e-45af-85c0-572c14a7de0f",
+      "id": "87a9950c-afb7-4cba-a7af-af25a8be63c6",
       "label": "Admin/Privileged Endpoints Exposed (1)",
       "steps": [
         "127.0.0.1/admin"
