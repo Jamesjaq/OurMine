@@ -77,7 +77,7 @@ describe('Live Offensive Capability Suite', () => {
 
   test('LiveAdEngine — handles disconnected DC gracefully', async () => {
     const ad = new LiveAdEngine()
-    const findings = await ad.kerberoasting({ domainController: '127.0.0.99', domain: 'test.local' })
+    const findings = await ad.kerberoast({ domainController: '127.0.0.99', domain: 'test.local' })
     assert.ok(Array.isArray(findings))
   })
 
