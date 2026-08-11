@@ -1,109 +1,41 @@
 /**
- * @module @ourmine/security
- * Comprehensive Offensive Security & Red-Teaming Framework
- * Ported 1:1 from ARES / VANTA engine into pure TypeScript.
- *
- * Defaults to DRY-RUN mode across all modules. Pass `{ live: true }` for authorized testing.
+ * @module security
+ * OurMine Security Engine Master Index
+ * Exports all live security engines, brokers, and analysis modules.
  */
 
-export * as ad_engine from "./ad_engine.ts";
-export * as ad_exploit from "./ad_exploit.ts";
-export * as ai_manipulation from "./ai_manipulation.ts";
-export * as ai_recon from "./ai_recon.ts";
-export * as aitm_proxy from "./aitm_proxy.ts";
-export * as anti_analysis from "./anti_analysis.ts";
-export * as anti_forensics from "./anti_forensics.ts";
-export * as atlas_arsenal from "./atlas_arsenal.ts";
-export * as auth_primitives from "./auth_primitives.ts";
-export * as auto_research from "./auto_research.ts";
-export * as bountyhunter from "./bountyhunter.ts";
-export * as browser_ext from "./browser_ext.ts";
-export * as c2 from "./c2.ts";
-export * as c2_channels from "./c2_channels.ts";
-export * as c2_infra from "./c2_infra.ts";
-export * as c2_ops from "./c2_ops.ts";
-export * as c2_platform from "./c2_platform.ts";
-export * as caldera_ttp from "./caldera_ttp.ts";
-export * as campaign from "./campaign.ts";
-export * as carding from "./carding.ts";
-export * as cicd_supplychain from "./cicd_supplychain.ts";
-export * as cloud from "./cloud.ts";
-export * as cloud_token from "./cloud_token.ts";
-export * as container from "./container.ts";
-export * as container_k8s from "./container_k8s.ts";
-export * as counter_intel from "./counter_intel.ts";
-export * as covert_c2 from "./covert_c2.ts";
-export * as cred_dump from "./cred_dump.ts";
-export * as deaddrop from "./deaddrop.ts";
-export * as dev_target from "./dev_target.ts";
-export * as edr_evasion from "./edr_evasion.ts";
-export * as evasion from "./evasion.ts";
-export * as exfil from "./exfil.ts";
-export * as exfil_channels from "./exfil_channels.ts";
-export * as financial from "./financial.ts";
-export * as financial_fraud from "./financial_fraud.ts";
-export * as financial_ops from "./financial_ops.ts";
-export * as firmware from "./firmware.ts";
-export * as hybrid_ad_entra from "./hybrid_ad_entra.ts";
-export * as identity from "./identity.ts";
-export * as identity_prt from "./identity_prt.ts";
-export * as identity_theft from "./identity_theft.ts";
-export * as implant_gen from "./implant_gen.ts";
-export * as infra from "./infra.ts";
-export * as insider from "./insider.ts";
-export * as iot_scada from "./iot_scada.ts";
-export * as lateral from "./lateral.ts";
-export * as lolbins from "./lolbins.ts";
-export * as malware_dev from "./malware_dev.ts";
-export * as meterpreter from "./meterpreter.ts";
-export * as mobile from "./mobile.ts";
-export * as multi_lang from "./multi_lang.ts";
-export * as net_device from "./net_device.ts";
-export * as oauth_chain from "./oauth_chain.ts";
-export * as opsec from "./opsec.ts";
-export * as pentagi_docker from "./pentagi_docker.ts";
-export * as pentestgpt_agent from "./pentestgpt_agent.ts";
-export * as pentestgpt_ptt from "./pentestgpt_ptt.ts";
-export * as persistence from "./persistence.ts";
-export * as physical from "./physical.ts";
-export * as pivot_tunnel from "./pivot_tunnel.ts";
-export * as polymorphic from "./polymorphic.ts";
-export * as privesc from "./privesc.ts";
-export * as ransomware from "./ransomware.ts";
-export * as scanner_parsers from "./scanner_parsers.ts";
-export * as skills from "./skills.ts";
-export * as social_eng from "./social_eng.ts";
-export * as social_eng_auto from "./social_eng_auto.ts";
-export * as stego_c2 from "./stego_c2.ts";
-export * as strix_engine from "./strix_engine.ts";
-export * as supply_chain from "./supply_chain.ts";
-export * as toolkit from "./toolkit.ts";
-export * as vuln_research from "./vuln_research.ts";
-export * as web_exploit from "./web_exploit.ts";
-export * as webmail_exploit from "./webmail_exploit.ts";
-export * as yara from "./yara.ts";
-export * as yara_rules from "./yara_rules.ts";
-export * as adcs_audit from "./adcs_audit.ts";
-export * as esxi_audit from "./esxi_audit.ts";
-export * as lolbins_audit from "./lolbins_audit.ts";
-export * as ebpf_audit from "./ebpf_audit.ts";
-export * as ai_agent_audit from "./ai_agent_audit.ts";
-export * as edge_appliance_audit from "./edge_appliance_audit.ts";
-export * as idp_oauth_audit from "./idp_oauth_audit.ts";
-export * as uefi_bootkit_audit from "./uefi_bootkit_audit.ts";
-export * as cicd_k8s_audit from "./cicd_k8s_audit.ts";
-export * as agent_resilience from "./agent_resilience.ts";
-export * as opsec_throttle from "./opsec_throttle.ts";
-export * as tool_broker from "./tool_broker.ts";
-export * as context_guard from "./context_guard.ts";
-export * as crypto_token from "./crypto_token.ts";
-export * as capability_policy from "./capability_policy.ts";
-export * as policy_daemon from "./policy_daemon.ts";
-export * as sandbox_runner from "./sandbox_runner.ts";
-export * as attack_surface from "./attack_surface.ts";
-export * as finding_lifecycle from "./finding_lifecycle.ts";
-export * as validation_planner from "./validation_planner.ts";
-export * as validation_engine from "./validation_engine.ts";
-export * as parameter_analyzer from "./parameter_analyzer.ts";
-export * as app_security_engine from "./app_security_engine.ts";
-export * as impact_engine from "./impact_engine.ts";
+export * from './attack_surface.ts'
+export * from './finding_lifecycle.ts'
+export * from './validation_planner.ts'
+export * from './validation_engine.ts'
+export * from './tool_broker.ts'
+export * from './sandbox_runner.ts'
+export * from './policy_daemon.ts'
+export * from './capability_policy.ts'
+export * from './context_guard.ts'
+export * from './parameter_analyzer.ts'
+export * from './app_security_engine.ts'
+export * from './impact_engine.ts'
+
+// Live execution engines (Thirteenth-Pass Full Offensive Capability)
+export * from './live_web_exploit.ts'
+export * from './live_cred_attacks.ts'
+export * from './live_privesc.ts'
+export * from './live_scanner.ts'
+export * from './live_postex.ts'
+export * from './live_ad_attacks.ts'
+export * from './live_recon.ts'
+export * from './msf_client.ts'
+
+// VANTA attack taxonomy modules
+export * from './web_exploit.ts'
+export * from './privesc.ts'
+export * from './lateral.ts'
+export * from './toolkit.ts'
+export * from './c2_platform.ts'
+export * from './cloud.ts'
+export * from './evasion.ts'
+export * from './ad_engine.ts'
+export * from './runtime_exec.ts'
+export * from './repl.ts'
+export * from './mcp_server.ts'

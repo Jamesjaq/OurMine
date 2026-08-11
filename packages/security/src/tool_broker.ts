@@ -17,12 +17,17 @@ export interface ExecPolicy {
 const DEFAULT_POLICY: ExecPolicy = {
   allowedBinaries: new Set([
     "nmap", "gobuster", "ffuf", "nikto", "sqlmap", "dig", "whois",
-    "ping", "traceroute", "curl", "git", "yara"
+    "ping", "traceroute", "curl", "git", "yara", "masscan", "hydra",
+    "john", "hashcat", "nuclei", "wfuzz", "smbclient", "enum4linux",
+    "snmpwalk", "searchsploit", "msfvenom", "impacket-secretsdump",
+    "impacket-GetUserSPNs", "impacket-GetNPUsers", "evil-winrm",
+    "bloodhound-python", "openssl", "ssh", "nc", "netcat", "socat",
+    "ftp", "python3"
   ]),
   blockedSubcommands: new Set([
     "rm -rf /", "mkfs", "dd", ":(){ :|:& };:", "-c import", "-e eval"
   ]),
-  maxExecutionTimeMs: 60000,
+  maxExecutionTimeMs: 300000,
 }
 
 export class ToolBroker {
