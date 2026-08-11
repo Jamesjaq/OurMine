@@ -1,0 +1,5 @@
+# Local engagement/runtime artifacts (proof packs, wallets, Tor keys, sessions)
+.ourmine/
+
+# Test temp dirs
+packages/security/test/.tmp_*/
