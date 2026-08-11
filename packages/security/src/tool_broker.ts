@@ -45,7 +45,12 @@ export class ToolBroker {
       return { valid: false, binary: "", args: [], reason: "Empty command string" }
     }
 
-    // Check against blocked dangerous patterns
+    // Check against blocked dangerous patterns and shell metacharacters
+    const metacharRegex = /[;&|`$]/
+    if (metacharRegex.test(trimmed)) {
+      return { valid: false, binary: "", args: [], reason: "Forbidden shell metacharacters detected (; & | ` $)" }
+    }
+
     for (const blocked of this.policy.blockedSubcommands) {
       if (trimmed.includes(blocked)) {
         return { valid: false, binary: "", args: [], reason: `Forbidden subcommand pattern: ${blocked}` }

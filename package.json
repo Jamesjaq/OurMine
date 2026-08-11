@@ -19,7 +19,8 @@
     "lab:down": "bash lab/teardown.sh",
     "lab:health": "node --experimental-strip-types lab/health.ts",
     "capability:benchmark": "node --experimental-strip-types lab/benchmark_runner.ts",
-    "capability:report": "cat lab/results/capability_report.md"
+    "capability:report": "cat lab/results/capability_report.md",
+    "adversarial:audit": "node --experimental-strip-types lab/complex_benchmark.ts"
   },
   "devDependencies": {
     "typescript": "^5.8.3",
