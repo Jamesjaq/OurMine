@@ -1,6 +1,6 @@
 # OurMine Lab Capability Proof Report
 
-**Date:** 2026-08-11T04:31:44.635Z  
+**Date:** 2026-08-11T05:06:06.058Z  
 **Target:** `127.0.0.1:8080` (Local Controlled Target)  
 **Status:** READY & EXECUTED  
 
@@ -21,9 +21,9 @@ All tool invocations were routed through `ToolBroker`, captured in `AttackSurfac
 - **Services:** 1 (Port 8080 HTTP - Apache/2.4.29)
 - **Endpoints Ingested:** 4 (`/admin`, `/api/v1`, `/login`, `/backup.sql`)
 - **Total Vulnerabilities Tracked:** 3
-  - **Confirmed:** 2 (Log4j Header Indicator)
+  - **Confirmed:** 0 (Log4j Header Indicator)
   - **False Positives:** 1 (Nonexistent Admin Path 404)
-  - **Unverified:** 0 (Unknown Custom Protocol)
+  - **Unverified:** 2 (Unknown Custom Protocol)
   - **Suspected:** 0
 
 ## 4. Reanalyzed Attack Paths

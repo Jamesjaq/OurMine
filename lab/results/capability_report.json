@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-11T04:31:44.635Z",
+  "timestamp": "2026-08-11T05:06:06.058Z",
   "target": "127.0.0.1",
   "lab_status": "READY",
   "toolchain": {
@@ -29,12 +29,12 @@
   "ground_truth_matched": {
     "services": true,
     "endpoints": true,
-    "confirmed_findings": true
+    "confirmed_findings": false
   },
   "graph_summary": {
-    "sessionId": "24895526-ba2c-42ff-8306-217cd80bbe34",
+    "sessionId": "4cf81fff-c936-4c69-b65c-8ca54663d9ae",
     "target": "127.0.0.1",
-    "startedAt": "2026-08-11T04:31:44.638Z",
+    "startedAt": "2026-08-11T05:06:06.060Z",
     "assets": 1,
     "services": 1,
     "openPorts": [
@@ -48,11 +48,11 @@
     },
     "vulns": {
       "total": 3,
-      "confirmed": 2,
+      "confirmed": 0,
       "suspected": 0,
       "validating": 0,
       "falsePos": 1,
-      "unverified": 0,
+      "unverified": 2,
       "bySeverity": {
         "critical": 1,
         "high": 0,
@@ -66,7 +66,7 @@
   },
   "attack_paths": [
     {
-      "id": "4392c74d-4943-4707-891d-d430b6963ac5",
+      "id": "39c0b526-f20e-45af-85c0-572c14a7de0f",
       "label": "Admin/Privileged Endpoints Exposed (1)",
       "steps": [
         "127.0.0.1/admin"

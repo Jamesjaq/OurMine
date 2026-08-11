@@ -105,3 +105,5 @@ export * as finding_lifecycle from "./finding_lifecycle.ts";
 export * as validation_planner from "./validation_planner.ts";
 export * as validation_engine from "./validation_engine.ts";
 export * as parameter_analyzer from "./parameter_analyzer.ts";
+export * as app_security_engine from "./app_security_engine.ts";
+export * as impact_engine from "./impact_engine.ts";

@@ -1,0 +1,66 @@
+{
+  "project": "OurMine",
+  "audit_timestamp": "2026-08-11T05:02:34Z",
+  "capabilities": [
+    {
+      "name": "ToolBroker Command Execution",
+      "category": "Execution Core",
+      "classification": "REAL",
+      "entry_point": "ToolBroker.executeSafe()",
+      "implementation_files": ["packages/security/src/tool_broker.ts"],
+      "external_dependencies": ["nmap", "gobuster", "curl", "dig", "whois", "git", "yara"],
+      "execution_mode": "REAL",
+      "maximum_proven_depth": "L2"
+    },
+    {
+      "name": "Finding State Lifecycle Machine",
+      "category": "Lifecycle Core",
+      "classification": "REAL",
+      "entry_point": "FindingStateMachine.transition()",
+      "implementation_files": ["packages/security/src/finding_lifecycle.ts"],
+      "external_dependencies": [],
+      "execution_mode": "REAL",
+      "maximum_proven_depth": "N/A"
+    },
+    {
+      "name": "Validation Planner & Engine",
+      "category": "Validation Core",
+      "classification": "REAL",
+      "entry_point": "ValidationEngine.validate()",
+      "implementation_files": ["packages/security/src/validation_planner.ts", "packages/security/src/validation_engine.ts"],
+      "external_dependencies": ["curl"],
+      "execution_mode": "REAL",
+      "maximum_proven_depth": "L2"
+    },
+    {
+      "name": "Attack Surface Graph",
+      "category": "State Core",
+      "classification": "REAL",
+      "entry_point": "AttackSurfaceGraph",
+      "implementation_files": ["packages/security/src/attack_surface.ts"],
+      "external_dependencies": [],
+      "execution_mode": "REAL",
+      "maximum_proven_depth": "L2"
+    },
+    {
+      "name": "HTTP Parameter Analyzer",
+      "category": "Application Security",
+      "classification": "NATIVE_REAL",
+      "entry_point": "ParameterAnalyzer.analyzeParameter()",
+      "implementation_files": ["packages/security/src/parameter_analyzer.ts"],
+      "external_dependencies": [],
+      "execution_mode": "REAL",
+      "maximum_proven_depth": "L2"
+    },
+    {
+      "name": "Ported Attack & Exploitation Modules (AD, C2, Malware, Cloud, Ransomware)",
+      "category": "Exploitation / C2",
+      "classification": "STUB",
+      "entry_point": "ad_exploit, c2, malware_dev, ransomware, cloud_token",
+      "implementation_files": ["packages/security/src/ad_exploit.ts", "packages/security/src/c2.ts", "packages/security/src/malware_dev.ts"],
+      "external_dependencies": [],
+      "execution_mode": "DRY-RUN / SKELETON",
+      "maximum_proven_depth": "L0"
+    }
+  ]
+}
