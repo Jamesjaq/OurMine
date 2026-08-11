@@ -18,6 +18,8 @@ ourmine
 
 That's it — OpenCode TUI launches with ARES wired automatically. Pick a model with `/model`, give a target, and go.
 
+**Requires:** [Node.js](https://nodejs.org/) 20+, `git`, and [OpenCode](https://opencode.ai) (installed automatically if missing).
+
 <details>
 <summary>Manual install</summary>
 
@@ -27,7 +29,32 @@ cd ~/.ourmine && npm install && npm link --force
 ourmine
 ```
 
-Requires [Node.js](https://nodejs.org/) 20+ and [OpenCode](https://opencode.ai) (`curl -fsSL https://opencode.ai/install | bash`).
+</details>
+
+## Uninstall
+
+Remove the CLI and install directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Jamesjaq/OurMine/main/uninstall.sh | bash
+```
+
+Also remove OurMine MCP, pentest agent, and TUI plugin from OpenCode config:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Jamesjaq/OurMine/main/uninstall.sh | bash -s -- --purge-config
+```
+
+This does **not** uninstall OpenCode itself.
+
+<details>
+<summary>Manual uninstall</summary>
+
+```bash
+npm unlink -g ourmine 2>/dev/null || npm rm -g ourmine
+rm -rf ~/.ourmine
+# optional: delete ares MCP + pentest agent from ~/.config/opencode/
+```
 
 </details>
 
