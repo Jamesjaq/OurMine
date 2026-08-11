@@ -4,18 +4,32 @@
 
 Built on **OpenCode** with the **ARES Security Suite** — 115+ security modules for recon, auditing, pentest automation, MITRE ATT&CK TTPs, validation pipelines, and OPSEC-safe dry-run defaults.
 
-## Quick Start
+## Install
 
 ```bash
-git clone https://github.com/Jamesjaq/OurMine.git
-cd OurMine
-npm install
-npm link --force
-
-ourmine                  # launches OpenCode TUI — ARES wired automatically
+curl -fsSL https://raw.githubusercontent.com/Jamesjaq/OurMine/main/install.sh | bash
 ```
 
-That's it. Pick a model with `/model`, tell the agent your target, and it goes to work.
+Then run:
+
+```bash
+ourmine
+```
+
+That's it — OpenCode TUI launches with ARES wired automatically. Pick a model with `/model`, give a target, and go.
+
+<details>
+<summary>Manual install</summary>
+
+```bash
+git clone https://github.com/Jamesjaq/OurMine.git ~/.ourmine
+cd ~/.ourmine && npm install && npm link --force
+ourmine
+```
+
+Requires [Node.js](https://nodejs.org/) 20+ and [OpenCode](https://opencode.ai) (`curl -fsSL https://opencode.ai/install | bash`).
+
+</details>
 
 On first launch, OurMine auto-wires:
 - **ARES MCP server** (`ares`) — 50+ offensive security tools
