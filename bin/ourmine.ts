@@ -78,7 +78,7 @@ function launchOpenCode(args: string[]): void {
 function delegateToOpenCode(args: string[]): void {
   const child = spawn("opencode", args, {
     stdio: "inherit",
-    env: process.env,
+    env: { ...process.env, OURMINE: "1", OURMINE_BRAND: "1" },
   })
 
   const sigs: NodeJS.Signals[] = ["SIGINT", "SIGTERM", "SIGHUP"]

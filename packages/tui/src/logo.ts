@@ -9,3 +9,19 @@ export const go = {
 }
 
 export const marks = "_^~,"
+
+/** OurMine full block wordmark (Our | Mine). */
+export const ourmine = {
+  left: [
+    "                   ",
+    "█▀▀█ █▀▀▀ █▀▀█ █▀▀█",
+    "█__█ █__█ █▀▀█ █__█",
+    "▀▀▀▀ ▀~~▀ █__█ ▀▀▀▀",
+  ],
+  right: [
+    "             ▄     ",
+    "█▀▀▄  ▀  █▀▀▄ █▀▀█",
+    "█▀▀█  █  █__█ █^^^",
+    "█__█ ▀▀▀ ▀~~▀ ▀▀▀▀",
+  ],
+}

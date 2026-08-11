@@ -15,6 +15,8 @@ const SCHEMA = "https://opencode.ai/config.json"
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..")
 const MCP_SERVER = path.join(REPO_ROOT, "packages/security/src/mcp_server.ts")
+const BRAND_PLUGIN = path.join(REPO_ROOT, ".opencode", "plugins", "ourmine-brand.tsx")
+const TUI_SCHEMA = "https://opencode.ai/tui.json"
 
 export interface BootstrapResult {
   configDir: string
@@ -142,6 +144,19 @@ function ensureAgent(agentPath: string, live: boolean): boolean {
   return true
 }
 
+function mergeTuiConfig(existing: Record<string, unknown>): { config: Record<string, unknown>; changed: boolean } {
+  const config: Record<string, unknown> = { ...existing, $schema: TUI_SCHEMA }
+  const plugins = Array.isArray(config.plugin) ? [...(config.plugin as string[])] : []
+  const hasBrand = plugins.some((entry) => entry === BRAND_PLUGIN || String(entry).endsWith("ourmine-brand.tsx"))
+  let changed = false
+  if (!hasBrand) {
+    plugins.unshift(BRAND_PLUGIN)
+    config.plugin = plugins
+    changed = true
+  }
+  return { config, changed }
+}
+
 function ensureProjectAgent(live: boolean): boolean {
   const agentPath = path.join(REPO_ROOT, ".opencode", "agent", "pentest.md")
   return ensureAgent(agentPath, live)
@@ -152,9 +167,11 @@ export function bootstrapOpenCode(options: { quiet?: boolean } = {}): BootstrapR
   const live = isKaliLinux() || process.env.OURMINE_LIVE === "1"
   const configDir = opencodeConfigDir()
   const configPath = path.join(configDir, "opencode.json")
+  const tuiPath = path.join(configDir, "tui.json")
   const agentPath = path.join(configDir, "agent", "pentest.md")
 
   let configChanged = false
+  let tuiChanged = false
   let agentChanged = false
   let projectAgentChanged = false
 
@@ -162,6 +179,9 @@ export function bootstrapOpenCode(options: { quiet?: boolean } = {}): BootstrapR
     const merged = mergeConfig(readJsonFile(configPath), live)
     configChanged = merged.changed
     if (configChanged) writeJsonFile(configPath, merged.config)
+    const tui = mergeTuiConfig(readJsonFile(tuiPath))
+    tuiChanged = tui.changed
+    if (tuiChanged) writeJsonFile(tuiPath, tui.config)
     agentChanged = ensureAgent(agentPath, live)
   } catch (e) {
     if (!options.quiet) {
@@ -176,7 +196,7 @@ export function bootstrapOpenCode(options: { quiet?: boolean } = {}): BootstrapR
     // project agent is optional when cwd is not the repo
   }
 
-  const updated = configChanged || agentChanged || projectAgentChanged
+  const updated = configChanged || tuiChanged || agentChanged || projectAgentChanged
 
   if (updated && !options.quiet) {
     process.stderr.write(

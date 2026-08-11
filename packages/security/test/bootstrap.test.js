@@ -25,6 +25,12 @@ test("bootstrapOpenCode wires ARES MCP and pentest agent", async () => {
     assert.ok(Array.isArray(config.mcp?.ares?.command))
     assert.ok(config.mcp.ares.command.some((c) => c.includes("mcp_server.ts")))
 
+    const tuiPath = path.join(configDir, "tui.json")
+    assert.ok(fs.existsSync(tuiPath), "tui.json should exist")
+    const tui = JSON.parse(fs.readFileSync(tuiPath, "utf8"))
+    assert.ok(Array.isArray(tui.plugin))
+    assert.ok(tui.plugin.some((p) => p.includes("ourmine-brand.tsx")))
+
     const agent = fs.readFileSync(first.agentPath, "utf8")
     assert.ok(agent.includes("OurMine ARES"))
     assert.ok(agent.includes("mode: primary"))
