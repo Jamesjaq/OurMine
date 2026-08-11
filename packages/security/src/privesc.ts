@@ -8,6 +8,8 @@
  * advisory text — nothing executes here.
  */
 
+import { LivePrivescChecker, type PrivescVector } from "./live_privesc.ts"
+
 export interface PrivescTechnique {
   name: string;
   platform: string;
@@ -22,9 +24,15 @@ export interface PrivescTechnique {
 
 export class PrivilegeEscalator {
   currentOs: string;
+  private liveChecker: LivePrivescChecker;
 
   constructor() {
     this.currentOs = process.platform;
+    this.liveChecker = new LivePrivescChecker();
+  }
+
+  async runLivePrivescChecks(): Promise<{ vectors: PrivescVector[]; summary: string }> {
+    return this.liveChecker.runAllChecks();
   }
 
   getWindowsPrivesc(): PrivescTechnique[] {
