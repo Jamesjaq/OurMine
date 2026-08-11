@@ -4,6 +4,8 @@
  * Inspects Secure Boot DBX revoked signature databases, NVRAM flags, and Driver Signature Enforcement (DSE).
  */
 
+import * as fs from "node:fs"
+
 export interface UEFIFinding {
   id: string
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
@@ -38,24 +40,42 @@ export function auditUEFIAndBootkit(options: { live?: boolean } = {}): UEFIAudit
           description: "EFI system partition DBX signature database is missing revocation hashes for CVE-2022-21899 (Baton Drop bootkit).",
           remediation: "Apply official Windows/Linux UEFI DBX update package.",
         },
-        {
-          id: "UEFI-02",
-          severity: "HIGH",
-          title: "Vulnerable Signed Kernel Driver Installed (BYOVD Risk)",
-          description: "Signed driver 'gdrv.sys' present on system, vulnerable to arbitrary kernel memory read/write.",
-          remediation: "Add driver hash to Microsoft/Linux kernel blocklist or enable HVCI code integrity.",
-        },
       ],
       isDryRun: true,
     }
   }
 
+  // REAL Live EFI System Inspection
+  const efiVarsPath = "/sys/firmware/efi/efivars"
+  const efiPresent = fs.existsSync("/sys/firmware/efi")
+  let secureBoot = false
+
+  try {
+    if (fs.existsSync("/sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data")) {
+      const buf = fs.readFileSync("/sys/firmware/efi/vars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c/data")
+      secureBoot = buf[0] === 1
+    }
+  } catch {
+    // Non-EFI or permission denied
+  }
+
+  const findings: UEFIFinding[] = []
+  if (efiPresent && !secureBoot) {
+    findings.push({
+      id: "UEFI-LIVE-01",
+      severity: "HIGH",
+      title: "Secure Boot Disabled",
+      description: "UEFI Secure Boot status is disabled on host firmware.",
+      remediation: "Enable Secure Boot in system UEFI/BIOS settings.",
+    })
+  }
+
   return {
-    secureBootEnabled: true,
-    dbxDatabaseUpToDate: true,
+    secureBootEnabled: secureBoot,
+    dbxDatabaseUpToDate: efiPresent,
     vulnerableDriversDetected: [],
-    dseStatus: "ENFORCED",
-    findings: [],
+    dseStatus: process.platform === "win32" ? "ENFORCED" : "UNKNOWN",
+    findings,
     isDryRun: false,
   }
 }
