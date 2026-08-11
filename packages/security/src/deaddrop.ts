@@ -14,6 +14,7 @@
  * with an in-memory fake transport.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { createHash } from "node:crypto";
 
 // ------------------------------------------------------------------------- //

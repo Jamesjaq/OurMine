@@ -9,6 +9,7 @@
  * FOR AUTHORISED RED-TEAM SIMULATION ONLY.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";

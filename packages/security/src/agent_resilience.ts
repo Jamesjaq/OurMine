@@ -84,4 +84,5 @@ export class AgentResilienceEngine {
   }
 }
 
-export default new AgentResilienceEngine()
+export const resilienceEngine = new AgentResilienceEngine()
+export default resilienceEngine

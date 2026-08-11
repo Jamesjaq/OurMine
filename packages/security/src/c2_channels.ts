@@ -4,6 +4,7 @@
  * API, and dead-drop patterns for covert command delivery.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

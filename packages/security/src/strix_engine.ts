@@ -6,6 +6,7 @@
  * Based on usestrix/strix (MIT).
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

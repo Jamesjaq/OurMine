@@ -93,6 +93,9 @@ export async function runBenchmark() {
     }
   } catch (err: any) {
     log(`[NOTE] Nmap ToolBroker exception: ${err.message}`)
+    if (process.env.CI_STRICT === "1") {
+      throw new Error(`CI_STRICT: Nmap failed — ${err.message}`)
+    }
     nmapRaw = "8080/tcp open http Apache httpd 2.4.29 (Ubuntu)\n"
   }
 
@@ -116,6 +119,9 @@ export async function runBenchmark() {
     log(`[SUCCESS] Real Gobuster executed via ToolBroker (exit code ${res.exitCode}, length ${gobusterRaw.length})`)
   } catch (err: any) {
     log(`[FALLBACK] Gobuster execution fallback: ${err.message}`)
+    if (process.env.CI_STRICT === "1") {
+      throw new Error(`CI_STRICT: Gobuster failed — ${err.message}`)
+    }
     gobusterRaw = "admin (Status: 301) [Size: 22]\napi/v1 (Status: 200) [Size: 33]\nlogin (Status: 200) [Size: 67]\nbackup.sql (Status: 200) [Size: 68]"
   }
 
@@ -198,7 +204,42 @@ export async function runBenchmark() {
   const loadedGraph = AttackSurfaceGraph.load(savedFile)
   log(`[PERSISTENCE] Successfully saved & reloaded AttackSurfaceGraph (${loadedGraph.summary().services} service(s), ${loadedGraph.summary().endpoints.total} endpoint(s))`)
 
-  // ─── STAGE 11: LLM-OFF vs LLM-ON Assessment Summary ────────────────────────
+  // ─── STAGE 11: Module Verification ────────────────────────────────────────
+  log("\n--- STAGE 11: Security Module Verification ---")
+  const securityModules = await import("../packages/security/src/index.ts")
+  const moduleCount = Object.keys(securityModules).length
+  log(`[MODULES] ${moduleCount} security modules loaded`)
+
+  // Test a few key modules in dry-run
+  const moduleTests: Record<string, string> = {}
+
+  try {
+    const recon = await securityModules.ai_recon.runRecon({ domain: "example.com" }, { dryRun: true })
+    moduleTests["ai_recon"] = recon.subdomains.length > 0 ? "OK" : "EMPTY"
+  } catch (e: any) { moduleTests["ai_recon"] = `FAIL: ${e.message}` }
+
+  try {
+    const container = securityModules.container.auditContainer({ dryRun: true })
+    moduleTests["container"] = container.dryRun ? "OK" : "WRONG_MODE"
+  } catch (e: any) { moduleTests["container"] = `FAIL: ${e.message}` }
+
+  try {
+    const supply = await import("../packages/security/src/supply_chain.ts")
+    const result = await supply.auditPackage("reqeusts", "npm", { dryRun: true })
+    moduleTests["supply_chain"] = result.isTyposquat ? "OK" : "WRONG_RESULT"
+  } catch (e: any) { moduleTests["supply_chain"] = `FAIL: ${e.message}` }
+
+  try {
+    const skills = await import("../packages/security/src/skills.ts")
+    const tools = await skills.detectAllTools(undefined, true)
+    moduleTests["skills"] = tools.length > 0 ? "OK" : "EMPTY"
+  } catch (e: any) { moduleTests["skills"] = `FAIL: ${e.message}` }
+
+  for (const [mod, status] of Object.entries(moduleTests)) {
+    log(`  Module '${mod}': ${status}`)
+  }
+
+  // ─── STAGE 12: LLM-OFF vs LLM-ON Assessment Summary ──────────────────────
   const summary = graph.summary()
   log("\n=================================================================")
   log("📊 BENCHMARK CAPABILITY SCORECARD")
@@ -235,15 +276,17 @@ export async function runBenchmark() {
     attack_paths: paths,
     next_actions: recs,
     classifications: {
-      discovery_nmap: "REAL-WRAPPER (Unprivileged Socket Restriction)",
-      web_enumeration_gobuster: "REAL (Executed via ToolBroker)",
-      scanner_parsers: "REAL (Native TS Parsers)",
-      attack_surface_graph: "REAL (Stateful Evidence Graph)",
-      finding_state_machine: "REAL (Strict Lifecycle Enforcement)",
-      validation_planner: "REAL (Typed Registry & Scope Boundary)",
-      validation_engine: "REAL (Sole CONFIRMED Promotion Path)",
-      llm_orchestration: "ORCHESTRATOR (Context & Reasoning Layer)",
-    }
+        discovery_nmap: "REAL-WRAPPER (Unprivileged Socket Restriction)",
+        web_enumeration_gobuster: "REAL (Executed via ToolBroker)",
+        scanner_parsers: "REAL (Native TS Parsers)",
+        attack_surface_graph: "REAL (Stateful Evidence Graph)",
+        finding_state_machine: "REAL (Strict Lifecycle Enforcement)",
+        validation_planner: "REAL (Typed Registry & Scope Boundary)",
+        validation_engine: "REAL (Sole CONFIRMED Promotion Path)",
+        llm_orchestration: "ORCHESTRATOR (Context & Reasoning Layer)",
+        module_verification: moduleTests,
+        total_modules: moduleCount,
+      }
   }
 
   fs.writeFileSync(path.join(resultsDir, "capability_report.json"), JSON.stringify(reportJson, null, 2))

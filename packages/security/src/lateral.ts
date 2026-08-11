@@ -12,6 +12,7 @@
  * implementation for tests.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 

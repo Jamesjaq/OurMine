@@ -4,6 +4,7 @@
  * Provides a unified interface to common offensive payloads and tooling.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
 import * as os from "node:os";
 

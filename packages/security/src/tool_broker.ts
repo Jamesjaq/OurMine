@@ -16,13 +16,27 @@ export interface ExecPolicy {
 
 const DEFAULT_POLICY: ExecPolicy = {
   allowedBinaries: new Set([
-    "nmap", "gobuster", "ffuf", "nikto", "sqlmap", "dig", "whois",
-    "ping", "traceroute", "curl", "git", "yara", "masscan", "hydra",
-    "john", "hashcat", "nuclei", "wfuzz", "smbclient", "enum4linux",
-    "snmpwalk", "searchsploit", "msfvenom", "impacket-secretsdump",
-    "impacket-GetUserSPNs", "impacket-GetNPUsers", "evil-winrm",
-    "bloodhound-python", "openssl", "ssh", "nc", "netcat", "socat",
-    "ftp", "python3"
+    // Network discovery & scanning
+    "nmap", "masscan", "rustscan", "ping", "traceroute", "arp-scan", "dig", "host", "whois",
+    // Web offensive
+    "gobuster", "ffuf", "feroxbuster", "nikto", "nuclei", "wfuzz", "dirb", "whatweb", "wpscan",
+    "sqlmap", "curl", "wget",
+    // AD / Windows
+    "smbclient", "enum4linux", "rpcclient", "ldapsearch", "evil-winrm", "bloodhound-python",
+    "impacket-secretsdump", "impacket-GetUserSPNs", "impacket-GetNPUsers",
+    "impacket-wmiexec", "impacket-smbexec", "impacket-psexec", "impacket-ticketer", "impacket-getTGT",
+    "certipy", "crackmapexec", "netexec",
+    // Credentials
+    "hydra", "john", "hashcat", "responder",
+    // Recon / OSINT
+    "subfinder", "amass", "theHarvester", "searchsploit",
+    // Exploitation / post-ex
+    "msfvenom", "msfconsole", "openssl", "ssh", "nc", "netcat", "ncat", "socat", "ftp",
+    // Local enumeration (LotL)
+    "find", "grep", "id", "whoami", "hostname", "uname", "ip", "ifconfig", "arp", "ps", "cat", "ls",
+    "sudo", "getcap", "strings", "file",
+    // Infra / cloud / containers
+    "kubectl", "docker", "python3", "git", "yara", "snmpwalk", "tcpdump", "tshark",
   ]),
   blockedSubcommands: new Set([
     "rm -rf /", "mkfs", "dd", ":(){ :|:& };:", "-c import", "-e eval"
@@ -95,7 +109,7 @@ export class ToolBroker {
     return new Promise((resolve, reject) => {
       const proc = spawn(validation.binary, validation.args, {
         cwd,
-        env: { ...process.env, PATH: "/usr/local/bin:/usr/bin:/bin" }, // Fixed safe PATH
+        env: { ...process.env, PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" },
         shell: false, // Prevents shell metacharacter expansion
       })
 

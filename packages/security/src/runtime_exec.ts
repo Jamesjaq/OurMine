@@ -5,6 +5,7 @@
  * PTY passthrough, and subagent tracking.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { spawn, spawnSync } from "node:child_process"
 import * as readline from "node:readline"
 

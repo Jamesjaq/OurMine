@@ -10,6 +10,7 @@
  *   dotnet (file ops only); `run()` refuses unless `live=true`.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { execFile } from "node:child_process";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";

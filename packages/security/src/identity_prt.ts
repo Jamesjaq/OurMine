@@ -19,6 +19,7 @@
  * Node built-ins only: `node:crypto`, `node:sqlite`, `node:fs`, `node:zlib`-free.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { createDecipheriv, generateKeyPairSync, randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { copyFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

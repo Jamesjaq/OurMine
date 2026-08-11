@@ -4,6 +4,7 @@
  * Chisel-style HTTP/Websocket Tunneling, and Ligolo-ng Virtual Interface Routing Simulator.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as net from "node:net";
 
 export interface TunnelConfig {

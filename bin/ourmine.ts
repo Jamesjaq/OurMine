@@ -16,6 +16,7 @@
 import { spawn, spawnSync } from "node:child_process"
 import { execShell, ExecutionDisplay, runSubagent } from "../packages/security/src/runtime_exec.ts"
 import { PentestAgent } from "../packages/security/src/pentestgpt_agent.ts"
+import { bootstrapOpenCode } from "../packages/security/src/opencode_bootstrap.ts"
 import * as security from "../packages/security/src/index.ts"
 
 const OURMINE_VERSION = "1.0.0"
@@ -33,7 +34,7 @@ const C = {
 
 const SECURITY_COMMANDS = new Set([
   "recon", "audit", "pentest", "yara", "c2", "modules",
-  "security", "sec",
+  "security", "sec", "serve", "agent", "toolcheck",
 ])
 
 // ─── Security-only help addendum ──────────────────────────────────────────────
@@ -45,20 +46,34 @@ ${C.bold}${C.orange}OurMine Security Commands (ARES Suite):${C.reset}
   ourmine audit <target>       Container + cloud vulnerability audit
   ourmine pentest <target>     Full autonomous PentestGPT attack plan
   ourmine yara <path>          YARA rulepack scan on a file/path
-  ourmine c2 [status]         C2 channel & beacon management
-  ourmine modules              List all 77 ported ARES security modules
+  ourmine c2 [status]          C2 channel & beacon management
+  ourmine serve                Start ARES MCP server on stdio (for LLM agents)
+  ourmine agent <target>       Interactive LLM-driven pentest agent
+  ourmine toolcheck            Check which security tools are installed
+  ourmine modules              List all 77+ ARES security modules
   ourmine security list        Same as 'modules'
 
 ${C.bold}Security Flags:${C.reset}
-  ${C.grey}--live${C.reset}                       Enable real network/exec mode (dry-run is default)
+  ${C.grey}--live${C.reset}                       Enable real network/exec mode
+  ${C.grey}--dry-run${C.reset}                    Force simulation (overrides Kali auto-live)
+  ${C.grey}--require-live${C.reset}               Fail if tools unavailable (no fallbacks)
 
-${C.grey}All other commands (tui, run, serve, models, session, mcp, providers, stats,
-export, import, session, github, pr, agent, db, web, acp, attach, upgrade)
+${C.grey}All other commands (tui, run, models, session, mcp, providers, stats,
+export, import, session, github, pr, db, web, acp, attach, upgrade)
 are passed directly to the real OpenCode binary.${C.reset}
 `)
 }
 
-// ─── Delegate to real opencode binary (with full stdio inherit) ──────────────
+// ─── OpenCode launch (bootstrap ARES MCP + pentest agent, then delegate) ───
+
+function launchOpenCode(args: string[]): void {
+  try {
+    bootstrapOpenCode()
+  } catch {
+    // never block OpenCode launch on bootstrap failures
+  }
+  delegateToOpenCode(args)
+}
 
 function delegateToOpenCode(args: string[]): void {
   const child = spawn("opencode", args, {
@@ -160,7 +175,7 @@ async function cmdPentest(target: string, display: ExecutionDisplay, isLive: boo
   }
 
   display.emit({ type: "tool_start", label: "PentestAgent.runAutonomous", detail: target })
-  const agent = new PentestAgent({ target, scope: [target], live: isLive })
+  const agent = new PentestAgent({ target, scope: [target], live: isLive, requireLive: false })
   const result = await agent.runAutonomous()
   display.emit({ type: "tool_done",  label: "PentestAgent.runAutonomous",
     detail: `${result.summary["completed"]}/${result.summary["totalTasks"]} tasks` })
@@ -171,12 +186,81 @@ async function cmdPentest(target: string, display: ExecutionDisplay, isLive: boo
 }
 
 async function cmdModules() {
-  const mods = Object.keys(security)
-  console.log(`\n${C.bold}ARES Security Modules (${mods.length} Total):${C.reset}\n`)
+  const { toolSummary, checkTools } = await import("../packages/security/src/tool_detection.ts")
+  const mods = Object.keys(security).filter((k) => !k.startsWith("_")).sort()
+  console.log(`\n${C.bold}ARES Security Modules (${mods.length} namespaces):${C.reset}\n`)
   mods.forEach((mod, i) => {
-    const num = String(i + 1).padStart(2, " ")
-    console.log(`  ${C.orange}${num}.${C.reset} ${C.cyan}${mod.padEnd(24)}${C.reset} ${C.grey}dry-run safe${C.reset}`)
+    const num = String(i + 1).padStart(3, " ")
+    console.log(`  ${C.orange}${num}.${C.reset} ${C.cyan}${mod.padEnd(28)}${C.reset}`)
   })
+  console.log(`\n${C.bold}Tool availability (sample):${C.reset}`)
+  const sample = checkTools("nmap", "gobuster", "curl", "nuclei", "kubectl")
+  for (const t of sample) {
+    const mark = t.available ? `${C.green}✓${C.reset}` : `${C.red}✗${C.reset}`
+    console.log(`  ${mark} ${t.name}${t.version ? ` v${t.version}` : ""}`)
+  }
+  console.log(`\n${C.grey}Run 'ourmine toolcheck' for full tool report.${C.reset}\n`)
+}
+
+async function cmdServe() {
+  console.log(`${C.bold}${C.orange}OurMine ARES MCP Server${C.reset}`)
+  console.log(`${C.grey}Starting MCP server on stdio...${C.reset}`)
+  console.log(`${C.grey}Connect an LLM agent to this process for tool access.${C.reset}\n`)
+
+  const { startMcpServer } = await import("../packages/security/src/mcp_server.ts")
+  startMcpServer()
+}
+
+async function cmdAgent(target: string, isLive: boolean, requireLive: boolean) {
+  console.log(`\n${C.bold}${C.orange}OurMine LLM-Driven Pentest Agent${C.reset}`)
+  console.log(`${C.grey}Target: ${target} | Mode: ${isLive ? "LIVE" : "DRY-RUN"}${requireLive ? " | REQUIRE-LIVE" : ""}${C.reset}\n`)
+
+  const { hasLLMKey, listProviders } = await import("../packages/security/src/llm_client.ts")
+  if (!hasLLMKey()) {
+    console.log(`${C.yellow}No LLM API key found. Running in deterministic mode.${C.reset}`)
+    console.log(`${C.grey}Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY for AI-driven analysis.${C.reset}\n`)
+  } else {
+    const providers = listProviders()
+    console.log(`${C.green}LLM providers available: ${providers.join(", ")}${C.reset}\n`)
+  }
+
+  const { PentestAgent } = await import("../packages/security/src/pentestgpt_agent.ts")
+  const agent = new PentestAgent({
+    target,
+    scope: [target],
+    live: isLive,
+    requireLive,
+    maxSteps: 30,
+  })
+
+  console.log(`${C.cyan}Starting autonomous pentest...${C.reset}\n`)
+  const result = await agent.runAutonomous()
+
+  console.log(`\n${C.bold}${C.green}═══ PENTEST COMPLETE ═══${C.reset}\n`)
+  console.log(`${C.bold}Summary:${C.reset}`)
+  console.log(`  Target: ${result.summary["target"]}`)
+  console.log(`  Tasks completed: ${result.summary["completed"]}/${result.summary["totalTasks"]}`)
+
+  const findings = result.summary["findings"] as Record<string, number> | undefined
+  if (findings) {
+    console.log(`  Findings: ${findings["critical"] ?? 0} critical, ${findings["high"] ?? 0} high, ${findings["medium"] ?? 0} medium, ${findings["low"] ?? 0} low`)
+  }
+
+  if (result.findings.length > 0) {
+    console.log(`\n${C.bold}Findings:${C.reset}`)
+    for (const f of result.findings) {
+      const color = f.severity === "critical" ? C.red : f.severity === "high" ? C.orange : f.severity === "medium" ? C.yellow : C.grey
+      console.log(`  ${color}[${f.severity.toUpperCase()}]${C.reset} ${f.title}`)
+      console.log(`    ${C.grey}${f.recommendation}${C.reset}`)
+    }
+  }
+  console.log()
+}
+
+async function cmdToolCheck() {
+  const { toolSummary } = await import("../packages/security/src/tool_detection.ts")
+  console.log(`\n${C.bold}${C.orange}ARES Tool Detection${C.reset}\n`)
+  console.log(toolSummary())
   console.log()
 }
 
@@ -184,12 +268,16 @@ async function cmdModules() {
 
 async function main() {
   const args    = process.argv.slice(2)
-  const isLive  = args.includes("--live")
-  const passArgs = args.filter(a => a !== "--live")
+  const dryRun  = args.includes("--dry-run")
+  const requireLive = args.includes("--require-live")
+  const passArgs = args.filter(a => !["--live", "--dry-run", "--require-live"].includes(a))
 
-  // No args → delegate to real opencode (launches TUI)
+  const { isKaliLinux } = await import("../packages/security/src/apt_tradecraft.ts")
+  const isLive  = !dryRun && (args.includes("--live") || isKaliLinux())
+
+  // No args → launch real opencode TUI (ARES auto-wired)
   if (args.length === 0) {
-    delegateToOpenCode([])
+    launchOpenCode([])
     return
   }
 
@@ -253,12 +341,21 @@ async function main() {
       case "modules":
         await cmdModules()
         break
+      case "serve":
+        await cmdServe()
+        break
+      case "agent":
+        await cmdAgent(target, isLive, requireLive)
+        break
+      case "toolcheck":
+        await cmdToolCheck()
+        break
     }
     return
   }
 
   // ── Everything else → real opencode binary, full stdio passthrough ─────────
-  delegateToOpenCode(passArgs)
+  launchOpenCode(passArgs)
 }
 
 main().catch(e => {

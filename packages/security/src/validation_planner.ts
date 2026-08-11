@@ -179,6 +179,42 @@ const CAPABILITY_REGISTRY: ValidationCapability[] = [
     supportedProtocols: ["http", "https"],
     timeoutMs:          5_000,
   },
+  // ── SSRF: internal metadata probe ─────────────────────────────────────────
+  {
+    id:                 "ssrf-metadata-probe",
+    name:               "SSRF Metadata Endpoint Probe",
+    strategy:           "HTTP_PROBE",
+    matchPatterns:      ["ssrf", "server-side-request", "metadata", "169.254.169.254"],
+    requiredTool:       "curl",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          5_000,
+  },
+  // ── SQLi: error-based response diff ───────────────────────────────────────
+  {
+    id:                 "sqli-error-probe",
+    name:               "SQL Injection Error Probe",
+    strategy:           "HTTP_PROBE",
+    matchPatterns:      ["sqli", "sql-injection", "sqlmap", "mysql-error", "syntax-error"],
+    requiredTool:       "curl",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          5_000,
+  },
+  // ── Auth bypass: unauthenticated admin access ─────────────────────────────
+  {
+    id:                 "auth-bypass-probe",
+    name:               "Authentication Bypass Probe",
+    strategy:           "HTTP_PROBE",
+    matchPatterns:      ["auth-bypass", "unauthenticated", "broken-auth", "idor"],
+    requiredTool:       "curl",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          5_000,
+  },
 ]
 
 // ─── ValidationPlanner ───────────────────────────────────────────────────────

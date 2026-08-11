@@ -4,6 +4,7 @@
  * Covert HTTP Headers, and Steganographic Transport.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
 
 export interface ExfilOptions {

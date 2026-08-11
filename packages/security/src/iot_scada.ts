@@ -4,6 +4,7 @@
  * DNP3 Master/Outstation Simulation, MQTT Packet Sniffing & Injection, and BACnet/IP Router Audit.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as net from "node:net";
 
 export interface ModbusReadResult {

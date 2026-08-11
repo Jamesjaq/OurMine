@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install root dependencies
+        run: npm install typescript@^5.8.3 @types/node@^22 --no-save --ignore-scripts
+
+      - name: Generate security index
+        run: npm run generate:index
+
+      - name: Typecheck security
+        run: npm run typecheck
+
+      - name: Security tests
+        run: npm test
+
+  lint-exports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install typescript@^5.8.3 @types/node@^22 --no-save --ignore-scripts
+      - run: npm run generate:index
+
+      - name: Verify module namespace exports
+        run: npm run test:wiring
+
+  bun-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [core, opencode, llm, tui, client, codemode, session-ui]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Bun workspace deps
+        run: bun install
+        working-directory: packages/opencode
+
+      - name: Test packages/${{ matrix.package }}
+        run: bun test --only-failures
+        working-directory: packages/${{ matrix.package }}
+        continue-on-error: true
+
+  capability-benchmark:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install typescript@^5.8.3 @types/node@^22 --no-save --ignore-scripts
+      - run: npm run generate:index
+
+      - name: Run lab capability benchmark
+        run: npm run capability:benchmark
+        env:
+          CI_STRICT: "1"
+
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: capability-report
+          path: lab/results/

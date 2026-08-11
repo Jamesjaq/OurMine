@@ -1,3 +1,4 @@
+import { resolveDryRun } from "./exec_options.ts"
 /**
  * @module cloud_token
  * Cloud Token Harvesting & Abuse — AWS IMDSv1/v2, GCP Metadata Server, Azure IMDS,

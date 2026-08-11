@@ -4,6 +4,7 @@
  * OSINT-personalised lures, and campaign management.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

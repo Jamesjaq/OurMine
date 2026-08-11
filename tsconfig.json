@@ -13,13 +13,9 @@
     "baseUrl": ".",
     "paths": {
       "@ourmine/core": ["./packages/core/src/index.ts"],
-      "@ourmine/agent": ["./packages/agent/src/index.ts"],
-      "@ourmine/devtools": ["./packages/devtools/src/index.ts"],
-      "@ourmine/gateway": ["./packages/gateway/src/index.ts"],
-      "@ourmine/security": ["./packages/security/src/index.ts"],
-      "@ourmine/tui": ["./packages/tui/src/index.ts"],
-      "@ourmine/ui": ["./packages/ui/src/index.ts"]
+      "@opencode-ai/core": ["./packages/core/src/index.ts"],
+      "@ourmine/security": ["./packages/security/src/index.ts"]
     }
   },
-  "exclude": ["node_modules", "dist", "packages/ui", "packages/tui"]
+  "exclude": ["node_modules", "dist", "packages/ui", "packages/tui", "packages/opencode"]
 }

@@ -13,6 +13,7 @@
  * `live=false` and never touch the network.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { randomUUID } from "node:crypto";
 import { readFile, writeFile, access } from "node:fs/promises";
 

@@ -6,6 +6,7 @@
  * Designed for authorised bug-bounty programmes (HackerOne / Bugcrowd).
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { spawnSync } from "node:child_process";
 import * as crypto from "node:crypto";
 
@@ -231,4 +232,19 @@ export async function runRecon(
   };
 }
 
-export default { runRecon, discoverSubdomains, probeHosts, harvestJSSecrets, extractSecrets };
+/** MCP/CLI alias — accepts `{ target }` or full BountyTarget */
+export async function recon(
+  targetOrOpts: BountyTarget | { target?: string; domain?: string; endpoints?: Endpoint[] },
+  opts: BountyHunterOptions = {},
+): Promise<ReconReport> {
+  const raw = targetOrOpts as BountyTarget & { target?: string };
+  const domain = raw.domain ?? raw.target ?? "example.com";
+  const bountyTarget: BountyTarget = {
+    domain,
+    inScope: raw.inScope ?? [`*.${domain}`, domain],
+    outOfScope: raw.outOfScope ?? [],
+  };
+  return runRecon(bountyTarget, opts);
+}
+
+export default { runRecon, recon, discoverSubdomains, probeHosts, harvestJSSecrets, extractSecrets };

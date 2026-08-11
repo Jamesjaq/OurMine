@@ -4,6 +4,7 @@
  * to guarantee environment isolation and zero host contamination.
  */
 
+import { resolveDryRun } from "./exec_options.ts"
 import { execSync } from "node:child_process";
 
 export interface DockerExecutionOptions {
