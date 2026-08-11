@@ -96,3 +96,5 @@ export * as agent_resilience from "./agent_resilience.ts";
 export * as opsec_throttle from "./opsec_throttle.ts";
 export * as tool_broker from "./tool_broker.ts";
 export * as context_guard from "./context_guard.ts";
+export * as crypto_token from "./crypto_token.ts";
+export * as capability_policy from "./capability_policy.ts";

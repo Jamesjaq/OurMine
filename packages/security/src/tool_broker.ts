@@ -17,10 +17,10 @@ export interface ExecPolicy {
 const DEFAULT_POLICY: ExecPolicy = {
   allowedBinaries: new Set([
     "nmap", "gobuster", "ffuf", "nikto", "sqlmap", "dig", "whois",
-    "ping", "traceroute", "curl", "git", "python3", "node", "yara"
+    "ping", "traceroute", "curl", "git", "yara"
   ]),
   blockedSubcommands: new Set([
-    "rm -rf /", "mkfs", "dd", ":(){ :|:& };:"
+    "rm -rf /", "mkfs", "dd", ":(){ :|:& };:", "-c import", "-e eval"
   ]),
   maxExecutionTimeMs: 60000,
 }
