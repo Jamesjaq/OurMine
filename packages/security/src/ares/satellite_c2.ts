@@ -1,12 +1,12 @@
 /**
  * @module ares/satellite_c2
- * Satellite covert C2 — CovertC2Engine + stego beacon + VSAT probe.
+ * Satellite covert C2 — CovertC2Engine + stego beacon + VSAT/SBD probes.
  */
 import { CovertC2Engine } from "../covert_c2.ts"
 import { generateC2Image } from "../stego_c2.ts"
 import { LegitC2Server, InMemoryTransport } from "../c2_platform.ts"
 import { brokerExec, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
-import { c2Material, step, type ExecStep } from "./_integrations.ts"
+import { c2Material, runCmd, step, type ExecStep } from "./_integrations.ts"
 
 export interface SatelliteC2Result {
   c2Id: string
@@ -54,6 +54,21 @@ export async function deploySatelliteC2(opts: {
     steps.push(step("vsat_probe", r.ok, r.out.slice(0, 200)))
     channels.push("vsat_modem")
   }
+
+  steps.push(await runCmd("domain_fronting_probe", `curl -s -m 8 -H "Host: ${frontDomain}" https://${frontDomain}/ 2>&1 | head -c 400`))
+  if (steps[steps.length - 1]?.success) {
+    channels.push("domain_fronting")
+    probed = true
+  }
+
+  artifacts.push(writeArtifact("satellite", `${c2Id}_sbd.json`, JSON.stringify({
+    protocol: "iridium_sbd",
+    imei: process.env.OURMINE_SBD_IMEI ?? "300234010000000",
+    endpoint: "https://rockblock.rock7.com/rockblock/MT",
+    session,
+  }, null, 2)))
+  channels.push("iridium_sbd")
+  steps.push(step("sbd_scaffold", true, session))
 
   if (isToolAvailable("nmap")) {
     const r = await brokerExec("nmap -sn 192.168.1.0/24 2>&1 | head -30")

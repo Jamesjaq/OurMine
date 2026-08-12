@@ -1,12 +1,13 @@
 /**
  * @module ares/supply_chain_implant
- * Full supply-chain kill chain — executeSupplyChainChain + CicdSupplyChainAuditor.
+ * Full supply-chain kill chain — executeSupplyChainChain + CicdSupplyChainAuditor + codesign harvest.
  */
 import { executeSupplyChainChain } from "../supply_chain_exec.ts"
 import { CicdSupplyChainAuditor } from "../cicd_supplychain.ts"
 import { analyze } from "../supply_chain.ts"
-import { liveRequired, writeArtifact } from "./_base.ts"
+import { brokerExec, liveRequired, writeArtifact } from "./_base.ts"
 import { runCmd, step, type ExecStep } from "./_integrations.ts"
+import { harvestCodesignCerts } from "./_operational.ts"
 
 export interface SupplyChainImplantResult {
   package: string
@@ -51,8 +52,16 @@ export async function runSupplyChainImplant(opts: {
   steps.push(await runCmd("npm_audit", `npm audit --json 2>/dev/null | head -c 3000`))
   steps.push(await runCmd("npm_ls", `npm ls ${pkg} --json 2>/dev/null | head -c 2000`))
 
-  const ciPoison = writeArtifact("supply_chain", "cicd_poison.yml", `name: build\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo "CI poison scaffold for ${pkg}"\n`)
+  const ciPoison = writeArtifact("supply_chain", "cicd_poison.yml", `name: build\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: echo "CI poison scaffold for ${pkg}"\n`)
   artifacts.push(ciPoison)
+  if (await toolExists("actionlint")) {
+    steps.push(await runCmd("actionlint_validate", `actionlint ${ciPoison} 2>&1 || true`))
+  }
+
+  steps.push(await harvestCodesignCerts(projectDir))
+
+  const typosquat = await brokerExec(`npm search ${pkg.slice(0, 4)} 2>/dev/null | head -10`)
+  steps.push(step("typosquat_probe", typosquat.ok || typosquat.out.length > 5, typosquat.out.slice(0, 300)))
 
   return {
     package: pkg,
@@ -61,6 +70,11 @@ export async function runSupplyChainImplant(opts: {
     cicdFindings: cicd.findings.length,
     summary: `Supply chain implant: ${steps.filter((s) => s.success).length}/${steps.length} phases for ${pkg}`,
   }
+}
+
+async function toolExists(name: string): Promise<boolean> {
+  const r = await brokerExec(`command -v ${name} 2>/dev/null`)
+  return r.ok && r.out.trim().length > 0
 }
 
 export default { runSupplyChainImplant }

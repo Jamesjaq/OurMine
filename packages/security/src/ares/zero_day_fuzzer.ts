@@ -6,6 +6,13 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
 import { parseAflCrashes, step, type ExecStep } from "./_integrations.ts"
+import {
+  brokerExecLong,
+  ensureLabFuzzHarness,
+  findPatternOffset,
+  minimizeCrash,
+  reproCrashInSandbox,
+} from "./_operational.ts"
 import { synthesizeFromIndicator, buildDeserScaffold } from "../exploit_synthesis.ts"
 import { researchCve } from "../auto_research.ts"
 
@@ -16,6 +23,8 @@ export interface FuzzCrash {
   exploitable: boolean
   harness?: string
   synthesis?: unknown
+  offset?: number
+  minimized?: string
 }
 
 export interface ZeroDayFuzzResult {
@@ -38,16 +47,17 @@ function mutationalFuzz(seed: Buffer, rounds: number): Buffer[] {
   return out
 }
 
-function triageCrash(output: string): boolean {
-  return /segfault|SIGSEGV|stack smashing|heap overflow|use-after-free|asan:|ubsan:|abort/i.test(output)
+function triageCrash(output: string, exitCode?: number): boolean {
+  return exitCode !== 0 && /segfault|SIGSEGV|stack smashing|heap overflow|use-after-free|asan:|ubsan:|abort|core dumped/i.test(output)
 }
 
 export async function runZeroDayFuzzer(opts: {
-  target: string
+  target?: string
   live?: boolean
   seedFile?: string
   rounds?: number
   cveId?: string
+  aflTimeoutSec?: number
 }): Promise<ZeroDayFuzzResult> {
   liveRequired("ares_zero_day_fuzzer", opts)
   const dir = ensureAresDir("fuzz")
@@ -63,35 +73,73 @@ export async function runZeroDayFuzzer(opts: {
     writeArtifact("fuzz", `cve_${opts.cveId}.json`, JSON.stringify(cve, null, 2))
   }
 
-  if (isToolAvailable("afl-fuzz") && opts.seedFile && fs.existsSync(opts.seedFile)) {
+  let target = opts.target ?? "lab"
+  let seedFile = opts.seedFile
+  if (target === "lab" || target === "auto") {
+    const lab = ensureLabFuzzHarness(dir)
+    steps.push(step("lab_harness_compile", lab.compiled, lab.harness))
+    if (lab.compiled) {
+      target = lab.harness
+      seedFile = seedFile ?? lab.seed
+    } else {
+      target = "/bin/sh"
+      seedFile = seedFile ?? writeArtifact("fuzz", "seed.bin", "OURMINE_FUZZ_SEED\x00AAAA")
+      steps.push(step("lab_harness_fallback", true, "gcc unavailable — shell echo fuzz"))
+    }
+  }
+
+  const aflTimeout = opts.aflTimeoutSec ?? 45
+  if (isToolAvailable("afl-fuzz") && seedFile && fs.existsSync(seedFile) && fs.existsSync(target)) {
     engine = "afl-fuzz"
     const outDir = path.join(dir, "afl-out")
     fs.mkdirSync(outDir, { recursive: true })
-    const seedDir = path.dirname(opts.seedFile)
-    const r = await brokerExec(`timeout 30 afl-fuzz -i ${seedDir} -o ${outDir} -m none -t 2000 -- ${opts.target} @@ 2>&1 || true`)
-    iterations = rounds
-    steps.push(step("afl_fuzz", r.ok || r.out.includes("crashes"), r.out.slice(0, 500)))
+    const seedDir = path.dirname(seedFile)
+    if (!fs.readdirSync(seedDir).length) fs.copyFileSync(seedFile, path.join(seedDir, "seed.txt"))
+    const r = await brokerExecLong(
+      `AFL_SKIP_CPUFREQ=1 afl-fuzz -i ${seedDir} -o ${outDir} -m none -t 2000 -- ${target} @@`,
+      aflTimeout,
+    )
+    steps.push(step("afl_fuzz", r.out.includes("crashes") || r.out.includes("unique"), r.out.slice(0, 500)))
+    if (isToolAvailable("afl-cmin")) {
+      const cminDir = path.join(dir, "afl-cmin")
+      fs.mkdirSync(cminDir, { recursive: true })
+      const cm = await brokerExec(`afl-cmin -i ${outDir}/queue -o ${cminDir} -m none -- ${target} @@ 2>&1 | tail -5`)
+      steps.push(step("afl_cmin", cm.ok || cm.out.includes("corpus"), cm.out.slice(0, 300)))
+    }
     for (const crashPath of parseAflCrashes(outDir)) {
-      const crashOut = fs.readFileSync(crashPath)
-      const repro = await brokerExec(`${opts.target} ${crashPath} 2>&1`)
-      const exploitable = triageCrash(repro.out)
+      const minimized = await minimizeCrash(crashPath, target)
+      const crashBuf = fs.readFileSync(minimized)
+      const repro = await brokerExec(`${target} ${minimized} 2>&1`)
+      const sbx = await reproCrashInSandbox(target, minimized).catch((e) => ({ exitCode: 1, stderr: String(e), stdout: "", sandboxed: false }))
+      const exploitable = triageCrash(repro.out + sbx.stderr, repro.exit || sbx.exitCode)
       let synthesis: unknown
       if (exploitable) {
-        synthesis = await synthesizeFromIndicator(opts.target, repro.out, { live: true })
+        synthesis = await synthesizeFromIndicator(target, repro.out + sbx.stderr, { live: true })
         buildDeserScaffold(repro.out)
       }
-      crashes.push({ input: crashPath, output: repro.out.slice(0, 300), exploitable, synthesis })
+      const marker = Buffer.from("OURMINE")
+      const offset = findPatternOffset(crashBuf, marker)
+      crashes.push({
+        input: crashPath,
+        minimized,
+        output: (repro.out + sbx.stderr).slice(0, 300),
+        exploitable,
+        synthesis,
+        offset: offset >= 0 ? offset : undefined,
+        signal: sbx.exitCode !== 0 ? `exit=${sbx.exitCode}` : undefined,
+      })
     }
+    iterations = parseAflCrashes(outDir).length + rounds
   } else {
-    const seedPath = opts.seedFile ?? writeArtifact("fuzz", "seed.bin", "OURMINE_FUZZ_SEED\x00AAAA")
+    const seedPath = seedFile ?? writeArtifact("fuzz", "seed.bin", "OURMINE_FUZZ_SEED\x00AAAA")
     const seed = fs.readFileSync(seedPath)
     for (let i = 0; i < rounds; i++) {
       const mutant = mutationalFuzz(seed, 1)[0]!
       const inp = path.join(dir, `input_${i}.bin`)
       fs.writeFileSync(inp, mutant)
-      const r = await brokerExec(`${opts.target} ${inp} 2>&1`)
-      if (!r.ok && triageCrash(r.out)) {
-        const synthesis = await synthesizeFromIndicator(opts.target, r.out, { live: true })
+      const r = await brokerExec(`${target} ${inp} 2>&1`)
+      if (triageCrash(r.out, r.exit)) {
+        const synthesis = await synthesizeFromIndicator(target, r.out, { live: true })
         crashes.push({ input: inp, output: r.out.slice(0, 300), exploitable: true, synthesis })
       }
     }
@@ -101,12 +149,16 @@ export async function runZeroDayFuzzer(opts: {
   let exploitScaffold: string | undefined
   if (crashes.length) {
     const crash = crashes[0]!
+    const payloadPath = crash.minimized ?? crash.input
     const synth = crash.synthesis as { polyglots?: unknown[]; deserScaffold?: unknown } | undefined
     exploitScaffold = writeArtifact("fuzz", "exploit_scaffold.py", `#!/usr/bin/env python3
 # Auto-generated from crash triage — authorized lab only
-import sys
-payload = open("${crash.input}", "rb").read()
+import struct, sys
+payload = open("${payloadPath}", "rb").read()
+offset = ${crash.offset ?? "None"}
 # Synthesis: ${JSON.stringify(synth?.deserScaffold ?? "manual ROP")}
+if offset is not None:
+    payload = payload[:offset] + struct.pack("<Q", 0x4141414141414141) + payload[offset+8:]
 sys.stdout.buffer.write(payload)
 `)
     steps.push(step("exploit_scaffold", true, exploitScaffold))

