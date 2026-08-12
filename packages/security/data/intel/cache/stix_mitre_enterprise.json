@@ -1,7 +1,7 @@
 {
   "feedId": "mitre_enterprise",
   "collectionId": "95ecc380-afe9-11df-a3b3-001e4cfc1678",
-  "cachedAt": "2026-08-12T15:36:12.850Z",
+  "cachedAt": "2026-08-12T15:37:49.400Z",
   "mode": "dry_run_stub",
   "objects": 0,
   "note": "TAXII live poll requires OURMINE_INTEL_REFRESH=1 + live mode"

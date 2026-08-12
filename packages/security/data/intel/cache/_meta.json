@@ -1,19 +1,19 @@
 {
   "kev": {
-    "cachedAt": "2026-08-12T15:36:12.851Z",
+    "cachedAt": "2026-08-12T15:37:49.400Z",
     "count": 1665,
     "source": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
     "ttlDays": 7
   },
   "ransomwatch": {
-    "cachedAt": "2026-08-12T15:36:12.851Z",
-    "count": 2500,
-    "latestDiscovered": "2022-03-27T17:22:27.888103Z",
+    "cachedAt": "2026-08-12T15:59:52.881Z",
+    "count": 16072,
+    "latestDiscovered": "2025-06-16T20:30:52.596196Z",
     "source": "https://raw.githubusercontent.com/joshhighet/ransomwatch/main/posts.json",
     "ttlDays": 7
   },
   "stix": {
-    "cachedAt": "2026-08-12T15:36:12.851Z",
+    "cachedAt": "2026-08-12T15:37:49.400Z",
     "count": 1,
     "ttlDays": 14
   }
