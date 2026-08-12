@@ -7,6 +7,7 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { brokerExec, ensureAresDir, isToolAvailable, writeArtifact } from "./_base.ts"
 import { CredentialGraph } from "../credential_graph.ts"
+import { resolveAdChainContext, type AdChainContext } from "./_chain.ts"
 
 export interface ExecStep {
   action: string
@@ -31,10 +32,28 @@ export async function runIfTool(tool: string, label: string, cmd: string): Promi
 
 export function loadBestCredential(host?: string): { username: string; secret: string; domain?: string } | null {
   const cg = CredentialGraph.load()
+  const krbtgt = cg.findKrbtgtHash()
+  if (krbtgt) {
+    const ctx = cg.getDomainContext()
+    return { username: "krbtgt", secret: krbtgt, domain: ctx.domain }
+  }
   const creds = host ? cg.unusedForHost(host) : cg.listCredentials().filter((c) => !c.used)
   const c = creds.find((x) => x.type === "password" || x.type === "nthash") ?? creds[0]
-  if (!c) return null
+  if (!c) {
+    if (process.env.OURMINE_AD_USER && process.env.OURMINE_AD_PASS) {
+      return {
+        username: process.env.OURMINE_AD_USER,
+        secret: process.env.OURMINE_AD_PASS,
+        domain: process.env.OURMINE_AD_DOMAIN,
+      }
+    }
+    return null
+  }
   return { username: c.username ?? "administrator", secret: c.value, domain: c.domain }
+}
+
+export function loadAdContext(opts: { domain?: string; target?: string } = {}): AdChainContext {
+  return resolveAdChainContext(CredentialGraph.load(), opts)
 }
 
 export function c2Material(): { mailboxUrl: string; keyHex: string; session: string } {

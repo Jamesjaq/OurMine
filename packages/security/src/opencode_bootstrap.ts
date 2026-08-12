@@ -77,6 +77,37 @@ Server posture: **${mode}** (Kali Linux auto-enables live execution).
 - On Kali or when live: run real scans, exploits, and tooling — no simulations.
 - In dry-run: plan and explain, but prefer \`ares_*\` tools which respect server mode.
 
+## Auto-chaining (cred graph → Kerberos → lateral)
+
+When tier-1 live mode is active, the platform **automatically chains** post-exploitation:
+
+1. \`cred_access_auto\` / DCSync → parses \`krbtgt\` + DC machine hashes into \`.ourmine/agent/credential_graph.json\`
+2. \`ares_kerberos_advanced\` picks up \`krbtgtHash\`, \`domainSid\`, \`dcMachineHash\` from the graph (no manual params)
+3. \`ares_lateral_scale\` → \`ares_fileless_implant\` → \`ares_persistence_advanced\` run when creds exist
+4. \`campaign_loop\` and \`ares_orchestrator\` invoke this chain automatically after pivot
+
+Call \`ares_auto_chain\` explicitly to run harvest → Kerberos → lateral → fileless → persistence in one shot.
+
+## Lab environment variables
+
+Set these to unlock gated operational paths (agent should check and use when present):
+
+| Variable | Unlocks |
+|----------|---------|
+| \`OURMINE_AD_DOMAIN\` | AD domain for Kerberos/lateral |
+| \`OURMINE_AD_USER\` / \`OURMINE_AD_PASS\` | DCSync + remote inject fallback |
+| \`OURMINE_DOMAIN_SID\` | Golden/platinum ticket forging |
+| \`OURMINE_KRBTGT_HASH\` | Skip DCSync when hash already known |
+| \`OURMINE_DC_MACHINE_HASH\` | Silver/platinum ticket paths |
+| \`OURMINE_LAB_FLASH_WRITE=1\` | flashrom **write** (bricks hardware if wrong) |
+| \`OURMINE_LAB_AUTONOMOUS=1\` | Full autonomous cred harvest + pivot |
+| \`OURMINE_TIER1=1\` | Tier-1 campaign loop + auto-chain |
+| \`OURMINE_SS7_HOST\` | SS7/SIGTRAN lab target |
+| \`OURMINE_VSAT_HOST\` | VSAT modem probe |
+| \`OURMINE_ROCKBLOCK_KEY\` | Iridium SBD API TX |
+| \`OURMINE_RESPONDER_DURATION\` | Sustained Responder seconds (default: brief probe) |
+| \`OURMINE_C2_MAILBOX\` | C2 mailbox URL for beacons |
+
 ## When the user gives a target
 
 1. Confirm scope in one short line (target, constraints, authorization assumed in lab).

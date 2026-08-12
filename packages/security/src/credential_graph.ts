@@ -6,6 +6,7 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { fileURLToPath } from "node:url"
 import type { AttackSurfaceGraph } from "./attack_surface.ts"
+import { extractDomainSid, parseSecretsdumpOutput } from "./cred_parse.ts"
 
 const DEFAULT_CRED_GRAPH_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -13,6 +14,15 @@ const DEFAULT_CRED_GRAPH_PATH = path.resolve(
 )
 
 export type CredentialType = "password" | "nthash" | "ticket" | "token" | "key" | "cookie"
+
+export type CredentialRole = "krbtgt" | "dc_machine" | "domain_sid" | "user" | "service" | "generic"
+
+export interface DomainContext {
+  domain?: string
+  domainSid?: string
+  dcHost?: string
+  dcName?: string
+}
 
 export interface CredentialNode {
   id: string
@@ -24,6 +34,7 @@ export interface CredentialNode {
   value: string
   discoveredAt: string
   used: boolean
+  role?: CredentialRole
 }
 
 export interface PivotEdge {
@@ -46,6 +57,7 @@ export class CredentialGraph {
   private pivots: PivotEdge[] = []
   private bloodhoundPaths: BloodHoundPathRef[] = []
   private bloodhoundExportPath?: string
+  private domainContext: DomainContext = {}
 
   addCredential(cred: Omit<CredentialNode, "id" | "discoveredAt" | "used">): CredentialNode {
     const id = `cred_${this.creds.size + 1}_${Date.now()}`
@@ -56,7 +68,73 @@ export class CredentialGraph {
       used: false,
     }
     this.creds.set(id, node)
+    if (cred.domain) this.domainContext.domain = cred.domain
+    if (cred.role === "dc_machine" && cred.username) this.domainContext.dcName = cred.username.replace(/\$$/, "")
+    if (cred.host) this.domainContext.dcHost = cred.host
     return node
+  }
+
+  setDomainContext(ctx: DomainContext): void {
+    this.domainContext = { ...this.domainContext, ...ctx }
+  }
+
+  getDomainContext(): DomainContext {
+    return { ...this.domainContext }
+  }
+
+  findKrbtgtHash(domain?: string): string | undefined {
+    const d = (domain ?? this.domainContext.domain)?.toUpperCase()
+    for (const c of this.creds.values()) {
+      if (c.role === "krbtgt" || c.username?.toLowerCase() === "krbtgt") {
+        if (!d || !c.domain || c.domain.toUpperCase() === d) return c.value
+      }
+    }
+    return undefined
+  }
+
+  findDcMachineHash(domain?: string): string | undefined {
+    const d = (domain ?? this.domainContext.domain)?.toUpperCase()
+    for (const c of this.creds.values()) {
+      if (c.role === "dc_machine" || (c.username?.endsWith("$") && /^dc/i.test(c.username))) {
+        if (!d || !c.domain || c.domain.toUpperCase() === d) return c.value
+      }
+    }
+    return undefined
+  }
+
+  getAdContext(): DomainContext & { krbtgtHash?: string; dcMachineHash?: string } {
+    return {
+      ...this.domainContext,
+      krbtgtHash: this.findKrbtgtHash(),
+      dcMachineHash: this.findDcMachineHash(),
+    }
+  }
+
+  /** Parse impacket secretsdump / DCSync output into typed graph nodes. */
+  ingestSecretsdumpOutput(output: string, opts: { source?: string; domain?: string; host?: string } = {}): number {
+    let added = 0
+    const sid = extractDomainSid(output)
+    if (sid) this.domainContext.domainSid = sid
+
+    for (const acct of parseSecretsdumpOutput(output)) {
+      const domain = opts.domain ?? acct.domain
+      this.addCredential({
+        type: "nthash",
+        source: opts.source ?? "secretsdump",
+        username: acct.username,
+        domain,
+        host: opts.host,
+        value: acct.ntHash,
+        role: acct.role === "user" ? "generic" : acct.role,
+      })
+      added++
+      if (acct.role === "krbtgt") this.domainContext.domain = domain
+      if (acct.role === "dc_machine") {
+        this.domainContext.domain = domain
+        this.domainContext.dcName = acct.username.replace(/\$$/, "")
+      }
+    }
+    return added
   }
 
   listCredentials(host?: string): CredentialNode[] {
@@ -131,12 +209,19 @@ export class CredentialGraph {
     }
   }
 
-  toJSON(): { credentials: CredentialNode[]; pivots: PivotEdge[]; bloodhoundPaths: BloodHoundPathRef[]; bloodhoundExportPath?: string } {
+  toJSON(): {
+    credentials: CredentialNode[]
+    pivots: PivotEdge[]
+    bloodhoundPaths: BloodHoundPathRef[]
+    bloodhoundExportPath?: string
+    domainContext?: DomainContext
+  } {
     return {
       credentials: [...this.creds.values()],
       pivots: this.pivots,
       bloodhoundPaths: this.bloodhoundPaths,
       bloodhoundExportPath: this.bloodhoundExportPath,
+      domainContext: Object.keys(this.domainContext).length ? this.domainContext : undefined,
     }
   }
 
@@ -145,12 +230,14 @@ export class CredentialGraph {
     pivots?: PivotEdge[]
     bloodhoundPaths?: BloodHoundPathRef[]
     bloodhoundExportPath?: string
+    domainContext?: DomainContext
   }): CredentialGraph {
     const g = new CredentialGraph()
     for (const c of data.credentials ?? []) g.creds.set(c.id, c)
     g.pivots = data.pivots ?? []
     g.bloodhoundPaths = data.bloodhoundPaths ?? []
     g.bloodhoundExportPath = data.bloodhoundExportPath
+    g.domainContext = data.domainContext ?? {}
     return g
   }
 

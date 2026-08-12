@@ -684,8 +684,21 @@ export const MODULE_BRIDGE: Record<
       target: String(params.target ?? hostFromTarget(ctx.target)),
       domain: params.domain as string | undefined,
       projectDir: params.project_dir as string | undefined,
+      autoChain: params.auto_chain !== false && params.auto_chain !== "false",
     })
     return result("ares_orchestrator", "runAresOrchestrator", ctx, r, r.succeeded > 0)
+  },
+  ares_auto_chain: async (ctx, params) => {
+    const { runAresAutoChain } = await import("./ares/_chain.ts")
+    const { CredentialGraph } = await import("./credential_graph.ts")
+    const r = await runAresAutoChain({
+      live: ctx.live,
+      target: String(params.target ?? hostFromTarget(ctx.target)),
+      domain: params.domain as string | undefined,
+      credGraph: ctx.credGraph ?? CredentialGraph.load(),
+      skipHarvest: params.skip_harvest === true || params.skip_harvest === "true",
+    })
+    return result("ares_auto_chain", "runAresAutoChain", ctx, r, r.phases.some((p) => p.success && !p.skipped))
   },
 }
 

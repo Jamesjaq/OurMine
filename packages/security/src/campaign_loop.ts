@@ -10,6 +10,7 @@ import { createPortForwarderAsync } from "./pivot_tunnel.ts"
 import { EngagementMemory } from "./engagement_memory.ts"
 import { resolveLiveMode } from "./exec_options.ts"
 import { orchestrateSegmentTunnels } from "./segment_tunnel_orchestrator.ts"
+import { runAresAutoChain, harvestAdCredentials } from "./ares/_chain.ts"
 
 export interface CampaignObjective {
   type: PivotObjective
@@ -58,6 +59,22 @@ export async function runCampaignLoop(opts: {
 
   if (!isTier1Autonomous()) {
     process.env.OURMINE_AUTONOMOUS_PIVOT = "1"
+  }
+
+  try {
+    const harvest = await harvestAdCredentials({
+      target: opts.target,
+      domain: process.env.OURMINE_AD_DOMAIN,
+      live: opts.live,
+      credGraph: opts.credGraph,
+    })
+    phases.push({
+      phase: "cred_harvest",
+      success: harvest.phases.some((p) => p.success),
+      detail: harvest.phases.map((p) => p.summary).join("; ").slice(0, 200),
+    })
+  } catch (err) {
+    phases.push({ phase: "cred_harvest", success: false, detail: String((err as Error).message).slice(0, 120) })
   }
 
   try {
@@ -116,6 +133,23 @@ export async function runCampaignLoop(opts: {
     success: pivot.hostsGained.length > 0,
     detail: pivot.summary,
   })
+
+  try {
+    const chain = await runAresAutoChain({
+      target: opts.target,
+      domain: process.env.OURMINE_AD_DOMAIN,
+      live: opts.live,
+      credGraph: opts.credGraph,
+      skipHarvest: true,
+    })
+    phases.push({
+      phase: "ares_auto_chain",
+      success: chain.phases.some((p) => p.success && !p.skipped),
+      detail: chain.summary,
+    })
+  } catch (err) {
+    phases.push({ phase: "ares_auto_chain", success: false, detail: String((err as Error).message).slice(0, 120) })
+  }
 
   opts.credGraph.save()
   const met = objectiveMet(objective.type, [...hosts], opts.credGraph, opts.graph)
