@@ -7,6 +7,7 @@
  */
 
 import { resolveDryRun, resolveLiveMode } from "./exec_options.ts"
+import { httpProbe, probeEmailSecurity, probeWhois } from "./domain_probe.ts"
 import * as crypto from "node:crypto"
 import * as fs from "node:fs"
 import * as path from "node:path"
@@ -16,6 +17,8 @@ export interface AutomatedCampaignOptions {
   template: string
   live?: boolean
   dryRun?: boolean
+  /** When true, run OSINT/recon only — no landing pages or email delivery. */
+  reconOnly?: boolean
   targets?: Array<{ name: string; email: string; role?: string; company?: string }>
   lureType?: "password_reset" | "invoice" | "it_support" | "hr_policy" | "ceo_fraud" | "package_delivery"
   outputDir?: string
@@ -23,6 +26,17 @@ export interface AutomatedCampaignOptions {
   smtpPort?: number
   smtpUser?: string
   smtpPass?: string
+}
+
+export interface TargetReconResult {
+  domain: string
+  mx: string[]
+  spf: string | null
+  dmarc: string | null
+  dmarcPolicy: string | null
+  whoisOrg: string | null
+  whoisRegistrar: string | null
+  webProbes: Array<{ url: string; status: number; ok: boolean }>
 }
 
 export interface CampaignResult {
@@ -189,6 +203,49 @@ function generateEmailTemplate(target: { name: string; email: string; role?: str
   return `Subject: ${template.subject}\nTo: ${target.email}\nFrom: noreply@${target.company || "example.com"}\nContent-Type: text/html; charset=UTF-8\n\n${body.replace(/\n/g, "<br>")} ${generateTrackingPixel(campaignId)}`
 }
 
+/** Live OSINT: mail/web endpoints + DNS email-security records (no delivery). */
+export async function probeTargetRecon(
+  domain: string,
+  opts: { live?: boolean; dryRun?: boolean } = {},
+): Promise<TargetReconResult> {
+  const dryRun = resolveDryRun(opts)
+  const base = domain.replace(/^https?:\/\//, "").split("/")[0] ?? domain
+  if (dryRun) {
+    return {
+      domain: base,
+      mx: [],
+      spf: null,
+      dmarc: null,
+      dmarcPolicy: null,
+      whoisOrg: null,
+      whoisRegistrar: null,
+      webProbes: [],
+    }
+  }
+
+  const [emailSec, whois] = await Promise.all([
+    probeEmailSecurity(base),
+    probeWhois(base),
+  ])
+  const webUrls = [
+    `https://${base}/`,
+    `https://mail.${base}/`,
+    `https://autodiscover.${base}/autodiscover/autodiscover.xml`,
+  ]
+  const webProbes = await Promise.all(webUrls.map((url) => httpProbe(url)))
+
+  return {
+    domain: base,
+    mx: emailSec.mx,
+    spf: emailSec.spf,
+    dmarc: emailSec.dmarc,
+    dmarcPolicy: emailSec.dmarcPolicy,
+    whoisOrg: whois.org,
+    whoisRegistrar: whois.registrar,
+    webProbes: webProbes.map((p) => ({ url: p.url, status: p.status, ok: p.ok })),
+  }
+}
+
 export async function sendSpearphishEmail(
   options: AutomatedCampaignOptions & { to: string; subject: string; htmlBody: string },
 ): Promise<{ sent: boolean; detail: string }> {
@@ -228,6 +285,19 @@ export async function runAutomatedCampaign(options: AutomatedCampaignOptions): P
       landingPage: "",
       trackingPixel: generateTrackingPixel(campaignId),
       targetsCount: targets.length,
+      files: [],
+    }
+  }
+
+  if (options.reconOnly) {
+    const recon = await probeTargetRecon(options.targetDomain, { live: true })
+    return {
+      campaignId,
+      status: "RECON",
+      emailTemplate: `Recon-only: ${recon.webProbes.filter((p) => p.ok).length} web probe(s), MX=${recon.mx.length}, SPF=${recon.spf ? "yes" : "no"}`,
+      targetsCount: targets.length,
+      emailsSent: 0,
+      trackingEnabled: false,
       files: [],
     }
   }

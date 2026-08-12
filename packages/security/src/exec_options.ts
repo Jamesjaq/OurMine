@@ -11,7 +11,16 @@ export function isKaliLinux(): boolean {
   }
 }
 
-/** True when real execution is required (Kali, OURMINE_LIVE, --live, tier-1, or explicit live). */
+/** Start-and-go posture: explicit flag or Kali Linux (unless OURMINE_ALLOW_DRY_RUN=1). */
+export function isBattleReady(): boolean {
+  if (process.env.OURMINE_ALLOW_DRY_RUN === "1") return false
+  const v = process.env.OURMINE_BATTLE_READY?.trim().toLowerCase()
+  if (v === "1" || v === "true" || v === "yes") return true
+  if (isKaliLinux()) return true
+  return false
+}
+
+/** True when real execution is required (battle-ready, OURMINE_LIVE, --live, tier-1, or explicit live). */
 export function resolveLiveMode(opts: { live?: boolean; dryRun?: boolean } = {}): boolean {
   if (opts.dryRun === true) return false
   if (opts.live === false) return false
@@ -22,7 +31,7 @@ export function resolveLiveMode(opts: { live?: boolean; dryRun?: boolean } = {})
   if (process.env.OURMINE_TIER1 === "1" || process.env.OURMINE_TIER1 === "true") return true
   if (process.env.OURMINE_LAB_AUTONOMOUS === "1") return true
   if (process.argv.includes("--live")) return true
-  if (isKaliLinux()) return true
+  if (isBattleReady()) return true
   return false
 }
 
@@ -36,5 +45,5 @@ export function resolveLive(opts: { live?: boolean; dryRun?: boolean } = {}): bo
 }
 
 export function requireLiveMode(): boolean {
-  return process.env.OURMINE_REQUIRE_LIVE === "1" || isKaliLinux()
+  return process.env.OURMINE_REQUIRE_LIVE === "1" || isBattleReady()
 }

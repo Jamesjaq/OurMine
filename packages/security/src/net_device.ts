@@ -113,6 +113,13 @@ const MANAGEMENT_PORTS: Array<{ port: number; service: string; cleartext: boolea
   { port: 5060, service: "SIP", cleartext: true },
 ]
 
+const VPN_GATEWAY_PORTS: Array<{ port: number; vendor: string; service: string; ztaBypass?: string }> = [
+  { port: 443, vendor: "citrix", service: "Citrix Gateway / ADC", ztaBypass: "split-tunnel or session persistence abuse" },
+  { port: 8443, vendor: "pulse", service: "Ivanti Pulse Connect Secure", ztaBypass: "device posturing bypass via cookie replay" },
+  { port: 4433, vendor: "f5", service: "F5 BIG-IP APM", ztaBypass: "APM policy gap or NTLM relay via VPN" },
+  { port: 4443, vendor: "pulse", service: "Pulse admin/VPN alt", ztaBypass: "legacy auth path outside ZTA" },
+]
+
 const DEFAULT_CREDENTIALS: Array<{ username: string; password: string }> = [
   { username: "admin", password: "admin" },
   { username: "admin", password: "" },
@@ -480,7 +487,35 @@ function generateFindings(
   return findings
 }
 
-function performLiveAudit(host: string): NetworkDeviceAudit {
+function fingerprintVpnGateway(
+  host: string,
+  hint?: string,
+  dryRun = true,
+): NetworkFinding[] {
+  const h = (hint ?? "").toLowerCase()
+  const govHint = /\b(citrix|pulse|f5|big-ip|zta|zero.?trust|vpn|gov)\b/i.test(h)
+  if (!govHint && !dryRun) return []
+
+  const findings: NetworkFinding[] = []
+  for (const gw of VPN_GATEWAY_PORTS) {
+    const vendorMatch = !h || h.includes(gw.vendor) || h.includes("vpn") || h.includes("zta") || h.includes("gov")
+    if (!vendorMatch && !dryRun) continue
+
+    findings.push({
+      id: `NETDEV-VPN-${gw.vendor.toUpperCase()}-${gw.port}`,
+      component: "VPN Gateway",
+      severity: dryRun ? "INFO" : "HIGH",
+      title: `${gw.service} fingerprint (port ${gw.port})`,
+      description: dryRun
+        ? `Dry-run: ${gw.service} on ${host}:${gw.port} — ZTA bypass vector: ${gw.ztaBypass ?? "policy gap"}`
+        : `Potential ${gw.service} on port ${gw.port}. ZTA bypass: ${gw.ztaBypass ?? "verify split-tunnel and device trust policies"}.`,
+      remediation: "Enforce device compliance checks, disable split-tunnel for sensitive segments, patch known CVEs for VPN appliances.",
+    })
+  }
+  return findings
+}
+
+function performLiveAudit(host: string, hint?: string): NetworkDeviceAudit {
   // 1. SNMP enumeration
   const snmpResult = snmpEnumerate(host)
 
@@ -500,7 +535,10 @@ function performLiveAudit(host: string): NetworkDeviceAudit {
   const defaultCreds = checkDefaultCredentials(host)
 
   // 7. Generate findings
-  const vulnerabilities = generateFindings(snmpResult, managementInterfaces, sshConfig, defaultCreds)
+  const vulnerabilities = [
+    ...generateFindings(snmpResult, managementInterfaces, sshConfig, defaultCreds),
+    ...fingerprintVpnGateway(host, hint, false),
+  ]
 
   return {
     ip: host,
@@ -523,11 +561,12 @@ function performLiveAudit(host: string): NetworkDeviceAudit {
 
 export function auditNetworkDevice(
   host: string,
-  options: { dryRun?: boolean; live?: boolean } = {},
+  options: { dryRun?: boolean; live?: boolean; hint?: string } = {},
 ): NetworkDeviceAudit {
   const dryRun = options.dryRun !== undefined ? options.dryRun : !options.live
 
   if (dryRun) {
+    const vpnFindings = fingerprintVpnGateway(host, options.hint, true)
     return {
       ip: host,
       vendor: "unknown",
@@ -538,13 +577,13 @@ export function auditNetworkDevice(
       managementInterfaces: [],
       sshConfig: null,
       defaultCredentialCheck: [],
-      vulnerabilities: [],
+      vulnerabilities: vpnFindings,
       dryRun: true,
     }
   }
 
   try {
-    return performLiveAudit(host)
+    return performLiveAudit(host, options.hint)
   } catch (err) {
     return {
       ip: host,

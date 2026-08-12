@@ -929,9 +929,30 @@ async function runIdpAudit(ctx: AgentToolContext): Promise<ToolRunResult> {
 }
 
 async function runSocialEngAssess(ctx: AgentToolContext): Promise<ToolRunResult> {
+  const domain = hostFromTarget(ctx.target)
+  if (ctx.live) {
+    const auto = await import("./social_eng_auto.ts")
+    const [recon, campaign] = await Promise.all([
+      auto.probeTargetRecon(domain, { live: true }),
+      auto.runAutomatedCampaign({
+        targetDomain: domain,
+        template: "assessment",
+        live: true,
+        reconOnly: true,
+        targets: [],
+      }),
+    ])
+    return {
+      tool: "social_eng_assess",
+      command: "social_eng recon (delivery disabled)",
+      dryRun: false,
+      success: true,
+      output: JSON.stringify({ recon, campaign, deliveryDisabled: true }).slice(0, 4000),
+    }
+  }
   const mod = await import("./social_eng.ts")
-  const email = mod.generatePhishingEmail("it_password_reset", { dryRun: !ctx.live, targetName: "assessment", targetCompany: hostFromTarget(ctx.target) })
-  return { tool: "social_eng_assess", command: "social_eng checklist", dryRun: !ctx.live, success: true, output: JSON.stringify(email).slice(0, 4000) }
+  const email = mod.generatePhishingEmail("it_password_reset", { dryRun: true, targetName: "assessment", targetCompany: domain })
+  return { tool: "social_eng_assess", command: "social_eng checklist", dryRun: true, success: true, output: JSON.stringify(email).slice(0, 4000) }
 }
 
 async function runRansomwareAssess(ctx: AgentToolContext, params: Record<string, unknown> = {}): Promise<ToolRunResult> {
@@ -949,26 +970,109 @@ async function runRansomwareAssess(ctx: AgentToolContext, params: Record<string,
   }
 }
 
+function isHostTarget(target: string): boolean {
+  const host = hostFromTarget(target)
+  return /^[\w.-]+$/.test(host) && host.length > 0
+}
+
+function webPortsForHost(ctx: AgentToolContext, host: string): number[] {
+  const ports = new Set<number>()
+  const json = ctx.graph.toJSON() as {
+    assets?: Record<string, { services?: Record<string, { port: number; service?: string; state?: string }> }>
+  }
+  for (const [ip, asset] of Object.entries(json.assets ?? {})) {
+    if (ip !== host) continue
+    for (const svc of Object.values(asset.services ?? {})) {
+      if (svc.state === "closed") continue
+      if ([80, 443, 8080, 8443].includes(svc.port) || /http/i.test(svc.service ?? "")) {
+        ports.add(svc.port)
+      }
+    }
+  }
+  if (ports.size === 0) [80, 443, 8080].forEach((p) => ports.add(p))
+  return [...ports]
+}
+
+function shouldProbeModbus(ctx: AgentToolContext, host: string, paths: import("./attack_surface.ts").AttackPath[]): boolean {
+  const json = ctx.graph.toJSON() as {
+    assets?: Record<string, { services?: Record<string, { port: number; state?: string }> }>
+  }
+  const asset = json.assets?.[host]
+  if (asset && Object.values(asset.services ?? {}).some((s) => s.port === 502 && s.state !== "closed")) {
+    return true
+  }
+  const otHint = /modbus|\b502\b|\bics\b|scada|\bot\b|plc/i
+  return otHint.test(ctx.target) || paths.some((p) => otHint.test(p.narrative))
+}
+
 async function runImpactAssess(ctx: AgentToolContext): Promise<ToolRunResult> {
   const { ImpactDemonstrationEngine } = await import("./impact_engine.ts")
   const paths = ctx.graph.analyzeAttackPaths()
-  const proofs = paths.slice(0, 3).map((p) =>
-    ImpactDemonstrationEngine.demonstrateImpact(
-      { id: p.id, title: p.label } as import("./attack_surface.ts").VulnNode,
-      ctx.target,
-      p.narrative,
-    ),
-  ).filter(Boolean)
+  const proofs: import("./impact_engine.ts").ImpactProof[] = []
+  const host = hostFromTarget(ctx.target)
+  let mode: "live_probe" | "narrative_dry" = "narrative_dry"
+  let httpPortsAttempted: number[] = []
+  let modbusProbed = false
+
+  if (ctx.live && isHostTarget(ctx.target)) {
+    mode = "live_probe"
+    const { runStateMachineFlow, defaultL4CanaryFlow } = await import("./http_state_fuzzer.ts")
+    httpPortsAttempted = webPortsForHost(ctx, host)
+    for (const port of httpPortsAttempted) {
+      const protocol = port === 443 || port === 8443 ? "https" : "http"
+      const baseUrl = `${protocol}://${host}:${port}`
+      try {
+        const result = await runStateMachineFlow(defaultL4CanaryFlow(baseUrl), {
+          broker: ctx.broker,
+          live: true,
+        })
+        const bodyEvidence = result.l4Evidence
+          ?? (result.l4ImpactProven ? result.steps.map((s) => s.bodySnippet).join("\n") : "")
+        if (bodyEvidence) {
+          const proof = ImpactDemonstrationEngine.demonstrateImpact(
+            { id: `http-${host}-${port}`, title: `HTTP canary ${baseUrl}` } as import("./attack_surface.ts").VulnNode,
+            baseUrl,
+            bodyEvidence,
+          )
+          if (proof) proofs.push(proof)
+        }
+      } catch {
+        /* unreachable port — continue */
+      }
+    }
+
+    if (shouldProbeModbus(ctx, host, paths)) {
+      modbusProbed = true
+      const vuln = { id: `ics-${host}-502`, title: `Modbus ${host}:502` } as import("./attack_surface.ts").VulnNode
+      const { proof } = await ImpactDemonstrationEngine.demonstrateIcsImpact(vuln, host, { port: 502, live: true })
+      if (proof) proofs.push(proof)
+    }
+  } else {
+    for (const p of paths.slice(0, 3)) {
+      const proof = ImpactDemonstrationEngine.demonstrateImpact(
+        { id: p.id, title: p.label } as import("./attack_surface.ts").VulnNode,
+        ctx.target,
+        p.narrative,
+      )
+      if (proof) proofs.push(proof)
+    }
+  }
+
   return {
     tool: "impact_assess",
-    command: "impact_engine controlled impact proof",
+    command: mode === "live_probe" ? "impact_engine live HTTP/Modbus canary" : "impact_engine narrative dry-run",
     dryRun: !ctx.live,
     success: true,
     output: JSON.stringify({
       engine: ImpactDemonstrationEngine.name,
+      mode,
       proofs,
       pathsAnalyzed: paths.length,
-      note: "L4 controlled impact proofs from attack paths — non-destructive canary markers",
+      httpPortsAttempted: mode === "live_probe" ? httpPortsAttempted : undefined,
+      modbusProbed: mode === "live_probe" ? modbusProbed : undefined,
+      note: mode === "live_probe"
+        ? "Live controlled impact proofs via HTTP canary chain and/or Modbus read"
+        : "Dry-run narrative proofs from attack paths — set live:true for HTTP/Modbus canaries",
       live: ctx.live,
     }).slice(0, 4000),
   }
@@ -988,6 +1092,19 @@ async function runCalderaTtp(ctx: AgentToolContext, params: Record<string, unkno
   const r = await mod.executeAbility(ability as import("./caldera_ttp.ts").Ability, { live: ctx.live })
   return { tool: "caldera_ttp", command: `executeAbility(${tid})`, dryRun: !ctx.live, success: r.exitCode === 0, output: JSON.stringify(r).slice(0, 4000) }
 }
+
+/** Registered agent dispatch tools (playbook / engagement graph keys). */
+export const AGENT_TOOL_NAMES = [
+  "recon", "live_recon", "nmap_scan", "masscan_scan", "gobuster_dir", "ffuf_scan",
+  "nuclei_scan", "nikto_scan", "validate_findings", "web_exploit", "sqlmap_scan",
+  "identity_attack", "live_ad_attack", "ad_exploit", "cloud_enum", "cred_spray",
+  "enum4linux_scan", "container_audit", "privesc_check", "postex_harvest", "lateral_move",
+  "supply_chain_audit", "lockfile_scan", "postex_pivot", "evilginx_lab", "yara_scan",
+  "vuln_research", "intel_enrich", "stix_ingest", "ai_surface_scan", "cpanel_audit",
+  "ai_agent_audit", "ai_manipulation_test", "atlas_ml_audit", "esxi_audit", "edge_audit",
+  "cicd_audit", "idp_audit", "social_eng_assess", "ransomware_assess", "impact_assess",
+  "caldera_ttp", "ai_recon", "exfil", "impact_engine", "dev_target", "cloud_token", "pivot_replay",
+] as const
 
 export async function executeAgentTool(
   ctx: AgentToolContext,

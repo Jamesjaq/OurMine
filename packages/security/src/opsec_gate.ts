@@ -15,6 +15,9 @@ const PROFILE_RPM: Record<string, number> = {
   medusa: 45,
   qilin: 40,
   lockbit5: 40,
+  lockbit: 35,
+  play: 35,
+  ransomhub: 35,
   default: 30,
 }
 

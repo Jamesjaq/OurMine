@@ -20,6 +20,9 @@ import { FindingStateMachine, type FindingState }
 import { ValidationPlanner, type ValidationPlan, type ValidationResult, type ValidationOutcome }
   from "./validation_planner.ts"
 import { ToolBroker } from "./tool_broker.ts"
+import { icsValidationProbe } from "./ics_validation.ts"
+import { parseNucleiJson } from "./scanner_parsers.ts"
+import { isToolAvailable } from "./tool_detection.ts"
 
 // Per-session deduplication: fingerprint → last outcome + timestamp
 const VALIDATION_CACHE = new Map<string, { outcome: ValidationOutcome; ts: string; planId: string }>()
@@ -173,6 +176,20 @@ export class ValidationEngine {
         return this.privescProbe(plan, t0)
       case "EXPLOIT_REPLAY":
         return this.exploitReplayProbe(plan, ip, port, t0)
+      case "MODBUS_PROBE":
+      case "DNP3_PROBE":
+      case "BACNET_PROBE":
+      case "MQTT_PROBE":
+      case "COAP_PROBE":
+      case "S7_PROBE":
+        return icsValidationProbe(
+          { ...plan, serviceHint: plan.serviceHint ?? service },
+          ip,
+          port,
+          t0,
+        )
+      case "NUCLEI_PROBE":
+        return this.nucleiProbe(plan, ip, port, t0)
       default:
         return {
           planId:      plan.planId,
@@ -376,6 +393,43 @@ export class ValidationEngine {
         JSON.stringify(r), `Exploit replay ${r.validationLevel} rolledBack=${r.rolledBack}`)
     } catch (err: unknown) {
       return buildResult(plan, t0, "VALIDATION_FAILED", String((err as Error).message), "Exploit replay failed")
+    }
+  }
+
+  private static async nucleiProbe(
+    plan: ValidationPlan,
+    ip: string,
+    port: number,
+    t0: number,
+  ): Promise<ValidationResult> {
+    if (!isToolAvailable("nuclei")) {
+      return buildResult(plan, t0, "VALIDATION_UNAVAILABLE", "",
+        "nuclei binary not available — install nuclei for template validation")
+    }
+    if (!plan.command) {
+      return buildResult(plan, t0, "VALIDATION_UNAVAILABLE", "",
+        "NUCLEI_PROBE plan missing command")
+    }
+    try {
+      const execResult = await broker.executeSafe(plan.command, process.cwd())
+      const raw = (execResult.stdout + execResult.stderr).slice(0, 4_000)
+      const vulns = parseNucleiJson(raw)
+      const matched = vulns.length > 0
+      return buildResult(plan, t0,
+        matched ? "VALIDATION_SUCCESS" : "VALIDATION_NEGATIVE",
+        raw,
+        matched
+          ? `Nuclei confirmed ${vulns.length} template match(es) on ${ip}:${port}`
+          : `Nuclei found no matching templates on ${ip}:${port}`,
+      )
+    } catch (err: unknown) {
+      const msg = String((err as Error)?.message ?? err)
+      const unavailable = msg.includes("not in allowlist") || msg.includes("not allowed")
+      return buildResult(plan, t0,
+        unavailable ? "VALIDATION_UNAVAILABLE" : "VALIDATION_FAILED",
+        msg,
+        `nuclei execution error: ${msg}`,
+      )
     }
   }
 

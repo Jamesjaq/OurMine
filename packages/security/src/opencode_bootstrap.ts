@@ -9,6 +9,7 @@ import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { isKaliLinux } from "./apt_tradecraft.ts"
+import { isBattleReady } from "./exec_options.ts"
 import { mergeGhGrepMcp, mergeOpenCodeToolPolicy } from "./opencode_tool_policy.ts"
 
 const MARKER = "<!-- ourmine-ares-v1 -->"
@@ -73,14 +74,29 @@ The user gives a target — you execute with **minimal LLM turns** using ARES MC
 
 ## Token-efficient workflow (default)
 
-**Efficient MCP mode is ON** (~16 tools vs 141). One phase = one tool call.
+**Efficient MCP mode is ON** — steer the engagement engine; do not call 141 tools individually.
 
-1. \`ares_intel_feed\` + \`ares_pentest_plan\`(target) — plan only, no execution spam
-2. \`ares_phase\` with \`phase\`: \`recon\` → \`identity\` → \`exploit\` → \`post_ex\` (each runs many modules server-side)
-3. \`ares_auto_chain\` when AD creds exist (Kerberos→lateral→fileless auto)
-4. \`ares_dispatch\`(module=…) for a single engine; avoid calling 18 tools individually
+### 3-turn live workflow (preferred)
 
-Set \`OURMINE_MCP_EFFICIENT=0\` to use **search mode** (~10 tools + \`ares_tool_search\` / \`ares_tool_call\`) instead of loading 141 schemas.
+1. \`ares_threat_intel\`(target, actor?) — APT tradecraft snippet + modules (Volt Typhoon → hybrid_it_ot, etc.)
+2. \`ares_engagement_slice\`(target, objective?, scope?) — **plan + first phase + graph** in ONE call  
+   Returns: \`summary\`, \`confirmed[]\`, \`candidates[]\`, \`blockers[]\`, \`graphNextActions\`, \`resumeToken\`, \`artifactId\`
+3. \`ares_engagement_continue\`(resumeToken) — next phase **without re-planning**; follow \`graphNextActions\`
+
+Use \`ares_artifact_get\`(id) only when you need full phase/batch detail (\`artifactId\` in response).
+
+**One-shot autonomous:** \`ares_autopilot\`(target, scope, maxPhases) — server loops slice→graph→action until done.
+
+### Legacy / fallback
+
+- \`ares_pentest_plan\` — profile + \`nextActions\` (now points to engagement_slice)
+- \`ares_phase\` — full phase if slice unavailable
+- \`ares_dispatch\`(module=…) — single engine (ot_batch_scan resumeToken, hybrid_pivot, ble_audit, usb_audit)
+- \`ares_auto_chain\` — AD cred graph → Kerberos → lateral
+
+Set \`OURMINE_MCP_EFFICIENT=0\` for search mode (~12 tools + \`ares_tool_search\`).
+
+See \`packages/security/LIVE_ENGAGEMENT.md\` for env vars, OT safety, and scope rules.
 
 ## MCP troubleshooting
 
@@ -128,7 +144,7 @@ Set these to unlock gated operational paths (agent should check and use when pre
 | \`OURMINE_VSAT_HOST\` | VSAT modem probe |
 | \`OURMINE_ROCKBLOCK_KEY\` | Iridium SBD API TX |
 | \`OURMINE_RESPONDER_DURATION\` | Sustained Responder seconds (default: brief probe) |
-| \`OURMINE_MCP_EFFICIENT=1\` | **Default** — 16 curated MCP tools + compact outputs |
+| \`OURMINE_MCP_EFFICIENT=1\` | **Default** — curated MCP tools + compact outputs |
 | \`OURMINE_MCP_EFFICIENT=0\` | Search mode: \`ares_tool_search\` + slim tool surface (not 141 schemas) |
 | \`OURMINE_GH_GREP=0\` | Disable remote gh_grep MCP in bootstrap |
 
@@ -139,10 +155,11 @@ Server posture: **${mode}** (Kali Linux auto-enables live execution).
 ## When the user gives a target
 
 1. Confirm scope in one short line (target, constraints, authorization assumed in lab).
-2. \`ares_intel_feed\` + \`ares_pentest_plan\`(target)
-3. \`ares_phase\`(phase=recon|identity|exploit|post_ex) — **prefer this over many tool calls**
-4. \`ares_auto_chain\` when AD/domain target; \`ares_dispatch\` for one-off modules
-5. Summarize findings + MITRE mapping; next phase recommendation only
+2. \`ares_threat_intel\` if APT actor or campaign hinted; else skip to slice.
+3. \`ares_engagement_slice\`(target) — read \`graphNextActions\` + \`blockers\` (fix live/scope before continuing).
+4. \`ares_engagement_continue\`(resumeToken) or \`ares_autopilot\` for hands-off progression.
+5. \`ares_dispatch\` only for resumeToken batch scans, hybrid_pivot, or proximity (usb/ble/wifi).
+6. Summarize \`confirmed[]\` + MITRE; never claim CONFIRMED without evidence from graph.
 
 ## Rules
 
@@ -164,10 +181,15 @@ function mergeConfig(existing: Record<string, unknown>, live: boolean): { config
     enabled: true,
     command: mcpCommand(live),
     environment: {
+      OURMINE_BATTLE_READY: live ? "1" : "0",
       OURMINE_LIVE: live ? "1" : "0",
       OURMINE_REQUIRE_LIVE: live ? "1" : "0",
+      OURMINE_ROE_SIGNED: live ? "1" : "0",
+      OURMINE_PASSIVE_INTEL: live ? "1" : "0",
+      OURMINE_INTEL_REFRESH: live ? "1" : "0",
       OURMINE_MCP_EFFICIENT: "1",
       OURMINE_REPO: REPO_ROOT,
+      ...(process.env.SHODAN_API_KEY ? { SHODAN_API_KEY: process.env.SHODAN_API_KEY } : {}),
     },
   }
   const prev = mcp.ares as Record<string, unknown> | undefined
@@ -232,7 +254,7 @@ function ensureProjectAgent(live: boolean): boolean {
 
 /** Idempotently wire ARES MCP + pentest agent into OpenCode config. */
 export function bootstrapOpenCode(options: { quiet?: boolean } = {}): BootstrapResult {
-  const live = isKaliLinux() || process.env.OURMINE_LIVE === "1"
+  const live = isBattleReady() || process.env.OURMINE_LIVE === "1"
   const configDir = opencodeConfigDir()
   const configPath = path.join(configDir, "opencode.json")
   const tuiPath = path.join(configDir, "tui.json")

@@ -15,6 +15,8 @@ const DEFAULT_CRED_GRAPH_PATH = path.resolve(
 
 export type CredentialType = "password" | "nthash" | "ticket" | "token" | "key" | "cookie"
 
+export type CredentialSource = string | "stealer_log" | "iab_market"
+
 export type CredentialRole = "krbtgt" | "dc_machine" | "domain_sid" | "user" | "service" | "generic"
 
 export interface DomainContext {
@@ -27,7 +29,7 @@ export interface DomainContext {
 export interface CredentialNode {
   id: string
   type: CredentialType
-  source: string
+  source: CredentialSource
   username?: string
   domain?: string
   host?: string
@@ -35,6 +37,7 @@ export interface CredentialNode {
   discoveredAt: string
   used: boolean
   role?: CredentialRole
+  iabStage?: "stealer_log" | "vpn_session" | "raas_deploy"
 }
 
 export interface PivotEdge {
@@ -72,6 +75,28 @@ export class CredentialGraph {
     if (cred.role === "dc_machine" && cred.username) this.domainContext.dcName = cred.username.replace(/\$$/, "")
     if (cred.host) this.domainContext.dcHost = cred.host
     return node
+  }
+
+  /** Stealer-log / IAB market synthetic credential — never stores real secrets. */
+  addStealerCredential(cred: {
+    type: CredentialType
+    source: "stealer_log" | "iab_market"
+    username?: string
+    value: string
+    host?: string
+    iabStage?: CredentialNode["iabStage"]
+  }): CredentialNode {
+    return this.addCredential({
+      ...cred,
+      role: "generic",
+    })
+  }
+
+  /** Pivot candidates from stealer-log / IAB sources. */
+  iabPivotCandidates(): CredentialNode[] {
+    return [...this.creds.values()].filter(
+      (c) => c.source === "stealer_log" || c.source === "iab_market",
+    )
   }
 
   setDomainContext(ctx: DomainContext): void {
@@ -258,6 +283,41 @@ export class CredentialGraph {
       for (const h of p.targetHosts) hosts.add(h)
     }
     return [...hosts]
+  }
+
+  private static readonly PRIVATE_IP = /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.)/
+
+  /** Private hosts seen in cred harvest, pivots, or BloodHound paths. */
+  discoveredHosts(): string[] {
+    const hosts = new Set<string>()
+    for (const c of this.creds.values()) {
+      if (c.host && CredentialGraph.PRIVATE_IP.test(c.host)) hosts.add(c.host)
+    }
+    for (const p of this.pivots) {
+      if (CredentialGraph.PRIVATE_IP.test(p.to)) hosts.add(p.to)
+    }
+    for (const h of this.bloodhoundTargetHosts()) {
+      if (CredentialGraph.PRIVATE_IP.test(h)) hosts.add(h)
+    }
+    return [...hosts]
+  }
+
+  /** Adjacent /24 plant subnets inferred from discovered private hosts. */
+  inferOtSubnets(): string[] {
+    const subnets = new Set<string>()
+    for (const h of this.discoveredHosts()) {
+      const m = h.match(/^(\d+\.\d+\.\d+)\.\d+$/)
+      if (m) subnets.add(`${m[1]}.0/24`)
+    }
+    return [...subnets].slice(0, 16)
+  }
+
+  /** Suggest OT sweeps when IT foothold exposes adjacent VLANs. */
+  suggestOtPivotSweep(): Array<{ subnet: string; reason: string }> {
+    return this.inferOtSubnets().map((subnet) => ({
+      subnet,
+      reason: "cred-graph private host on adjacent /24 — OT sweep recommended",
+    }))
   }
 
   /** Ingest credentials from post-ex harvest JSON output. */

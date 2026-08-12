@@ -4,6 +4,7 @@
  */
 import { bridgedToolNames } from "./module_bridge.ts"
 import type { McpTool } from "./mcp_tool_types.ts"
+import { flattenBridgedResult } from "./mcp_response.ts"
 
 const BRIDGED_DESCRIPTIONS: Record<string, string> = {
   ares_zero_day_fuzzer: "Coverage-guided fuzzer + crash triage + exploit synthesis (APT parity)",
@@ -28,6 +29,9 @@ const BRIDGED_DESCRIPTIONS: Record<string, string> = {
   ares_auto_chain: "DCSync→Kerberos→lateral→fileless→persistence from cred graph",
   ares_dispatch: "Route to any ARES module by name (module param) — one call",
   ares_phase: "Run full phase server-side: recon|identity|exploit|post_ex|apt (1 LLM turn)",
+  ares_engagement_slice: "Plan + first phase + graph evidence in ONE server-side call",
+  ares_engagement_continue: "Resume multi-turn engagement from resumeToken — next phase, no re-plan",
+  ares_autopilot: "Autonomous tier-1 loop: slice→graphNextActions→execute until scope/maxPhases",
   tier1_orchestrator: "Full tier-1 APT orchestrator (all depth engines)",
   tier1_validation: "L3/L4 suite: IDOR/BOLA, privesc proof, exploit replay",
   tier1_depth: "Operational depth metrics (L3/L4 rate, workflow %)",
@@ -88,12 +92,7 @@ export function buildBridgedMcpTools(
         }
         const result = await runBridgedModule(ctx, name, params)
         if (!result) return { error: `bridged module not found: ${name}` }
-        return {
-          tool: result.tool,
-          success: result.success,
-          dryRun: result.dryRun,
-          output: result.output,
-        }
+        return flattenBridgedResult(result)
       },
     }))
 }

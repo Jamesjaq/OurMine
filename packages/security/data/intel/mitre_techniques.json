@@ -1,0 +1,1633 @@
+[
+  {
+    "id": "T1190",
+    "name": "Exploit Public-Facing Application",
+    "domain": "enterprise",
+    "modules": [
+      "strix_web",
+      "web_exploit",
+      "edge_audit",
+      "nuclei_scan"
+    ]
+  },
+  {
+    "id": "T1566",
+    "name": "Phishing",
+    "domain": "enterprise",
+    "modules": [
+      "social_eng_assess",
+      "identity_attack",
+      "evilginx_lab"
+    ]
+  },
+  {
+    "id": "T1078",
+    "name": "Valid Accounts",
+    "domain": "enterprise",
+    "modules": [
+      "identity_attack",
+      "cred_spray",
+      "idp_audit"
+    ]
+  },
+  {
+    "id": "T1059",
+    "name": "Command and Scripting Interpreter",
+    "domain": "enterprise",
+    "modules": [
+      "lolbins_audit",
+      "live_recon",
+      "postex_pivot"
+    ]
+  },
+  {
+    "id": "T1027",
+    "name": "Obfuscated Files or Information",
+    "domain": "enterprise",
+    "modules": [
+      "ares_evasion_engine",
+      "live_recon"
+    ]
+  },
+  {
+    "id": "T1021",
+    "name": "Remote Services",
+    "domain": "enterprise",
+    "modules": [
+      "postex_pivot",
+      "lateral_move",
+      "ares_ad_exploit"
+    ]
+  },
+  {
+    "id": "T1003",
+    "name": "OS Credential Dumping",
+    "domain": "enterprise",
+    "modules": [
+      "postex_harvest",
+      "cred_access_auto",
+      "ares_ad_exploit"
+    ]
+  },
+  {
+    "id": "T1071",
+    "name": "Application Layer Protocol",
+    "domain": "enterprise",
+    "modules": [
+      "live_recon",
+      "nmap_scan",
+      "cloud_enum"
+    ]
+  },
+  {
+    "id": "T1048",
+    "name": "Exfiltration Over Alternative Protocol",
+    "domain": "enterprise",
+    "modules": [
+      "ares_exfil",
+      "telecom_audit"
+    ]
+  },
+  {
+    "id": "T1195.002",
+    "name": "Supply Chain Compromise",
+    "domain": "enterprise",
+    "modules": [
+      "supply_chain_audit",
+      "lockfile_scan",
+      "cicd_audit"
+    ]
+  },
+  {
+    "id": "T1558",
+    "name": "Steal or Forge Kerberos Tickets",
+    "domain": "enterprise",
+    "modules": [
+      "ares_kerberos_advanced",
+      "ares_ad_exploit",
+      "identity_attack"
+    ]
+  },
+  {
+    "id": "T1486",
+    "name": "Data Encrypted for Impact",
+    "domain": "enterprise",
+    "modules": [
+      "ransomware_assess",
+      "raas_campaign",
+      "esxi_audit"
+    ]
+  },
+  {
+    "id": "T1490",
+    "name": "Inhibit System Recovery",
+    "domain": "enterprise",
+    "modules": [
+      "impact_assess",
+      "ransomware_assess"
+    ]
+  },
+  {
+    "id": "T1595",
+    "name": "Active Scanning",
+    "domain": "enterprise",
+    "modules": [
+      "ares_recon",
+      "nmap_scan",
+      "ares_bountyhunter"
+    ]
+  },
+  {
+    "id": "T1552.001",
+    "name": "Credentials in Files",
+    "domain": "enterprise",
+    "modules": [
+      "cloud_enum",
+      "postex_harvest"
+    ]
+  },
+  {
+    "id": "T0855",
+    "name": "Unauthorized Command Message",
+    "domain": "ics",
+    "modules": [
+      "iot_scada",
+      "ot_scan"
+    ]
+  },
+  {
+    "id": "T0886",
+    "name": "Remote Service Discovery",
+    "domain": "ics",
+    "modules": [
+      "ot_scan",
+      "net_device_audit",
+      "hybrid_pivot"
+    ]
+  },
+  {
+    "id": "T0827",
+    "name": "Loss of Control",
+    "domain": "ics",
+    "modules": [
+      "ics_impact_proof",
+      "impact_assess"
+    ]
+  },
+  {
+    "id": "T0839",
+    "name": "Module Firmware",
+    "domain": "ics",
+    "modules": [
+      "ares_firmware_implant"
+    ]
+  },
+  {
+    "id": "T0819",
+    "name": "Modify Program",
+    "domain": "ics",
+    "modules": [
+      "iot_scada",
+      "ics_impact_proof"
+    ]
+  },
+  {
+    "id": "T0867",
+    "name": "Lateral Tool Transfer",
+    "domain": "ics",
+    "modules": [
+      "hybrid_pivot",
+      "lateral_move"
+    ]
+  },
+  {
+    "id": "T0885",
+    "name": "Commonly Used Port",
+    "domain": "ics",
+    "modules": [
+      "ot_scan",
+      "iot_scada"
+    ]
+  },
+  {
+    "id": "T1091",
+    "name": "Replication Through Removable Media",
+    "domain": "enterprise",
+    "modules": [
+      "usb_audit",
+      "ares_hardware_implant"
+    ]
+  },
+  {
+    "id": "T1200",
+    "name": "Hardware Additions",
+    "domain": "enterprise",
+    "modules": [
+      "usb_audit",
+      "ares_hardware_implant",
+      "proximity_audit"
+    ]
+  },
+  {
+    "id": "T1557",
+    "name": "Adversary-in-the-Middle",
+    "domain": "enterprise",
+    "modules": [
+      "wifi_audit",
+      "telecom_audit"
+    ]
+  },
+  {
+    "id": "T1011",
+    "name": "Exfiltration Over Other Network Medium",
+    "domain": "enterprise",
+    "modules": [
+      "ble_audit",
+      "ares_exfil"
+    ]
+  },
+  {
+    "id": "T1219",
+    "name": "Remote Access Software",
+    "domain": "enterprise",
+    "modules": [
+      "rmm_audit",
+      "helpdesk_social_auto"
+    ]
+  },
+  {
+    "id": "T1621",
+    "name": "Multi-Factor Authentication Request Generation",
+    "domain": "enterprise",
+    "modules": [
+      "identity_playbooks",
+      "helpdesk_social_auto",
+      "evilginx_lab"
+    ]
+  },
+  {
+    "id": "T1556.006",
+    "name": "Modify Authentication Process: MFA",
+    "domain": "enterprise",
+    "modules": [
+      "citrix_audit",
+      "identity_playbooks",
+      "evilginx_lab"
+    ]
+  },
+  {
+    "id": "T1550",
+    "name": "Use Alternate Authentication Material",
+    "domain": "enterprise",
+    "modules": [
+      "oauth_consent_audit",
+      "idp_audit",
+      "cloud_token"
+    ]
+  },
+  {
+    "id": "T1550.001",
+    "name": "Application Access Token",
+    "domain": "enterprise",
+    "modules": [
+      "oauth_consent_audit",
+      "idp_audit",
+      "cloud_token"
+    ]
+  },
+  {
+    "id": "T1530",
+    "name": "Data from Cloud Storage",
+    "domain": "enterprise",
+    "modules": [
+      "cloud_enum",
+      "cloud_token",
+      "ares_cloud_native"
+    ]
+  },
+  {
+    "id": "T1484.002",
+    "name": "Domain Trust Modification",
+    "domain": "enterprise",
+    "modules": [
+      "idp_audit",
+      "oauth_consent_audit",
+      "hybrid_ad_audit"
+    ]
+  },
+  {
+    "id": "T1566.002",
+    "name": "Phishing: Spearphishing Voice",
+    "domain": "enterprise",
+    "modules": [
+      "helpdesk_social_auto",
+      "social_eng_assess"
+    ]
+  },
+  {
+    "id": "T1539",
+    "name": "Steal Web Session Cookie",
+    "domain": "enterprise",
+    "modules": [
+      "citrix_audit",
+      "evilginx_lab",
+      "aitm_proxy"
+    ]
+  },
+  {
+    "id": "T1110",
+    "name": "Brute Force",
+    "domain": "enterprise",
+    "modules": [
+      "nmap_scan",
+      "edge_audit"
+    ]
+  },
+  {
+    "id": "T1110.003",
+    "name": "Password Spraying",
+    "domain": "enterprise",
+    "modules": [
+      "nuclei_scan",
+      "cred_spray"
+    ]
+  },
+  {
+    "id": "T1087",
+    "name": "Account Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "web_exploit",
+      "cred_access_auto"
+    ]
+  },
+  {
+    "id": "T1087.002",
+    "name": "Domain Account",
+    "domain": "enterprise",
+    "modules": [
+      "strix_web",
+      "postex_harvest"
+    ]
+  },
+  {
+    "id": "T1083",
+    "name": "File and Directory Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "edge_audit",
+      "lateral_move"
+    ]
+  },
+  {
+    "id": "T1046",
+    "name": "Network Service Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "cred_spray",
+      "lolbins_audit"
+    ]
+  },
+  {
+    "id": "T1018",
+    "name": "Remote System Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "cred_access_auto",
+      "ebpf_audit"
+    ]
+  },
+  {
+    "id": "T1033",
+    "name": "System Owner/User Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "postex_harvest",
+      "ares_evasion_engine"
+    ]
+  },
+  {
+    "id": "T1057",
+    "name": "Process Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "lateral_move",
+      "cloud_enum"
+    ]
+  },
+  {
+    "id": "T1082",
+    "name": "System Information Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "lolbins_audit",
+      "cloud_token"
+    ]
+  },
+  {
+    "id": "T1016",
+    "name": "System Network Configuration Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "ebpf_audit",
+      "ares_cloud_native"
+    ]
+  },
+  {
+    "id": "T1049",
+    "name": "System Network Connections Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "ares_evasion_engine",
+      "idp_audit"
+    ]
+  },
+  {
+    "id": "T1007",
+    "name": "System Service Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "cloud_enum",
+      "oauth_consent_audit"
+    ]
+  },
+  {
+    "id": "T1124",
+    "name": "System Time Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "cloud_token",
+      "device_code_audit"
+    ]
+  },
+  {
+    "id": "T1497",
+    "name": "Virtualization/Sandbox Evasion",
+    "domain": "enterprise",
+    "modules": [
+      "ares_cloud_native",
+      "identity_playbooks"
+    ]
+  },
+  {
+    "id": "T1562",
+    "name": "Impair Defenses",
+    "domain": "enterprise",
+    "modules": [
+      "idp_audit",
+      "evilginx_lab"
+    ]
+  },
+  {
+    "id": "T1562.001",
+    "name": "Disable or Modify Tools",
+    "domain": "enterprise",
+    "modules": [
+      "oauth_consent_audit",
+      "citrix_audit"
+    ]
+  },
+  {
+    "id": "T1211",
+    "name": "Exploitation for Defense Evasion",
+    "domain": "enterprise",
+    "modules": [
+      "device_code_audit",
+      "helpdesk_social_auto"
+    ]
+  },
+  {
+    "id": "T1070",
+    "name": "Indicator Removal",
+    "domain": "enterprise",
+    "modules": [
+      "identity_playbooks",
+      "supply_chain_audit"
+    ]
+  },
+  {
+    "id": "T1070.004",
+    "name": "File Deletion",
+    "domain": "enterprise",
+    "modules": [
+      "evilginx_lab",
+      "lockfile_scan"
+    ]
+  },
+  {
+    "id": "T1105",
+    "name": "Ingress Tool Transfer",
+    "domain": "enterprise",
+    "modules": [
+      "citrix_audit",
+      "cicd_audit"
+    ]
+  },
+  {
+    "id": "T1570",
+    "name": "Lateral Tool Transfer",
+    "domain": "enterprise",
+    "modules": [
+      "helpdesk_social_auto",
+      "chaindrop_oidc"
+    ]
+  },
+  {
+    "id": "T1021.001",
+    "name": "Remote Desktop Protocol",
+    "domain": "enterprise",
+    "modules": [
+      "supply_chain_audit",
+      "raas_campaign"
+    ]
+  },
+  {
+    "id": "T1021.002",
+    "name": "SMB/Windows Admin Shares",
+    "domain": "enterprise",
+    "modules": [
+      "lockfile_scan",
+      "raas_leak_catalog"
+    ]
+  },
+  {
+    "id": "T1021.004",
+    "name": "SSH",
+    "domain": "enterprise",
+    "modules": [
+      "cicd_audit",
+      "esxi_audit"
+    ]
+  },
+  {
+    "id": "T1021.006",
+    "name": "Windows Remote Management",
+    "domain": "enterprise",
+    "modules": [
+      "chaindrop_oidc",
+      "impact_assess"
+    ]
+  },
+  {
+    "id": "T1558.003",
+    "name": "Kerberoasting",
+    "domain": "enterprise",
+    "modules": [
+      "raas_campaign",
+      "iot_scada"
+    ]
+  },
+  {
+    "id": "T1558.004",
+    "name": "AS-REP Roasting",
+    "domain": "enterprise",
+    "modules": [
+      "raas_leak_catalog",
+      "ot_scan"
+    ]
+  },
+  {
+    "id": "T1187",
+    "name": "Forced Authentication",
+    "domain": "enterprise",
+    "modules": [
+      "esxi_audit",
+      "ot_batch_scan"
+    ]
+  },
+  {
+    "id": "T1550.002",
+    "name": "Pass the Hash",
+    "domain": "enterprise",
+    "modules": [
+      "impact_assess",
+      "hybrid_pivot"
+    ]
+  },
+  {
+    "id": "T1550.003",
+    "name": "Pass the Ticket",
+    "domain": "enterprise",
+    "modules": [
+      "iot_scada",
+      "ics_impact_proof"
+    ]
+  },
+  {
+    "id": "T1528",
+    "name": "Steal Application Access Token",
+    "domain": "enterprise",
+    "modules": [
+      "ot_scan",
+      "profinet_l2"
+    ]
+  },
+  {
+    "id": "T1606",
+    "name": "Forge Web Credentials",
+    "domain": "enterprise",
+    "modules": [
+      "ot_batch_scan",
+      "firmware_audit"
+    ]
+  },
+  {
+    "id": "T1098",
+    "name": "Account Manipulation",
+    "domain": "enterprise",
+    "modules": [
+      "hybrid_pivot",
+      "rmm_audit"
+    ]
+  },
+  {
+    "id": "T1098.003",
+    "name": "Additional Cloud Roles",
+    "domain": "enterprise",
+    "modules": [
+      "ics_impact_proof",
+      "usb_audit"
+    ]
+  },
+  {
+    "id": "T1078.004",
+    "name": "Cloud Accounts",
+    "domain": "enterprise",
+    "modules": [
+      "profinet_l2",
+      "wifi_audit"
+    ]
+  },
+  {
+    "id": "T1136",
+    "name": "Create Account",
+    "domain": "enterprise",
+    "modules": [
+      "firmware_audit",
+      "ble_audit"
+    ]
+  },
+  {
+    "id": "T1136.003",
+    "name": "Cloud Account",
+    "domain": "enterprise",
+    "modules": [
+      "rmm_audit",
+      "ares_hardware_implant"
+    ]
+  },
+  {
+    "id": "T1485",
+    "name": "Data Destruction",
+    "domain": "enterprise",
+    "modules": [
+      "usb_audit",
+      "telecom_audit"
+    ]
+  },
+  {
+    "id": "T1489",
+    "name": "Service Stop",
+    "domain": "enterprise",
+    "modules": [
+      "wifi_audit",
+      "ares_exfil"
+    ]
+  },
+  {
+    "id": "T1491",
+    "name": "Defacement",
+    "domain": "enterprise",
+    "modules": [
+      "ble_audit",
+      "collection_engine"
+    ]
+  },
+  {
+    "id": "T1498",
+    "name": "Network Denial of Service",
+    "domain": "enterprise",
+    "modules": [
+      "ares_hardware_implant",
+      "ares_ad_exploit"
+    ]
+  },
+  {
+    "id": "T1565",
+    "name": "Data Manipulation",
+    "domain": "enterprise",
+    "modules": [
+      "telecom_audit",
+      "ares_kerberos_advanced"
+    ]
+  },
+  {
+    "id": "T1565.001",
+    "name": "Stored Data Manipulation",
+    "domain": "enterprise",
+    "modules": [
+      "ares_exfil",
+      "persistence_install"
+    ]
+  },
+  {
+    "id": "T1213",
+    "name": "Data from Information Repositories",
+    "domain": "enterprise",
+    "modules": [
+      "collection_engine",
+      "c2_autonomous"
+    ]
+  },
+  {
+    "id": "T1213.002",
+    "name": "Sharepoint",
+    "domain": "enterprise",
+    "modules": [
+      "ares_ad_exploit",
+      "tier1_validation"
+    ]
+  },
+  {
+    "id": "T1537",
+    "name": "Transfer Data to Cloud Account",
+    "domain": "enterprise",
+    "modules": [
+      "ares_kerberos_advanced",
+      "ai_agent_audit"
+    ]
+  },
+  {
+    "id": "T1567",
+    "name": "Exfiltration to Cloud Storage",
+    "domain": "enterprise",
+    "modules": [
+      "persistence_install",
+      "ai_surface_scan"
+    ]
+  },
+  {
+    "id": "T1020",
+    "name": "Automated Exfiltration",
+    "domain": "enterprise",
+    "modules": [
+      "c2_autonomous",
+      "container_audit"
+    ]
+  },
+  {
+    "id": "T1030",
+    "name": "Data Transfer Size Limits",
+    "domain": "enterprise",
+    "modules": [
+      "tier1_validation",
+      "nmap_scan"
+    ]
+  },
+  {
+    "id": "T1195",
+    "name": "Supply Chain Compromise",
+    "domain": "enterprise",
+    "modules": [
+      "ai_agent_audit",
+      "nuclei_scan"
+    ]
+  },
+  {
+    "id": "T1195.001",
+    "name": "Compromise Software Dependencies",
+    "domain": "enterprise",
+    "modules": [
+      "ai_surface_scan",
+      "web_exploit"
+    ]
+  },
+  {
+    "id": "T1554",
+    "name": "Compromise Client Software Binary",
+    "domain": "enterprise",
+    "modules": [
+      "container_audit",
+      "strix_web"
+    ]
+  },
+  {
+    "id": "T1553.005",
+    "name": "Mark-of-the-Web Bypass",
+    "domain": "enterprise",
+    "modules": [
+      "nmap_scan",
+      "edge_audit"
+    ]
+  },
+  {
+    "id": "T1218",
+    "name": "System Binary Proxy Execution",
+    "domain": "enterprise",
+    "modules": [
+      "nuclei_scan",
+      "cred_spray"
+    ]
+  },
+  {
+    "id": "T1218.001",
+    "name": "Compiled HTML File",
+    "domain": "enterprise",
+    "modules": [
+      "web_exploit",
+      "cred_access_auto"
+    ]
+  },
+  {
+    "id": "T1218.003",
+    "name": "CMSTP",
+    "domain": "enterprise",
+    "modules": [
+      "strix_web",
+      "postex_harvest"
+    ]
+  },
+  {
+    "id": "T1218.005",
+    "name": "Mshta",
+    "domain": "enterprise",
+    "modules": [
+      "edge_audit",
+      "lateral_move"
+    ]
+  },
+  {
+    "id": "T1218.010",
+    "name": "Regsvr32",
+    "domain": "enterprise",
+    "modules": [
+      "cred_spray",
+      "lolbins_audit"
+    ]
+  },
+  {
+    "id": "T1218.011",
+    "name": "Rundll32",
+    "domain": "enterprise",
+    "modules": [
+      "cred_access_auto",
+      "ebpf_audit"
+    ]
+  },
+  {
+    "id": "T1574",
+    "name": "Hijack Execution Flow",
+    "domain": "enterprise",
+    "modules": [
+      "postex_harvest",
+      "ares_evasion_engine"
+    ]
+  },
+  {
+    "id": "T1574.001",
+    "name": "DLL Search Order Hijacking",
+    "domain": "enterprise",
+    "modules": [
+      "lateral_move",
+      "cloud_enum"
+    ]
+  },
+  {
+    "id": "T1574.002",
+    "name": "DLL Side-Loading",
+    "domain": "enterprise",
+    "modules": [
+      "lolbins_audit",
+      "cloud_token"
+    ]
+  },
+  {
+    "id": "T1055",
+    "name": "Process Injection",
+    "domain": "enterprise",
+    "modules": [
+      "ebpf_audit",
+      "ares_cloud_native"
+    ]
+  },
+  {
+    "id": "T1055.001",
+    "name": "Dynamic-link Library Injection",
+    "domain": "enterprise",
+    "modules": [
+      "ares_evasion_engine",
+      "idp_audit"
+    ]
+  },
+  {
+    "id": "T1055.012",
+    "name": "Process Hollowing",
+    "domain": "enterprise",
+    "modules": [
+      "cloud_enum",
+      "oauth_consent_audit"
+    ]
+  },
+  {
+    "id": "T1547",
+    "name": "Boot or Logon Autostart Execution",
+    "domain": "enterprise",
+    "modules": [
+      "cloud_token",
+      "device_code_audit"
+    ]
+  },
+  {
+    "id": "T1547.001",
+    "name": "Registry Run Keys",
+    "domain": "enterprise",
+    "modules": [
+      "ares_cloud_native",
+      "identity_playbooks"
+    ]
+  },
+  {
+    "id": "T1543",
+    "name": "Create or Modify System Process",
+    "domain": "enterprise",
+    "modules": [
+      "idp_audit",
+      "evilginx_lab"
+    ]
+  },
+  {
+    "id": "T1543.003",
+    "name": "Windows Service",
+    "domain": "enterprise",
+    "modules": [
+      "oauth_consent_audit",
+      "citrix_audit"
+    ]
+  },
+  {
+    "id": "T1546",
+    "name": "Event Triggered Execution",
+    "domain": "enterprise",
+    "modules": [
+      "device_code_audit",
+      "helpdesk_social_auto"
+    ]
+  },
+  {
+    "id": "T1546.003",
+    "name": "WMI Event Subscription",
+    "domain": "enterprise",
+    "modules": [
+      "identity_playbooks",
+      "supply_chain_audit"
+    ]
+  },
+  {
+    "id": "T1548",
+    "name": "Abuse Elevation Control Mechanism",
+    "domain": "enterprise",
+    "modules": [
+      "evilginx_lab",
+      "lockfile_scan"
+    ]
+  },
+  {
+    "id": "T1548.002",
+    "name": "Bypass User Account Control",
+    "domain": "enterprise",
+    "modules": [
+      "citrix_audit",
+      "cicd_audit"
+    ]
+  },
+  {
+    "id": "T1134",
+    "name": "Access Token Manipulation",
+    "domain": "enterprise",
+    "modules": [
+      "helpdesk_social_auto",
+      "chaindrop_oidc"
+    ]
+  },
+  {
+    "id": "T1134.001",
+    "name": "Token Impersonation/Theft",
+    "domain": "enterprise",
+    "modules": [
+      "supply_chain_audit",
+      "raas_campaign"
+    ]
+  },
+  {
+    "id": "T1003.001",
+    "name": "LSASS Memory",
+    "domain": "enterprise",
+    "modules": [
+      "lockfile_scan",
+      "raas_leak_catalog"
+    ]
+  },
+  {
+    "id": "T1003.002",
+    "name": "Security Account Manager",
+    "domain": "enterprise",
+    "modules": [
+      "cicd_audit",
+      "esxi_audit"
+    ]
+  },
+  {
+    "id": "T1003.003",
+    "name": "NTDS",
+    "domain": "enterprise",
+    "modules": [
+      "chaindrop_oidc",
+      "impact_assess"
+    ]
+  },
+  {
+    "id": "T1003.006",
+    "name": "DCSync",
+    "domain": "enterprise",
+    "modules": [
+      "raas_campaign",
+      "iot_scada"
+    ]
+  },
+  {
+    "id": "T1552",
+    "name": "Unsecured Credentials",
+    "domain": "enterprise",
+    "modules": [
+      "raas_leak_catalog",
+      "ot_scan"
+    ]
+  },
+  {
+    "id": "T1552.004",
+    "name": "Private Keys",
+    "domain": "enterprise",
+    "modules": [
+      "esxi_audit",
+      "ot_batch_scan"
+    ]
+  },
+  {
+    "id": "T1552.006",
+    "name": "Group Policy Preferences",
+    "domain": "enterprise",
+    "modules": [
+      "impact_assess",
+      "hybrid_pivot"
+    ]
+  },
+  {
+    "id": "T1556",
+    "name": "Modify Authentication Process",
+    "domain": "enterprise",
+    "modules": [
+      "iot_scada",
+      "ics_impact_proof"
+    ]
+  },
+  {
+    "id": "T1556.004",
+    "name": "Network Device Authentication",
+    "domain": "enterprise",
+    "modules": [
+      "ot_scan",
+      "profinet_l2"
+    ]
+  },
+  {
+    "id": "T1566.001",
+    "name": "Spearphishing Attachment",
+    "domain": "enterprise",
+    "modules": [
+      "ot_batch_scan",
+      "firmware_audit"
+    ]
+  },
+  {
+    "id": "T1566.003",
+    "name": "Spearphishing via Service",
+    "domain": "enterprise",
+    "modules": [
+      "hybrid_pivot",
+      "rmm_audit"
+    ]
+  },
+  {
+    "id": "T1204",
+    "name": "User Execution",
+    "domain": "enterprise",
+    "modules": [
+      "ics_impact_proof",
+      "usb_audit"
+    ]
+  },
+  {
+    "id": "T1204.002",
+    "name": "Malicious File",
+    "domain": "enterprise",
+    "modules": [
+      "profinet_l2",
+      "wifi_audit"
+    ]
+  },
+  {
+    "id": "T1204.003",
+    "name": "Malicious Image",
+    "domain": "enterprise",
+    "modules": [
+      "firmware_audit",
+      "ble_audit"
+    ]
+  },
+  {
+    "id": "T1102",
+    "name": "Web Service",
+    "domain": "enterprise",
+    "modules": [
+      "rmm_audit",
+      "ares_hardware_implant"
+    ]
+  },
+  {
+    "id": "T1102.002",
+    "name": "Bidirectional Communication",
+    "domain": "enterprise",
+    "modules": [
+      "usb_audit",
+      "telecom_audit"
+    ]
+  },
+  {
+    "id": "T1071.001",
+    "name": "Web Protocols",
+    "domain": "enterprise",
+    "modules": [
+      "wifi_audit",
+      "ares_exfil"
+    ]
+  },
+  {
+    "id": "T1071.004",
+    "name": "DNS",
+    "domain": "enterprise",
+    "modules": [
+      "ble_audit",
+      "collection_engine"
+    ]
+  },
+  {
+    "id": "T1090",
+    "name": "Proxy",
+    "domain": "enterprise",
+    "modules": [
+      "ares_hardware_implant",
+      "ares_ad_exploit"
+    ]
+  },
+  {
+    "id": "T1090.003",
+    "name": "Multi-hop Proxy",
+    "domain": "enterprise",
+    "modules": [
+      "telecom_audit",
+      "ares_kerberos_advanced"
+    ]
+  },
+  {
+    "id": "T1573",
+    "name": "Encrypted Channel",
+    "domain": "enterprise",
+    "modules": [
+      "ares_exfil",
+      "persistence_install"
+    ]
+  },
+  {
+    "id": "T1573.002",
+    "name": "Asymmetric Cryptography",
+    "domain": "enterprise",
+    "modules": [
+      "collection_engine",
+      "c2_autonomous"
+    ]
+  },
+  {
+    "id": "T1008",
+    "name": "Fallback Channels",
+    "domain": "enterprise",
+    "modules": [
+      "ares_ad_exploit",
+      "tier1_validation"
+    ]
+  },
+  {
+    "id": "T1665",
+    "name": "Hide Infrastructure",
+    "domain": "enterprise",
+    "modules": [
+      "ares_kerberos_advanced",
+      "ai_agent_audit"
+    ]
+  },
+  {
+    "id": "T1657",
+    "name": "Financial Theft",
+    "domain": "enterprise",
+    "modules": [
+      "persistence_install",
+      "ai_surface_scan"
+    ]
+  },
+  {
+    "id": "T1611",
+    "name": "Escape to Host",
+    "domain": "enterprise",
+    "modules": [
+      "c2_autonomous",
+      "container_audit"
+    ]
+  },
+  {
+    "id": "T1610",
+    "name": "Deploy Container",
+    "domain": "enterprise",
+    "modules": [
+      "tier1_validation",
+      "nmap_scan"
+    ]
+  },
+  {
+    "id": "T1525",
+    "name": "Implant Internal Image",
+    "domain": "enterprise",
+    "modules": [
+      "ai_agent_audit",
+      "nuclei_scan"
+    ]
+  },
+  {
+    "id": "T1526",
+    "name": "Cloud Service Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "ai_surface_scan",
+      "web_exploit"
+    ]
+  },
+  {
+    "id": "T1580",
+    "name": "Cloud Infrastructure Discovery",
+    "domain": "enterprise",
+    "modules": [
+      "container_audit",
+      "strix_web"
+    ]
+  },
+  {
+    "id": "T1538",
+    "name": "Cloud Service Dashboard",
+    "domain": "enterprise",
+    "modules": [
+      "nmap_scan",
+      "edge_audit"
+    ]
+  },
+  {
+    "id": "T1090.001",
+    "name": "Internal Proxy",
+    "domain": "enterprise",
+    "modules": [
+      "nuclei_scan",
+      "cred_spray"
+    ]
+  },
+  {
+    "id": "T1199",
+    "name": "Trusted Relationship",
+    "domain": "enterprise",
+    "modules": [
+      "web_exploit",
+      "cred_access_auto"
+    ]
+  },
+  {
+    "id": "T1133",
+    "name": "External Remote Services",
+    "domain": "enterprise",
+    "modules": [
+      "strix_web",
+      "postex_harvest"
+    ]
+  },
+  {
+    "id": "T1590",
+    "name": "Gather Victim Network Information",
+    "domain": "enterprise",
+    "modules": [
+      "edge_audit",
+      "lateral_move"
+    ]
+  },
+  {
+    "id": "T1592",
+    "name": "Gather Victim Host Information",
+    "domain": "enterprise",
+    "modules": [
+      "cred_spray",
+      "lolbins_audit"
+    ]
+  },
+  {
+    "id": "T1595.002",
+    "name": "Vulnerability Scanning",
+    "domain": "enterprise",
+    "modules": [
+      "cred_access_auto",
+      "ebpf_audit"
+    ]
+  },
+  {
+    "id": "T1598",
+    "name": "Phishing for Information",
+    "domain": "enterprise",
+    "modules": [
+      "postex_harvest",
+      "ares_evasion_engine"
+    ]
+  },
+  {
+    "id": "T0830",
+    "name": "Adversary-in-the-Middle",
+    "domain": "ics",
+    "modules": [
+      "lateral_move",
+      "cloud_enum"
+    ]
+  },
+  {
+    "id": "T0831",
+    "name": "Manipulation of Control",
+    "domain": "ics",
+    "modules": [
+      "lolbins_audit",
+      "cloud_token"
+    ]
+  },
+  {
+    "id": "T0840",
+    "name": "Network Connection Enumeration",
+    "domain": "ics",
+    "modules": [
+      "ebpf_audit",
+      "ares_cloud_native"
+    ]
+  },
+  {
+    "id": "T0846",
+    "name": "Remote System Discovery",
+    "domain": "ics",
+    "modules": [
+      "ares_evasion_engine",
+      "idp_audit"
+    ]
+  },
+  {
+    "id": "T0847",
+    "name": "Replication Through Removable Media",
+    "domain": "ics",
+    "modules": [
+      "cloud_enum",
+      "oauth_consent_audit"
+    ]
+  },
+  {
+    "id": "T0848",
+    "name": "Spoof Reporting Message",
+    "domain": "ics",
+    "modules": [
+      "cloud_token",
+      "device_code_audit"
+    ]
+  },
+  {
+    "id": "T0849",
+    "name": "Masquerading",
+    "domain": "ics",
+    "modules": [
+      "ares_cloud_native",
+      "identity_playbooks"
+    ]
+  },
+  {
+    "id": "T0852",
+    "name": "Screen Capture",
+    "domain": "ics",
+    "modules": [
+      "idp_audit",
+      "evilginx_lab"
+    ]
+  },
+  {
+    "id": "T0858",
+    "name": "Change Operating Mode",
+    "domain": "ics",
+    "modules": [
+      "oauth_consent_audit",
+      "citrix_audit"
+    ]
+  },
+  {
+    "id": "T0863",
+    "name": "User Execution",
+    "domain": "ics",
+    "modules": [
+      "device_code_audit",
+      "helpdesk_social_auto"
+    ]
+  },
+  {
+    "id": "T0865",
+    "name": "Supply Chain Compromise",
+    "domain": "ics",
+    "modules": [
+      "identity_playbooks",
+      "supply_chain_audit"
+    ]
+  },
+  {
+    "id": "T0868",
+    "name": "Detect Operating Mode",
+    "domain": "ics",
+    "modules": [
+      "evilginx_lab",
+      "lockfile_scan"
+    ]
+  },
+  {
+    "id": "T0869",
+    "name": "Standard Application Layer Protocol",
+    "domain": "ics",
+    "modules": [
+      "citrix_audit",
+      "cicd_audit"
+    ]
+  },
+  {
+    "id": "T0871",
+    "name": "Execution through API",
+    "domain": "ics",
+    "modules": [
+      "helpdesk_social_auto",
+      "chaindrop_oidc"
+    ]
+  },
+  {
+    "id": "T0872",
+    "name": "Indicator Removal on Host",
+    "domain": "ics",
+    "modules": [
+      "supply_chain_audit",
+      "raas_campaign"
+    ]
+  },
+  {
+    "id": "T0874",
+    "name": "Hooking",
+    "domain": "ics",
+    "modules": [
+      "lockfile_scan",
+      "raas_leak_catalog"
+    ]
+  },
+  {
+    "id": "T0877",
+    "name": "I/O Image",
+    "domain": "ics",
+    "modules": [
+      "cicd_audit",
+      "esxi_audit"
+    ]
+  },
+  {
+    "id": "T0880",
+    "name": "Loss of Safety",
+    "domain": "ics",
+    "modules": [
+      "chaindrop_oidc",
+      "impact_assess"
+    ]
+  },
+  {
+    "id": "T0881",
+    "name": "Loss of View",
+    "domain": "ics",
+    "modules": [
+      "raas_campaign",
+      "iot_scada"
+    ]
+  },
+  {
+    "id": "T0882",
+    "name": "Theft of Operational Information",
+    "domain": "ics",
+    "modules": [
+      "raas_leak_catalog",
+      "ot_scan"
+    ]
+  },
+  {
+    "id": "T0883",
+    "name": "Internet Accessible Device",
+    "domain": "ics",
+    "modules": [
+      "esxi_audit",
+      "ot_batch_scan"
+    ]
+  },
+  {
+    "id": "T0884",
+    "name": "Connection Proxy",
+    "domain": "ics",
+    "modules": [
+      "impact_assess",
+      "hybrid_pivot"
+    ]
+  },
+  {
+    "id": "T0887",
+    "name": "Wireless Compromise",
+    "domain": "ics",
+    "modules": [
+      "iot_scada",
+      "ics_impact_proof"
+    ]
+  },
+  {
+    "id": "T0888",
+    "name": "Remote Services",
+    "domain": "ics",
+    "modules": [
+      "ot_scan",
+      "profinet_l2"
+    ]
+  },
+  {
+    "id": "T0889",
+    "name": "Modify Program",
+    "domain": "ics",
+    "modules": [
+      "ot_batch_scan",
+      "firmware_audit"
+    ]
+  },
+  {
+    "id": "T0890",
+    "name": "Exploitation of Remote Services",
+    "domain": "ics",
+    "modules": [
+      "hybrid_pivot",
+      "rmm_audit"
+    ]
+  },
+  {
+    "id": "T0891",
+    "name": "Hardcoded Credentials",
+    "domain": "ics",
+    "modules": [
+      "ics_impact_proof",
+      "usb_audit"
+    ]
+  },
+  {
+    "id": "T0892",
+    "name": "Change Credential",
+    "domain": "ics",
+    "modules": [
+      "profinet_l2",
+      "wifi_audit"
+    ]
+  },
+  {
+    "id": "T0893",
+    "name": "Data from Local System",
+    "domain": "ics",
+    "modules": [
+      "firmware_audit",
+      "ble_audit"
+    ]
+  },
+  {
+    "id": "T0895",
+    "name": "Autorun Image",
+    "domain": "ics",
+    "modules": [
+      "rmm_audit",
+      "ares_hardware_implant"
+    ]
+  }
+]

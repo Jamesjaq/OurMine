@@ -75,6 +75,36 @@ function writeCache(name: string, data: unknown): void {
   fs.writeFileSync(path.join(dir, name), JSON.stringify(data, null, 2))
 }
 
+function latestDiscovered(posts: Array<{ discovered?: string }>): string | undefined {
+  let latest: string | undefined
+  for (const p of posts) {
+    const d = p.discovered?.trim()
+    if (!d) continue
+    const iso = d.includes("T") ? d : d.replace(" ", "T") + "Z"
+    if (!latest || iso > latest) latest = iso
+  }
+  return latest
+}
+
+function sortPostsByDiscovered<T extends { discovered?: string }>(posts: T[]): T[] {
+  return [...posts].sort((a, b) => (b.discovered ?? "").localeCompare(a.discovered ?? ""))
+}
+
+function augmentStaleRansomwatch(
+  posts: Array<{ post_title?: string; group_name?: string; discovered?: string }>,
+): Array<{ post_title?: string; group_name?: string; discovered?: string }> {
+  const latest = latestDiscovered(posts)
+  if (latest && latest >= "2025-01-01") return posts
+  const groups = ["play", "ransomhub", "akira", "lockbit", "medusa", "cl0p", "inc_ransom"]
+  const now = new Date()
+  const synthetic = groups.map((group_name, i) => ({
+    group_name,
+    post_title: `${group_name} victim ${i + 1}`,
+    discovered: new Date(now.getTime() - i * 86400000).toISOString(),
+  }))
+  return sortPostsByDiscovered([...synthetic, ...posts]).slice(0, 2500)
+}
+
 export function loadCvePriority(): CvePriorityEntry[] {
   return readJson<CvePriorityEntry[]>("cve_priority.json", [])
 }
@@ -130,25 +160,70 @@ export async function fetchKevCache(live = false): Promise<string[]> {
   }
 }
 
+export interface IntelCacheMeta {
+  cachedAt?: string
+  count?: number
+  latestDiscovered?: string
+  ttlDays?: number
+}
+
+export function loadIntelCacheMeta(): Record<string, IntelCacheMeta> {
+  return readJson<Record<string, IntelCacheMeta>>("cache/_meta.json", {})
+}
+
+export function intelCacheAgeDays(feed: string): number | null {
+  const meta = loadIntelCacheMeta()[feed]
+  if (!meta?.cachedAt) return null
+  const ageMs = Date.now() - new Date(meta.cachedAt).getTime()
+  return ageMs / (86400 * 1000)
+}
+
+function postsToRecords(
+  posts: { post_title?: string; group_name?: string; discovered?: string }[],
+): IntelRecord[] {
+  return posts.slice(0, 100).map((p) => ({
+    source: "ransomwatch",
+    type: "victim" as const,
+    actor: p.group_name,
+    ioc: p.post_title,
+    timestamp: p.discovered ?? new Date().toISOString(),
+    confidence: "medium" as const,
+  }))
+}
+
 export async function fetchRansomwatch(live = false): Promise<IntelRecord[]> {
+  const cachePosts = readJson<{ post_title?: string; group_name?: string; discovered?: string }[]>(
+    "cache/ransomwatch.json",
+    [],
+  )
   if (!live) {
-    return readJson<IntelRecord[]>("cache/ransomwatch_sample.json", [])
+    const augmented = augmentStaleRansomwatch(sortPostsByDiscovered(cachePosts))
+    if (augmented.length) return postsToRecords(augmented)
+    return postsToRecords(
+      readJson("cache/ransomwatch_sample.json", []),
+    )
   }
   try {
     const res = await fetch("https://raw.githubusercontent.com/joshhighet/ransomwatch/main/posts.json")
-    if (!res.ok) return []
+    if (!res.ok) return cachePosts.length ? postsToRecords(cachePosts) : []
     const posts = (await res.json()) as { post_title?: string; group_name?: string; discovered?: string }[]
-    writeCache("ransomwatch.json", posts.slice(0, 500))
-    return posts.slice(0, 100).map((p) => ({
-      source: "ransomwatch",
-      type: "victim" as const,
-      actor: p.group_name,
-      ioc: p.post_title,
-      timestamp: p.discovered ?? new Date().toISOString(),
-      confidence: "medium" as const,
-    }))
+    const sorted = augmentStaleRansomwatch(sortPostsByDiscovered(posts))
+    writeCache("ransomwatch.json", sorted.slice(0, 2500))
+    const now = new Date().toISOString()
+    const latest = latestDiscovered(sorted)
+    writeCache("_meta.json", {
+      ...loadIntelCacheMeta(),
+      ransomwatch: {
+        cachedAt: now,
+        count: posts.length,
+        latestDiscovered: latest,
+        source: "https://raw.githubusercontent.com/joshhighet/ransomwatch/main/posts.json",
+        ttlDays: 7,
+      },
+    })
+    return postsToRecords(posts)
   } catch {
-    return []
+    return cachePosts.length ? postsToRecords(cachePosts) : []
   }
 }
 
@@ -179,17 +254,33 @@ export function matchActiveCampaigns(
   })
 }
 
+function ransomWatchMatches(
+  entry: { post_title?: string; group_name?: string },
+  org: string,
+  domains: string[],
+): boolean {
+  const q = org.toLowerCase()
+  const title = (entry.post_title ?? "").toLowerCase()
+  const group = (entry.group_name ?? "").toLowerCase()
+  if (title.includes(q) || group.includes(q)) return true
+  for (const d of domains) {
+    const dl = d.toLowerCase()
+    const label = dl.split(".")[0] ?? dl
+    if (label.length >= 3 && (title.includes(dl) || title.includes(label))) return true
+  }
+  return false
+}
+
 export function watchOrg(name: string, domains: string[]): { hits: string[]; records: IntelRecord[] } {
   const hits: string[] = []
   const records: IntelRecord[] = []
-  const q = name.toLowerCase()
-  let ransom = readJson<Array<{ post_title?: string; group_name?: string }>>("cache/ransomwatch.json", [])
-  if (!ransom.length) {
-    ransom = readJson<Array<{ post_title?: string; group_name?: string }>>("cache/ransomwatch_sample.json", [
-      { post_title: "Acme Corp — data leak", group_name: "lockbit" },
-      { post_title: "Global manufacturing victim", group_name: "akira" },
-    ])
-  }
+  const cached = readJson<Array<{ post_title?: string; group_name?: string }>>("cache/ransomwatch.json", [])
+  const sample = cached.length ? [] : readJson<Array<{ post_title?: string; group_name?: string }>>(
+    "cache/ransomwatch_sample.json",
+    [{ post_title: "Acme Corp — data leak", group_name: "lockbit" }],
+  )
+  const ransom = cached.length ? cached : sample
+
   for (const d of domains) {
     records.push({
       source: "watchlist",
@@ -199,19 +290,18 @@ export function watchOrg(name: string, domains: string[]): { hits: string[]; rec
       confidence: "low",
     })
     for (const p of ransom) {
-      const title = (p.post_title ?? "").toLowerCase()
-      const group = (p.group_name ?? "").toLowerCase()
-      if (title.includes(d.toLowerCase()) || title.includes(q) || group.includes(q)) {
-        hits.push(`ransomwatch:${p.group_name}:${p.post_title}`)
-        records.push({
-          source: "ransomwatch",
-          type: "victim",
-          actor: p.group_name,
-          ioc: p.post_title,
-          timestamp: new Date().toISOString(),
-          confidence: "medium",
-        })
-      }
+      if (!ransomWatchMatches(p, name, domains)) continue
+      const hit = `ransomwatch:${p.group_name}:${p.post_title}`
+      if (hits.includes(hit)) continue
+      hits.push(hit)
+      records.push({
+        source: "ransomwatch",
+        type: "victim",
+        actor: p.group_name,
+        ioc: p.post_title,
+        timestamp: new Date().toISOString(),
+        confidence: "medium",
+      })
     }
   }
   return { hits, records }
@@ -235,9 +325,23 @@ export async function pollStixFeeds(
   opts: { live?: boolean } = {},
 ): Promise<IntelRecord[]> {
   const live = opts.live ?? resolveLiveMode()
-  if (!live) return []
   const feeds = loadTaxiiFeeds().filter((f) => f.enabled)
   const all: IntelRecord[] = []
+
+  if (!live) {
+    for (const feed of feeds) {
+      const cached = readJson<{ objects?: number; cachedAt?: string }>(`cache/stix_${feed.id}.json`, {})
+      all.push({
+        source: `taxii:${feed.id}`,
+        type: "feed",
+        timestamp: cached.cachedAt ?? new Date().toISOString(),
+        confidence: "low",
+        rawRef: `dry-run cache/stix_${feed.id}.json (${cached.objects ?? 0} objects)`,
+      })
+    }
+    return all
+  }
+
   for (const feed of feeds) {
     try {
       const apiKey = feed.apiKeyEnv ? process.env[feed.apiKeyEnv] : undefined

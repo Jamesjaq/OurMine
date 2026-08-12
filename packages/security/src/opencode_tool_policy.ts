@@ -18,7 +18,9 @@ export const SEARCH_MODE_TOOL_ALLOWLIST = new Set([
   "ares_auto_chain",
   "ares_pentest_plan",
   "ares_intel_feed",
+  "ares_threat_intel",
   "ares_pentest_run",
+  "ares_opsec_throttle",
 ])
 
 /** OpenCode names MCP tools as `{server}_{toolName}`. */

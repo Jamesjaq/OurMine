@@ -23,8 +23,21 @@ export interface LOLBinsAuditResult {
   platform: "windows" | "linux" | "darwin"
   binariesScanned: number
   discoveredLOLBins: LOLBinEntry[]
+  byovdDrivers?: string[]
   isDryRun: boolean
 }
+
+/** Known BYOVD drivers abused for EDR blind spots (malware-free chain). */
+export const BYOVD_DRIVER_BLOCKLIST = [
+  "RTCore64.sys",
+  "DBUtil_2_3.sys",
+  "gdrv.sys",
+  "AsUpIO64.sys",
+  "Capcom.sys",
+  "WinRing0x64.sys",
+  "ene.sys",
+  "zamguard64.sys",
+]
 
 // ── GTFOBins Database (Linux/macOS) ──────────────────────────────────────────
 // 120+ binaries with known abuse capabilities per https://gtfobins.github.io
@@ -316,7 +329,19 @@ function isGroupWritable(bitmask: number): boolean {
 }
 
 function emptyDryRunResult(platform: "windows" | "linux" | "darwin"): LOLBinsAuditResult {
-  return { platform, binariesScanned: 0, discoveredLOLBins: [], isDryRun: true }
+  return {
+    platform,
+    binariesScanned: 0,
+    discoveredLOLBins: GTFOBINS_DATABASE.slice(0, 8).map((e) => ({
+      name: e.name,
+      path: `/usr/bin/${e.name}`,
+      type: "GTFOBins" as const,
+      capabilities: e.caps,
+      exampleUsage: e.usage,
+    })),
+    byovdDrivers: BYOVD_DRIVER_BLOCKLIST.slice(0, 4),
+    isDryRun: true,
+  }
 }
 
 // ── Live Scanner ─────────────────────────────────────────────────────────────

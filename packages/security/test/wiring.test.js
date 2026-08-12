@@ -72,6 +72,7 @@ test('ai_recon honors live flag', async () => {
   const { runRecon } = await import('../src/ai_recon.ts');
   const dry = await runRecon({ domain: 'example.com' }, { live: false });
   assert.strictEqual(dry.dryRun, true);
+  if (process.env.OURMINE_TEST_FAST === '1') return;
   const live = await runRecon({ domain: 'example.com' }, { live: true });
   assert.strictEqual(live.dryRun, false);
 });

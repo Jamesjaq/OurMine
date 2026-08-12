@@ -1,26 +1,27 @@
 /**
  * @module security/impact_engine
- * ImpactDemonstrationEngine — Bounded Non-Destructive Proof-of-Impact Engine
- *
- * Demonstrates security consequences against explicitly authorized local targets
- * without destructive payloads, data deletion, or unauthorized access.
+ * ImpactDemonstrationEngine — HTTP canaries + ICS semantic process proofs.
  */
-
 import type { VulnNode } from "./attack_surface.ts"
+import { proveIcsImpact, icsImpactToEngineProof, type IcsImpactProof } from "./ics_impact_proof.ts"
 
 export interface ImpactProof {
   vulnId: string
   level: "L3_VALIDATION" | "L4_CONTROLLED_IMPACT"
-  proofType: "CANARY_OBJECT_ACCESS" | "PRIVILEGE_BOUNDARY_CROSS" | "AUTHENTICATED_ENDPOINT_REACHED" | "HEADER_INDICATOR_REPRODUCED"
+  proofType:
+    | "CANARY_OBJECT_ACCESS"
+    | "PRIVILEGE_BOUNDARY_CROSS"
+    | "AUTHENTICATED_ENDPOINT_REACHED"
+    | "HEADER_INDICATOR_REPRODUCED"
+    | "ICS_REGISTER_READ"
+    | "ICS_SEMANTIC_PROCESS"
   evidenceSnippet: string
   timestamp: string
   safeProofMarker: string
 }
 
 export class ImpactDemonstrationEngine {
-  /**
-   * Demonstrates safe, bounded proof-of-impact for a confirmed vulnerability node.
-   */
+  /** HTTP / text-body impact proof (existing). */
   public static demonstrateImpact(vuln: VulnNode, targetUrl: string, responseBody: string): ImpactProof | null {
     if (responseBody.includes("CONFIDENTIAL_DB_KEYS") || responseBody.includes("Superuser Access Granted")) {
       return {
@@ -46,4 +47,27 @@ export class ImpactDemonstrationEngine {
 
     return null
   }
+
+  /** ICS Modbus / semantic process impact (unified path). */
+  public static async demonstrateIcsImpact(
+    vuln: VulnNode,
+    host: string,
+    opts: { port?: number; live?: boolean } = {},
+  ): Promise<{ proof: ImpactProof | null; ics: IcsImpactProof }> {
+    const ics = await proveIcsImpact({
+      host,
+      port: opts.port ?? 502,
+      live: opts.live,
+      vulnId: vuln.id,
+    })
+    const proof = icsImpactToEngineProof(vuln.id, ics)
+    if (proof && ics.semantic) {
+      proof.proofType = ics.proofType === "SEMANTIC_PROCESS_IMPACT"
+        ? "ICS_SEMANTIC_PROCESS"
+        : "ICS_REGISTER_READ"
+    }
+    return { proof, ics }
+  }
 }
+
+export default { ImpactDemonstrationEngine }

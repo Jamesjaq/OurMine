@@ -1,5 +1,12 @@
 [
   {
+    "id": "mitre_enterprise",
+    "name": "MITRE ATT&CK Enterprise",
+    "baseUrl": "https://attack-taxii.mitre.org/api/v21",
+    "collectionId": "95ecc380-afe9-11df-a3b3-001e4cfc1678",
+    "enabled": true
+  },
+  {
     "id": "cisa_apt",
     "name": "CISA APT STIX (example)",
     "baseUrl": "https://taxii.mitre.org/api/v21",

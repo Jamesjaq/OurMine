@@ -46,16 +46,41 @@ describe("mcp_efficiency", () => {
       { name: "ares_phase" },
       { name: "ares_obscure_tool" },
       { name: "ares_kerberos_advanced" },
+      { name: "ares_iot_scada" },
     ]
     const filtered = filterToolsForEfficiency(tools)
-    assert.equal(filtered.length, 2)
+    assert.equal(filtered.length, 3)
     assert.ok(filtered.some((t) => t.name === "bash"))
     assert.ok(filtered.some((t) => t.name === "ares_phase"))
+    assert.ok(filtered.some((t) => t.name === "ares_iot_scada"))
     process.env.OURMINE_MCP_EFFICIENT = "1"
   })
 
-  test("allowlist includes phase and dispatch", () => {
+  test("allowlist includes engagement continue", () => {
+    assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_engagement_continue"))
     assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_phase"))
     assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_dispatch"))
+    assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_opsec_throttle"))
+  })
+
+  test("compactToolOutput preserves stdout stderr exitCode", () => {
+    const raw = compactToolOutput({
+      stdout: "hello world",
+      stderr: "warn",
+      exitCode: 0,
+      dryRun: false,
+    })
+    const p = JSON.parse(raw)
+    assert.equal(p.stdout, "hello world")
+    assert.equal(p.exitCode, 0)
+  })
+
+  test("compactToolOutput caps lolbins payload", () => {
+    const bins = Array.from({ length: 100 }, (_, i) => ({ name: `bin${i}` }))
+    const raw = compactToolOutput({ discoveredLOLBins: bins, platform: "linux" })
+    const p = JSON.parse(raw)
+    assert.equal(p.lolbinCount, 100)
+    assert.equal(p.lolbinSample.length, 5)
+    assert.ok(raw.length < 800)
   })
 })

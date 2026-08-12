@@ -1,5 +1,11 @@
 # Local engagement/runtime artifacts (proof packs, wallets, Tor keys, sessions)
 .ourmine/
 
+# Secrets / local runtime config (never commit)
+.env
+.env.local
+**/.env.local
+.cursor/mcp.json
+
 # Test temp dirs
 packages/security/test/.tmp_*/

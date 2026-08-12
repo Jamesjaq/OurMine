@@ -17,6 +17,8 @@
     "build": "tsc -b",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test packages/security/test/*.test.js",
+    "test:fast": "node --experimental-strip-types packages/security/scripts/run-fast-tests.ts",
+    "ares:go": "bash packages/security/scripts/battle-ready.sh",
     "test:wiring": "node --experimental-strip-types --test packages/security/test/wiring.test.js",
     "test:all": "npm test && npm run test:bun",
     "test:bun": "for pkg in core opencode llm tui client codemode session-ui; do (cd packages/$pkg && bun test --only-failures) || exit 1; done",
@@ -28,7 +30,8 @@
     "capability:benchmark": "node --experimental-strip-types lab/benchmark_runner.ts",
     "capability:report": "cat lab/results/capability_report.md",
     "adversarial:audit": "node --experimental-strip-types lab/complex_benchmark.ts",
-    "capability:depth-audit": "node --experimental-strip-types lab/twelfth_pass_runner.ts"
+    "capability:depth-audit": "node --experimental-strip-types lab/twelfth_pass_runner.ts",
+    "intel:refresh": "node --experimental-strip-types packages/security/scripts/refresh-intel-cache.ts"
   },
   "devDependencies": {
     "typescript": "^5.8.3",

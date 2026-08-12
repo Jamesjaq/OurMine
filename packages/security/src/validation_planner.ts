@@ -24,6 +24,13 @@ export type ValidationStrategy =
   | "IDOR_BOLA"           // Multi-user IDOR/BOLA proof
   | "PRIVESC_PROOF"       // Controlled privesc flag read
   | "EXPLOIT_REPLAY"      // Exploit replay with rollback envelope
+  | "MODBUS_PROBE"        // ICS Modbus FC3 read proof (non-destructive)
+  | "DNP3_PROBE"          // ICS DNP3 link probe (non-destructive)
+  | "BACNET_PROBE"        // ICS BACnet Who-Is probe (non-destructive)
+  | "MQTT_PROBE"          // ICS MQTT CONNACK probe (non-destructive)
+  | "COAP_PROBE"          // ICS CoAP discovery probe (non-destructive)
+  | "S7_PROBE"            // ICS S7comm handshake probe (non-destructive)
+  | "NUCLEI_PROBE"        // Nuclei template re-run for web vuln validation
 
 export type ValidationRisk = "none" | "low" | "medium"
 
@@ -66,6 +73,8 @@ export interface ValidationPlan {
   destructive:    false
   authorizedScope: string          // must match AttackSurfaceGraph.target
   fingerprint:    string           // SHA-256(findingId+target+capabilityId) for idempotency
+  /** Service hint for icsValidationProbe routing (mqtt/coap/s7/modbus/…) */
+  serviceHint?:   string
   createdAt:      string
 }
 
@@ -114,6 +123,18 @@ const CAPABILITY_REGISTRY: ValidationCapability[] = [
     destructive:        false,
     supportedProtocols: ["http", "https"],
     timeoutMs:          5_000,
+  },
+  // ── Nuclei: web template validation ───────────────────────────────────────
+  {
+    id:                 "nuclei-web-validate",
+    name:               "Nuclei Template Validation",
+    strategy:           "NUCLEI_PROBE",
+    matchPatterns:      ["nuclei", "nuclei-vuln", "template-id", "log4j", "cve-", "http-admin-path"],
+    requiredTool:       "nuclei",
+    riskLevel:          "low",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          30_000,
   },
   // ── TLS: version & cert ───────────────────────────────────────────────────
   {
@@ -252,7 +273,7 @@ const CAPABILITY_REGISTRY: ValidationCapability[] = [
     id:                 "l4-canary-impact",
     name:               "L4 Controlled Impact Proof",
     strategy:           "L4_CONTROLLED_IMPACT",
-    matchPatterns:      ["rce", "critical", "data-exposure", "sql-injection", "ssrf", "confirmed", "impact"],
+    matchPatterns:      ["remote-code-exec", "critical", "data-exposure", "sql-injection", "ssrf", "confirmed", "impact"],
     requiredTool:       "curl",
     riskLevel:          "low",
     destructive:        false,
@@ -285,18 +306,92 @@ const CAPABILITY_REGISTRY: ValidationCapability[] = [
     id:                 "exploit-replay-envelope",
     name:               "Exploit Replay Rollback Envelope",
     strategy:           "EXPLOIT_REPLAY",
-    matchPatterns:      ["rce", "exploit", "injection", "deserialization"],
+    matchPatterns:      ["remote-code-exec", "code-execution", "deserialization", "injection"],
     requiredTool:       "curl",
     riskLevel:          "low",
     destructive:        false,
     supportedProtocols: ["http", "https"],
     timeoutMs:          20_000,
   },
+  {
+    id:                 "modbus-register-read",
+    name:               "Modbus Holding Register Read Proof",
+    strategy:           "MODBUS_PROBE",
+    matchPatterns:      ["modbus", "scada", "plc", "502"],
+    requiredTool:       "modbus-tcp",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["modbus", "tcp"],
+    timeoutMs:          8_000,
+  },
+  {
+    id:                 "dnp3-link-probe",
+    name:               "DNP3 Link Layer Probe",
+    strategy:           "DNP3_PROBE",
+    matchPatterns:      ["dnp3", "20000", "outstation"],
+    requiredTool:       "dnp3-tcp",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["dnp3", "tcp"],
+    timeoutMs:          10_000,
+  },
+  {
+    id:                 "bacnet-whois-probe",
+    name:               "BACnet Who-Is Probe",
+    strategy:           "BACNET_PROBE",
+    matchPatterns:      ["bacnet", "47808", "bms"],
+    requiredTool:       "bacnet-udp",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["bacnet", "udp"],
+    timeoutMs:          8_000,
+  },
+  {
+    id:                 "mqtt-connack-probe",
+    name:               "MQTT CONNACK Probe",
+    strategy:           "MQTT_PROBE",
+    matchPatterns:      ["mqtt", "1883", "iot-broker"],
+    requiredTool:       "mqtt-tcp",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["mqtt", "tcp"],
+    timeoutMs:          8_000,
+  },
+  {
+    id:                 "coap-discovery-probe",
+    name:               "CoAP Discovery Probe",
+    strategy:           "COAP_PROBE",
+    matchPatterns:      ["coap", "5683", "lwm2m"],
+    requiredTool:       "coap-udp",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["coap", "udp"],
+    timeoutMs:          8_000,
+  },
+  {
+    id:                 "s7comm-handshake-probe",
+    name:               "S7comm Handshake Probe",
+    strategy:           "S7_PROBE",
+    matchPatterns:      ["s7", "siemens", "profinet", "102", "s7comm"],
+    requiredTool:       "s7-tcp",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["s7", "tcp"],
+    timeoutMs:          10_000,
+  },
 ]
 
 // ─── ValidationPlanner ───────────────────────────────────────────────────────
 
 import * as crypto from "node:crypto"
+
+/** Match capability tokens on word boundaries (avoids "protocol" → "ot", "log4j-rce" → bare "rce"). */
+function patternMatches(search: string, pattern: string): boolean {
+  const p = pattern.toLowerCase()
+  if (!p) return false
+  const re = new RegExp(`(?:^|[\\s_./:-])${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[\\s_./:-])`)
+  return re.test(` ${search.toLowerCase()} `)
+}
 
 export class ValidationPlanner {
 
@@ -306,13 +401,23 @@ export class ValidationPlanner {
     service: string,
     templateId: string,
   ): ValidationCapability | null {
-    const search = [service.toLowerCase(), templateId.toLowerCase(), findingId.toLowerCase()].join(" ")
-    const priority = ["L4_CONTROLLED_IMPACT", "L3_BYPASS", "IDOR_BOLA", "EXPLOIT_REPLAY", "PRIVESC_PROOF", "HTTP_STATE_FUZZ", "NMAP_SCRIPT", "HTTP_PROBE"]
+    const svc = service.toLowerCase()
+    const tpl = templateId.toLowerCase()
+    const search = [svc, tpl, findingId.toLowerCase()].join(" ")
+    const priority = ["L4_CONTROLLED_IMPACT", "L3_BYPASS", "IDOR_BOLA", "MODBUS_PROBE", "DNP3_PROBE", "BACNET_PROBE", "MQTT_PROBE", "COAP_PROBE", "S7_PROBE", "NUCLEI_PROBE", "EXPLOIT_REPLAY", "PRIVESC_PROOF", "HTTP_STATE_FUZZ", "NMAP_SCRIPT", "HTTP_PROBE"]
     const matches = CAPABILITY_REGISTRY.filter(cap =>
-      cap.matchPatterns.some(p => search.includes(p.toLowerCase())),
+      cap.matchPatterns.some(p => patternMatches(search, p)),
     )
     if (!matches.length) return null
+    const tplRank = (cap: ValidationCapability) =>
+      cap.id === tpl || cap.matchPatterns.some(p => patternMatches(tpl, p)) ? 0 : 1
     matches.sort((a, b) => {
+      const aTpl = tplRank(a)
+      const bTpl = tplRank(b)
+      if (aTpl !== bTpl) return aTpl - bTpl
+      const aSvc = a.matchPatterns.some(p => patternMatches(svc, p)) ? 0 : 1
+      const bSvc = b.matchPatterns.some(p => patternMatches(svc, p)) ? 0 : 1
+      if (aSvc !== bSvc) return aSvc - bSvc
       const ai = priority.indexOf(a.strategy)
       const bi = priority.indexOf(b.strategy)
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
@@ -418,6 +523,15 @@ export class ValidationPlanner {
       plan.stateFuzzFlowId = "exploit-replay"
       plan.l3SafetyEnvelope = "read_only"
       plan.httpOptions = { method: "POST", path: "/api/v1/users" }
+    } else if (
+      cap.strategy === "MODBUS_PROBE" || cap.strategy === "DNP3_PROBE" || cap.strategy === "BACNET_PROBE"
+      || cap.strategy === "MQTT_PROBE" || cap.strategy === "COAP_PROBE" || cap.strategy === "S7_PROBE"
+    ) {
+      plan.serviceHint = opts.service
+      plan.command = `# ${cap.strategy} — executed in-process via ics_validation.ts`
+    } else if (cap.strategy === "NUCLEI_PROBE") {
+      const url = `${protocol}://${opts.target.split(":")[0]}:${port}`
+      plan.command = `nuclei -u ${url} -severity critical,high,medium -json -silent -timeout ${Math.floor(cap.timeoutMs / 1000)}`
     }
 
     return { plan, capability: cap }

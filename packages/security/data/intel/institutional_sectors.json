@@ -1,0 +1,283 @@
+{
+  "description": "ARES institutional attack surface — organizations with staff/network",
+  "detectionPriority": [
+    "critical_infra",
+    "healthcare",
+    "k12_school",
+    "university",
+    "banking",
+    "insurance",
+    "legal",
+    "government",
+    "corporate_office",
+    "telecom_office",
+    "ngo",
+    "saas"
+  ],
+  "sectors": {
+    "banking": {
+      "label": "Banking & Financial Cooperatives",
+      "examples": ["banks", "SACCOs", "credit unions", "microfinance"],
+      "hintPattern": "\\b(swift|iso20022|iso.?8583|iso8583|mt103|core.?bank|ach|wire.?transfer|8087|banking|treasury|sacco|credit.?union|microfinance|atm\\b|finacle|flexcube)\\b",
+      "ports": [
+        { "port": 8087, "protocol": "tcp", "service": "SWIFT-Alliance", "note": "SWIFT Alliance Access / FIN gateway" },
+        { "port": 443, "protocol": "tcp", "service": "ISO20022-API", "note": "ISO 20022 REST/SOAP banking API" },
+        { "port": 8443, "protocol": "tcp", "service": "Core-Banking-HTTPS", "note": "Core banking web/API tier" },
+        { "port": 5000, "protocol": "tcp", "service": "ISO8583-Gateway", "note": "ISO 8583 card/ATM switch (vendor-specific)" },
+        { "port": 1521, "protocol": "tcp", "service": "Oracle-DB", "note": "Core ledger database (common)" },
+        { "port": 1433, "protocol": "tcp", "service": "MSSQL", "note": "Treasury/reporting DB" }
+      ],
+      "modules": ["institutional_recon", "net_device_audit", "recon"],
+      "aptProfileId": "finance_tradecraft",
+      "persona": "enterprise_ad",
+      "objective": "identity_first",
+      "finding": {
+        "id": "inst-banking-swift",
+        "severity": "info",
+        "title": "SWIFT/ISO8583 read-only recon",
+        "detail": "Port 8087 (Alliance) and ISO 8583/20022 APIs — metadata/BIC enumeration only, no message injection",
+        "ports": [8087, 443, 5000]
+      }
+    },
+    "corporate_office": {
+      "label": "Corporate Office",
+      "examples": ["HQ", "branch offices", "regional offices"],
+      "hintPattern": "\\b(m365|microsoft.?365|office.?365|branch.?office|corporate.?hq|head.?office|voip|sip.?trunk|printer|mfp|unifi|meraki|fortinet.?office)\\b",
+      "ports": [
+        { "port": 443, "protocol": "tcp", "service": "M365-OAuth", "note": "Entra/M365 identity endpoints" },
+        { "port": 9100, "protocol": "tcp", "service": "JetDirect", "note": "Network printer RAW/JetDirect" },
+        { "port": 631, "protocol": "tcp", "service": "IPP", "note": "Internet Printing Protocol" },
+        { "port": 5060, "protocol": "udp", "service": "SIP", "note": "VoIP/SIP trunk signaling" },
+        { "port": 8443, "protocol": "tcp", "service": "VPN-Gateway", "note": "Branch VPN concentrator" }
+      ],
+      "modules": ["net_device_audit", "app_security_engine", "recon"],
+      "aptProfileId": "corp_office",
+      "persona": "enterprise_ad",
+      "objective": "identity_first",
+      "finding": {
+        "id": "inst-corp-m365",
+        "severity": "medium",
+        "title": "M365 / branch perimeter",
+        "detail": "M365 OAuth, VoIP (5060), and JetDirect (9100) — printer/VPN pivot from branch LAN",
+        "ports": [443, 5060, 9100]
+      }
+    },
+    "government": {
+      "label": "Government",
+      "examples": ["ministries", "agencies", "municipal", "classified networks"],
+      "hintPattern": "\\b(zta|zero.?trust|citrix|pulse.?secure|f5|big-ip|gov\\.|agency|perimeter.?vpn|classified|municipal|ministry)\\b",
+      "ports": [
+        { "port": 443, "protocol": "tcp", "service": "Citrix-Gateway", "note": "Citrix ADC / StoreFront" },
+        { "port": 8443, "protocol": "tcp", "service": "Pulse-VPN", "note": "Ivanti Pulse Connect Secure" },
+        { "port": 4433, "protocol": "tcp", "service": "F5-BIG-IP", "note": "F5 APM / SSL VPN" },
+        { "port": 4443, "protocol": "tcp", "service": "Pulse-alt", "note": "Alternate Pulse admin/VPN" }
+      ],
+      "modules": ["net_device_audit", "citrix_audit", "institutional_recon"],
+      "aptProfileId": "gov_perimeter",
+      "persona": "enterprise_ad",
+      "objective": "identity_first",
+      "finding": {
+        "id": "inst-gov-vpn",
+        "severity": "high",
+        "title": "Perimeter VPN fingerprint",
+        "detail": "F5 BIG-IP / Citrix / Pulse gateway — ZTA bypass via split-tunnel or device-trust gaps",
+        "ports": [443, 8443, 4433]
+      }
+    },
+    "university": {
+      "label": "University & Research",
+      "examples": [".edu", "research labs", "eduroam", "HPC clusters"],
+      "hintPattern": "\\b(eduroam|campus|\\.edu\\b|ldap|radius|802\\.1x.?campus|university|college|research.?lab|hpc|slurm|campus.?wifi)\\b",
+      "ports": [
+        { "port": 1812, "protocol": "udp", "service": "RADIUS-Auth", "note": "eduroam / campus 802.1X auth" },
+        { "port": 1813, "protocol": "udp", "service": "RADIUS-Acct", "note": "eduroam accounting" },
+        { "port": 389, "protocol": "tcp", "service": "LDAP", "note": "Campus directory / eduroam IdP" },
+        { "port": 636, "protocol": "tcp", "service": "LDAPS", "note": "Secure LDAP for federated auth" },
+        { "port": 6818, "protocol": "tcp", "service": "Slurm", "note": "HPC job scheduler (research)" }
+      ],
+      "modules": ["wifi_audit", "institutional_recon", "net_device_audit"],
+      "aptProfileId": "edu_campus",
+      "persona": "wireless_perimeter",
+      "objective": "proximity_physical",
+      "finding": {
+        "id": "inst-university-eduroam",
+        "severity": "medium",
+        "title": "eduroam / campus WiFi",
+        "detail": "802.1X/EAP via RADIUS — rogue AP credential capture vector; integrate wifi_audit for SSID survey",
+        "ports": [1812, 389]
+      }
+    },
+    "k12_school": {
+      "label": "K-12 Schools",
+      "examples": ["school district", "student information systems", "Chromebook MDM"],
+      "hintPattern": "\\b(k-?12|school.?district|student.?info|student.?information.?system|ferpa|chromebook|google.?admin|classlink|clever|powerschool|schoology|canvas.?lms)\\b",
+      "ports": [
+        { "port": 443, "protocol": "tcp", "service": "Google-Admin", "note": "Chromebook MDM / Google Workspace for Education" },
+        { "port": 8080, "protocol": "tcp", "service": "SIS-Portal", "note": "Student information system web portal" },
+        { "port": 8443, "protocol": "tcp", "service": "SIS-TLS", "note": "FERPA-adjacent SIS over TLS" },
+        { "port": 1812, "protocol": "udp", "service": "RADIUS-Auth", "note": "District WiFi 802.1X" }
+      ],
+      "modules": ["wifi_audit", "institutional_recon", "net_device_audit"],
+      "aptProfileId": "k12_campus",
+      "persona": "wireless_perimeter",
+      "objective": "proximity_physical",
+      "finding": {
+        "id": "inst-k12-mdm",
+        "severity": "medium",
+        "title": "K-12 MDM / SIS surface",
+        "detail": "Chromebook MDM and SIS portals — FERPA-adjacent data; district WiFi rogue AP vector",
+        "ports": [443, 8080, 1812]
+      }
+    },
+    "healthcare": {
+      "label": "Healthcare",
+      "examples": ["hospitals", "clinics", "medical centers"],
+      "hintPattern": "\\b(hl7|dicom|pacs|fhir|mirth|medical.?iot|phi|hipaa|11112|2761|2762|\\b104\\b|worklist|ris|ehr|epic|cerner|meditech)\\b",
+      "ports": [
+        { "port": 104, "protocol": "tcp", "service": "DICOM", "note": "DICOM association (legacy cleartext)" },
+        { "port": 11112, "protocol": "tcp", "service": "DICOM-TLS", "note": "PACS/DICOM over TLS" },
+        { "port": 2761, "protocol": "tcp", "service": "HL7-MLLP", "note": "HL7 v2 MLLP messaging" },
+        { "port": 2762, "protocol": "tcp", "service": "HL7-TLS", "note": "HL7 over TLS" },
+        { "port": 2575, "protocol": "tcp", "service": "HL7-MLLP-alt", "note": "Alternate MLLP listener" },
+        { "port": 8080, "protocol": "tcp", "service": "FHIR-REST", "note": "FHIR API / medical IoT gateway" }
+      ],
+      "modules": ["institutional_recon", "iot_scada", "net_device_audit", "recon"],
+      "aptProfileId": "healthcare_tradecraft",
+      "persona": "iot_device",
+      "objective": "ot_ics",
+      "finding": {
+        "id": "inst-healthcare-dicom",
+        "severity": "medium",
+        "title": "PACS/DICOM surface",
+        "detail": "HL7 MLLP (2761) and DICOM (104/11112) — check TLS, auth, and segmentation from clinical VLAN",
+        "ports": [104, 11112, 2761]
+      }
+    },
+    "insurance": {
+      "label": "Insurance",
+      "examples": ["insurers", "brokers", "underwriters"],
+      "hintPattern": "\\b(insurance|insurer|underwriter|broker.?portal|policy.?admin|claims.?system|guidewire|duck.?creek|legacy.?app)\\b",
+      "ports": [
+        { "port": 8080, "protocol": "tcp", "service": "Legacy-Portal", "note": "Legacy policy/claims web portal" },
+        { "port": 8443, "protocol": "tcp", "service": "Legacy-TLS", "note": "Legacy app HTTPS tier" },
+        { "port": 1521, "protocol": "tcp", "service": "Oracle-DB", "note": "Policy/claims database" },
+        { "port": 1433, "protocol": "tcp", "service": "MSSQL", "note": "Reporting/actuarial DB" }
+      ],
+      "modules": ["institutional_recon", "net_device_audit", "recon"],
+      "aptProfileId": "insurance_tradecraft",
+      "persona": "enterprise_ad",
+      "objective": "identity_first",
+      "finding": {
+        "id": "inst-insurance-legacy",
+        "severity": "medium",
+        "title": "Legacy insurance app ports",
+        "detail": "Policy admin and claims portals on 8080/8443 — often unpatched Java/.NET stacks",
+        "ports": [8080, 8443, 1521]
+      }
+    },
+    "legal": {
+      "label": "Legal",
+      "examples": ["law firms", "document management", "DMS"],
+      "hintPattern": "\\b(law.?firm|legal|dms\\b|document.?mgmt|imanage|netdocuments|worldox|sharepoint.?legal|matter.?mgmt)\\b",
+      "ports": [
+        { "port": 443, "protocol": "tcp", "service": "DMS-Web", "note": "Document management HTTPS portal" },
+        { "port": 8080, "protocol": "tcp", "service": "DMS-Alt", "note": "Legacy DMS web tier" },
+        { "port": 445, "protocol": "tcp", "service": "SMB", "note": "Matter file shares" }
+      ],
+      "modules": ["app_security_engine", "institutional_recon", "recon"],
+      "aptProfileId": "legal_dms",
+      "persona": "web_app",
+      "objective": "standard",
+      "finding": {
+        "id": "inst-legal-dms",
+        "severity": "medium",
+        "title": "Legal DMS surface",
+        "detail": "iManage/NetDocuments/Worldox portals — privileged matter docs; app_security_engine for auth bypass",
+        "ports": [443, 8080]
+      }
+    },
+    "telecom_office": {
+      "label": "Telecom Office",
+      "examples": ["telecom offices", "carrier NOC", "ISP operations"],
+      "hintPattern": "\\b(telecom.?office|carrier.?office|noc\\b|isp.?ops|ss7|sigtran|smsc|hlr|msc|billing.?system|oss.?bss)\\b",
+      "ports": [
+        { "port": 5060, "protocol": "udp", "service": "SIP", "note": "VoIP/SIP trunk" },
+        { "port": 3868, "protocol": "tcp", "service": "Diameter", "note": "LTE/5G Diameter signaling" },
+        { "port": 2905, "protocol": "tcp", "service": "SS7-SIGTRAN", "note": "SIGTRAN M3UA/SCTP gateway" },
+        { "port": 443, "protocol": "tcp", "service": "OSS-BSS", "note": "Operations/billing portal" }
+      ],
+      "modules": ["telecom_audit", "institutional_recon", "net_device_audit"],
+      "aptProfileId": "telecom_office",
+      "persona": "telecom_carrier",
+      "objective": "telecom",
+      "finding": {
+        "id": "inst-telecom-noc",
+        "severity": "high",
+        "title": "Telecom NOC / OSS surface",
+        "detail": "SIP/Diameter/SIGTRAN and OSS/BSS portals — carrier-grade pivot from office LAN",
+        "ports": [5060, 3868, 2905]
+      }
+    },
+    "ngo": {
+      "label": "NGO / Nonprofit",
+      "examples": ["NGOs", "nonprofits", "charities", "foundations"],
+      "hintPattern": "\\b(ngo\\b|nonprofit|non-profit|charity|foundation|grant.?mgmt|donor.?portal|salesforce.?nonprofit)\\b",
+      "ports": [
+        { "port": 443, "protocol": "tcp", "service": "Donor-Portal", "note": "Donor/grant management SaaS" },
+        { "port": 8080, "protocol": "tcp", "service": "Legacy-CRM", "note": "Legacy nonprofit CRM" }
+      ],
+      "modules": ["institutional_recon", "ares_cloud_native", "net_device_audit"],
+      "aptProfileId": "ngo_tradecraft",
+      "persona": "cloud_saas",
+      "objective": "identity_first",
+      "finding": {
+        "id": "inst-ngo-portal",
+        "severity": "info",
+        "title": "NGO donor/grant portal",
+        "detail": "Salesforce Nonprofit / donor CRM — OAuth consent and shared credential risks",
+        "ports": [443, 8080]
+      }
+    },
+    "critical_infra": {
+      "label": "Critical Infrastructure",
+      "examples": ["power plants", "water/wastewater", "chemical plants", "substations", "pipelines", "dams", "rail signaling", "airports/ports", "telecom backbone"],
+      "hintPattern": "\\b(iec61850|61850|mms|goose|sv\\b|substation|water.?scada|electric.?grid|utility|power.?plant|wastewater|water.?treatment|chemical.?plant|pipeline|dam\\b|flood.?control|rail.?signal|etcs|port.?authority|airport|ot.?network|scada.?plant|compressor.?station|opc.?ua|hart\\b)\\b",
+      "ports": [
+        { "port": 102, "protocol": "tcp", "service": "IEC61850-MMS", "note": "IEC 61850 MMS (substation automation)" },
+        { "port": 20000, "protocol": "tcp", "service": "DNP3", "note": "DNP3 outstation/master" },
+        { "port": 502, "protocol": "tcp", "service": "Modbus", "note": "Legacy RTU/PLC" },
+        { "port": 2404, "protocol": "tcp", "service": "IEC60870-5-104", "note": "Telecontrol protocol" }
+      ],
+      "modules": ["ot_batch_scan", "iot_scada", "ics_impact_proof", "institutional_recon"],
+      "aptProfileId": "utility_scada",
+      "persona": "ot_scada_plant",
+      "objective": "ot_ics",
+      "finding": {
+        "id": "inst-infra-61850",
+        "severity": "high",
+        "title": "IEC 61850 MMS (port 102)",
+        "detail": "OT industrial networks — read-only live probes + semantic impact only; no control writes",
+        "ports": [102, 20000]
+      }
+    },
+    "saas": {
+      "label": "SaaS / Cloud IdP",
+      "examples": ["Entra", "Okta", "Google Workspace tenants"],
+      "hintPattern": "\\b(entra|okta|google.?workspace|oauth|idp|azure.?ad|gsuite|workspace.?admin)\\b",
+      "ports": [
+        { "port": 443, "protocol": "tcp", "service": "OAuth/OIDC", "note": "Entra/Okta/Google IdP endpoints" }
+      ],
+      "modules": ["ares_cloud_native", "cloud_enum", "oauth_audit", "institutional_recon"],
+      "aptProfileId": "saas_idp",
+      "persona": "cloud_saas",
+      "objective": "identity_first",
+      "finding": {
+        "id": "inst-saas-oauth",
+        "severity": "medium",
+        "title": "IdP OAuth abuse paths",
+        "detail": "Entra/Okta/Google Workspace — consent phishing, refresh-token replay, device-code flow",
+        "ports": [443]
+      }
+    }
+  }
+}

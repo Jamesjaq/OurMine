@@ -6,8 +6,8 @@
  * FIDO2 fallback policies, token binding enforcement, stale app registrations,
  * and exposed client secrets via Microsoft Graph API.
  *
- * All operations default to DRY-RUN mode. Pass `dryRun: false` only in authorised
- * red-team environments with a valid Microsoft Graph Bearer token.
+ * All operations default to DRY-RUN mode. Pass `live: true` or `dryRun: false` only in authorised
+ * red-team environments with a valid Microsoft Graph Bearer token (or OURMINE_GRAPH_TOKEN env).
  */
 
 import { resolveDryRun } from "./exec_options.ts"
@@ -91,8 +91,9 @@ export interface IdPAuditResult {
 
 export interface IdPAuditOptions {
   dryRun?: boolean
+  live?: boolean
   tenantId?: string
-  domain: string
+  domain?: string
   accessToken?: string
 }
 
@@ -151,6 +152,61 @@ function makeId(): string {
 
 function resetFindings(): void {
   findingCounter = 0
+}
+
+const GRAPH_TOKEN_ENV_KEYS = [
+  "OURMINE_GRAPH_TOKEN",
+  "AZURE_ACCESS_TOKEN",
+  "GRAPH_ACCESS_TOKEN",
+] as const
+
+function resolveGraphAccessToken(options: IdPAuditOptions): string | undefined {
+  const direct = options.accessToken?.trim()
+  if (direct) return direct
+  for (const key of GRAPH_TOKEN_ENV_KEYS) {
+    const val = process.env[key]?.trim()
+    if (val) return val
+  }
+  return undefined
+}
+
+async function buildNoTokenBlockerFinding(
+  tenantId: string | undefined,
+  configTenantId?: string,
+): Promise<IdPFinding> {
+  const tenant = tenantId || configTenantId || "common"
+  const envPaths = ["options.accessToken", ...GRAPH_TOKEN_ENV_KEYS]
+  let deviceCodeHint = ""
+
+  try {
+    const { performDeviceCodeFlow } = await import("./oauth_chain.ts")
+    const device = await performDeviceCodeFlow(undefined, {
+      dryRun: false,
+      tenant,
+      poll: false,
+    })
+    if (device.deviceCode && device.verificationUri) {
+      deviceCodeHint =
+        ` Device-code flow available: visit ${device.verificationUri}` +
+        (device.phishingUrl ? ` (${device.phishingUrl})` : "") +
+        ` — expires in ${device.expiresIn}s. Set OURMINE_GRAPH_TOKEN after auth and re-run.`
+    }
+  } catch {
+    // device-code endpoint unreachable — blocker text below stands alone
+  }
+
+  return {
+    id: makeId(),
+    category: "OAUTH_CONSENT",
+    severity: "CRITICAL",
+    title: "No Access Token Provided",
+    description:
+      `Live IdP audit requires a Microsoft Graph API access token. Checked: ${envPaths.join(", ")}.` +
+      deviceCodeHint,
+    remediation:
+      "Obtain a valid OAuth 2.0 access token with Application.Read.All, AuditLog.Read.All, and Policy.Read.* scopes. Use Azure CLI (az login), MSAL device-code flow, or set OURMINE_GRAPH_TOKEN.",
+    evidence: `tenant=${tenant}, tokenSourcesChecked=[${envPaths.join(", ")}]`,
+  }
 }
 
 async function graphApiGet(
@@ -556,21 +612,23 @@ function generateLiveFindings(
 /**
  * Perform a full IdP & OAuth application security audit.
  *
- * DRY-RUN (default): returns simulated results with realistic findings.
- * LIVE (dryRun=false): queries Microsoft Graph API for real tenant data.
+ * DRY-RUN (default): returns empty results — no fabricated tenant findings.
+ * LIVE (live=true / dryRun=false): queries Microsoft Graph API for real tenant data.
  *
  * @param config - IdP configuration with domain and optional tenantId
- * @param options - Audit options including dryRun flag and accessToken for live mode
+ * @param options - Audit options including live/dryRun and accessToken for live mode
  * @returns Audit result with findings, app registrations, and policy statuses
  */
 export async function auditIdPAndOAuth(
   config: IdPConfig,
-  options: IdPAuditOptions = { dryRun: true, domain: "" },
+  options: IdPAuditOptions = {},
 ): Promise<IdPAuditResult> {
   resetFindings()
 
-  const { dryRun = true, tenantId, accessToken } = options
-  const domain = config.domain || options.domain
+  const dryRun = resolveDryRun(options)
+  const { tenantId } = options
+  const domain = config.domain || options.domain || ""
+  const accessToken = resolveGraphAccessToken(options)
 
   if (dryRun) {
     return {
@@ -593,6 +651,7 @@ export async function auditIdPAndOAuth(
   // ── Live Mode ──────────────────────────────────────────────────────────────
 
   if (!accessToken) {
+    const blocker = await buildNoTokenBlockerFinding(tenantId, config.tenantId)
     return {
       domain,
       tenantId: tenantId || config.tenantId || null,
@@ -605,14 +664,7 @@ export async function auditIdPAndOAuth(
       authMethodPolicy: EMPTY_AUTH_METHOD,
       tokenBindingPolicy: EMPTY_TOKEN_BINDING,
       oauthApps: [],
-      findings: [{
-        id: makeId(),
-        category: "OAUTH_CONSENT",
-        severity: "CRITICAL",
-        title: "No Access Token Provided",
-        description: "Live audit requires a Microsoft Graph API access token. No token was supplied in options.accessToken.",
-        remediation: "Obtain a valid OAuth 2.0 access token with Application.Read.All, AuditLog.Read.All, and Policy.Read.* scopes. Pass it as options.accessToken.",
-      }],
+      findings: [blocker],
       isDryRun: false,
     }
   }

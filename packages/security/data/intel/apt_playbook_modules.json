@@ -1,0 +1,353 @@
+{
+  "volt_typhoon": {
+    "objectiveHint": "hybrid_it_ot",
+    "techniqueChain": ["T1190", "T1059", "T1027", "T0886", "T0855"],
+    "modules": ["edge_audit", "lolbins_audit", "live_recon", "ot_scan", "iot_scada", "hybrid_pivot", "persistence_install"],
+    "intelSnippetTemplate": "{name}: edge LotL dwell → IT recon → OT protocol sweep; {techniques}"
+  },
+  "salt_typhoon": {
+    "objectiveHint": "telecom",
+    "techniqueChain": ["T1190", "T1071", "T1048", "T0886"],
+    "modules": ["edge_audit", "telecom_audit", "net_device_audit", "ot_scan", "live_recon", "web_exploit"],
+    "intelSnippetTemplate": "{name}: edge/telecom implant → covert C2 → carrier pivot; {techniques}"
+  },
+  "lazarus": {
+    "objectiveHint": "supply_chain",
+    "techniqueChain": ["T1195.002", "T1566", "T1071", "T1048"],
+    "modules": ["lockfile_scan", "supply_chain_audit", "dev_target", "web_exploit", "cred_spray"],
+    "intelSnippetTemplate": "{name}: npm/supply-chain poison → cred harvest → exfil; {techniques}"
+  },
+  "apt38": {
+    "objectiveHint": "supply_chain",
+    "techniqueChain": ["T1195.002", "T1566", "T1071"],
+    "modules": ["supply_chain_audit", "lockfile_scan", "web_exploit", "cred_spray"],
+    "intelSnippetTemplate": "{name}: dev-repo compromise → financial pivot; {techniques}"
+  },
+  "unc4899": {
+    "objectiveHint": "supply_chain",
+    "techniqueChain": ["T1195.002", "T1078.004", "T1021", "T1552.001"],
+    "modules": ["supply_chain_audit", "cloud_enum", "container_audit", "cicd_audit", "cred_spray"],
+    "intelSnippetTemplate": "{name}: cloud LotC → container pivot → exfil; {techniques}"
+  },
+  "team_pcp": {
+    "objectiveHint": "supply_chain",
+    "techniqueChain": ["T1195.002", "T1554", "T1059"],
+    "modules": ["lockfile_scan", "cicd_audit", "supply_chain_audit", "dev_target"],
+    "intelSnippetTemplate": "{name}: npm worm → CI/CD poison → lateral; {techniques}"
+  },
+  "proximity_tradecraft": {
+    "objectiveHint": "proximity_physical",
+    "techniqueChain": ["T1091", "T1200", "T1557", "T1011"],
+    "modules": ["usb_audit", "wifi_audit", "ble_audit", "ares_hardware_implant", "proximity_audit"],
+    "intelSnippetTemplate": "{name}: BadUSB drop → BLE sniff → evil-twin pivot; {techniques}"
+  },
+  "scattered_spider": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1566.002", "T1621", "T1078", "T1219", "T1557", "T1528"],
+    "modules": ["helpdesk_social_auto", "social_eng_assess", "identity_attack", "identity_playbooks", "rmm_audit", "evilginx_lab", "idp_audit", "oauth_consent_audit", "device_code_audit"],
+    "intelSnippetTemplate": "{name}: vishing → MFA fatigue → RMM persistence; {techniques}"
+  },
+  "kimsuky": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1566.001", "T1078", "T1059"],
+    "modules": ["social_eng_assess", "identity_attack", "recon", "web_exploit"],
+    "intelSnippetTemplate": "{name}: spear-phish → valid accounts → persistence; {techniques}"
+  },
+  "shinyhunters": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1550", "T1078", "T1530"],
+    "modules": ["idp_audit", "cloud_token", "cloud_enum", "identity_attack"],
+    "intelSnippetTemplate": "{name}: OAuth abuse → SaaS token theft → exfil; {techniques}"
+  },
+  "apt28": {
+    "objectiveHint": "standard",
+    "techniqueChain": ["T1190", "T1110", "T1071.001", "T1003"],
+    "modules": ["recon", "nuclei_scan", "web_exploit", "identity_attack", "ad_exploit", "cloud_enum"],
+    "intelSnippetTemplate": "{name}: edge exploit → cred dump → cloud C2; {techniques}"
+  },
+  "apt41": {
+    "objectiveHint": "supply_chain",
+    "techniqueChain": ["T1190", "T1059", "T1027", "T1048"],
+    "modules": ["web_exploit", "citrix_audit", "supply_chain_audit", "lolbins_audit", "postex_harvest", "lateral_move", "persistence_install"],
+    "intelSnippetTemplate": "{name}: Citrix/edge exploit → LotL dwell → exfil; {techniques}"
+  },
+  "mustang_panda": {
+    "objectiveHint": "standard",
+    "techniqueChain": ["T1566.001", "T1574.002", "T1091", "T1102"],
+    "modules": ["social_eng_assess", "yara_scan", "lolbins_audit", "web_exploit", "lateral_move"],
+    "intelSnippetTemplate": "{name}: USB lure → DLL sideload → C2; {techniques}"
+  },
+  "sandworm": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T1485", "T1490", "T1486", "T0827", "T0831"],
+    "modules": ["institutional_recon", "ot_batch_scan", "profinet_l2", "iot_scada", "ics_impact_proof", "impact_assess"],
+    "intelSnippetTemplate": "{name}: grid/substation recon → read-only OT sweep → semantic impact proof; {techniques}"
+  },
+  "xenotime": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T0880", "T0831", "T0827"],
+    "modules": ["ics_impact_proof", "institutional_recon", "iot_scada"],
+    "intelSnippetTemplate": "{name}: TRISIS-adjacent safety-system awareness — read-only semantic probes only, NO SIS control writes; {techniques}"
+  },
+  "medusa": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486", "T1490", "T1021", "T1078"],
+    "modules": ["nmap_scan", "nuclei_scan", "postex_harvest", "lateral_move", "esxi_audit", "ransomware_assess"],
+    "intelSnippetTemplate": "{name}: backup discovery → ESXi encrypt → double extort; {techniques}"
+  },
+  "akira": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486", "T1021", "T1110", "T1190"],
+    "modules": ["edge_audit", "cred_spray", "lateral_move", "postex_harvest", "nmap_scan"],
+    "intelSnippetTemplate": "{name}: VPN edge → spray → fast escalation; {techniques}"
+  },
+  "lockbit5": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1190", "T1486", "T1021", "T1219", "T1003"],
+    "modules": ["citrix_audit", "edge_audit", "rmm_audit", "postex_harvest", "lateral_move", "esxi_audit", "raas_campaign"],
+    "intelSnippetTemplate": "{name}: Citrix/VPN edge → RMM → harvest → ESXi encrypt; {techniques}"
+  },
+  "lockbit": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1190", "T1486", "T1021", "T1219"],
+    "modules": ["edge_audit", "rmm_audit", "postex_harvest", "raas_leak_catalog", "esxi_audit"],
+    "intelSnippetTemplate": "{name}: disrupted 2025 — affiliates → RansomHub/Play; {techniques}"
+  },
+  "play": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486", "T1490", "T1489", "T1021"],
+    "modules": ["postex_harvest", "raas_leak_catalog", "esxi_audit", "lolbins_audit", "lateral_move"],
+    "intelSnippetTemplate": "{name}: IAB VPN → harvest → encrypt + leak; payment ~28%"
+  },
+  "ransomhub": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1078", "T1021", "T1486", "T1490"],
+    "modules": ["edge_audit", "rmm_audit", "cred_access_auto", "raas_leak_catalog", "raas_campaign", "esxi_audit"],
+    "intelSnippetTemplate": "{name}: IAB VPN creds → RMM → encrypt + leak; payment rate ~28%"
+  },
+  "interlock": {
+    "objectiveHint": "extortion_only",
+    "techniqueChain": ["T1486", "T1657"],
+    "modules": ["collection_engine", "raas_leak_catalog", "raas_tor_portal"],
+    "intelSnippetTemplate": "{name}: extortion-only — catalog + leak portal, no encrypt"
+  },
+  "world_leaks": {
+    "objectiveHint": "extortion_only",
+    "techniqueChain": ["T1486", "T1567"],
+    "modules": ["raas_leak_catalog", "raas_exfil_upload", "raas_tor_portal"],
+    "intelSnippetTemplate": "{name}: leak-first extortion — no ransomware payload"
+  },
+  "ghost": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486", "T1021"],
+    "modules": ["postex_harvest", "lateral_move", "esxi_audit"],
+    "intelSnippetTemplate": "{name}: volume ransomware — fast lateral"
+  },
+  "gunra": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486"],
+    "modules": ["raas_campaign", "postex_harvest"],
+    "intelSnippetTemplate": "{name}: RaaS affiliate ops"
+  },
+  "nightspire": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486", "T1078"],
+    "modules": ["edge_audit", "cred_spray", "raas_leak_catalog"],
+    "intelSnippetTemplate": "{name}: healthcare-focused encrypt + leak"
+  },
+  "inc_ransom": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486", "T1021"],
+    "modules": ["postex_harvest", "raas_leak_catalog", "lateral_move"],
+    "intelSnippetTemplate": "{name}: manufacturing/legal sector focus"
+  },
+  "chaindrop": {
+    "objectiveHint": "supply_chain",
+    "techniqueChain": ["T1552.001", "T1078.004", "T1528", "T1195.002"],
+    "modules": ["cicd_audit", "chaindrop_oidc", "cloud_token", "supply_chain_exec"],
+    "intelSnippetTemplate": "{name}: CI OIDC token → federated cloud abuse"
+  },
+  "sylvanite_voltzite": {
+    "objectiveHint": "hybrid_it_ot",
+    "techniqueChain": ["T1078", "T0886", "T0855", "T0827"],
+    "modules": ["edge_audit", "ot_batch_scan", "hybrid_pivot", "iot_scada", "ics_impact_proof"],
+    "pairedOps": { "iab": "sylvanite", "ot_mapping": "voltzite" },
+    "intelSnippetTemplate": "{name}: IAB → OT mapping paired ops"
+  },
+  "pipedream_chernovite": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T0855", "T0827", "T0886"],
+    "modules": ["iot_scada", "ics_impact_proof", "profinet_l2", "firmware_audit"],
+    "intelSnippetTemplate": "{name}: PLC/safety-system tradecraft awareness"
+  },
+  "sylvanite": {
+    "objectiveHint": "hybrid_it_ot",
+    "techniqueChain": ["T1078", "T0886"],
+    "modules": ["edge_audit", "ot_batch_scan", "hybrid_pivot"],
+    "intelSnippetTemplate": "{name}: OT IAB broker — VPN creds to engineering WS"
+  },
+  "voltzite": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T0886", "T0855", "T0827"],
+    "modules": ["iot_scada", "ot_segment_infer", "ics_impact_proof"],
+    "intelSnippetTemplate": "{name}: OT network mapping post-IAB handoff"
+  },
+  "kamacite": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T0855", "T0886"],
+    "modules": ["iot_scada", "ot_scan"],
+    "intelSnippetTemplate": "{name}: industrial protocol recon"
+  },
+  "cosmicenergy": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T0827", "T0855"],
+    "modules": ["iot_scada", "impact_assess", "ics_impact_proof"],
+    "intelSnippetTemplate": "{name}: substation impact simulation — read-only"
+  },
+  "cl0p": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1190", "T1486", "T1048"],
+    "modules": ["web_exploit", "nuclei_scan", "citrix_audit", "postex_harvest"],
+    "intelSnippetTemplate": "{name}: mass exploit → exfil → extort; {techniques}"
+  },
+  "dragonforce": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1486", "T1021"],
+    "modules": ["ransomware_assess", "raas_campaign", "postex_harvest", "lateral_move"],
+    "intelSnippetTemplate": "{name}: RaaS white-label → leak catalog; {techniques}"
+  },
+  "storm_0501": {
+    "objectiveHint": "cloud_ransom",
+    "techniqueChain": ["T1078.004", "T1098.003", "T1530", "T1485", "T1486"],
+    "modules": ["hybrid_ad_audit", "ares_cloud_native", "cloud_token", "idp_audit", "raas_leak_catalog", "impact_assess"],
+    "cloudNative": true,
+    "endpointMalware": false,
+    "intelSnippetTemplate": "{name}: Azure hybrid → cloud ransom → inhibit recovery; {techniques}"
+  },
+  "jadepuffer": {
+    "objectiveHint": "ai_agent",
+    "techniqueChain": ["T1190", "T1486", "T1611"],
+    "modules": ["ai_surface_scan", "container_audit", "ai_agent_audit", "atlas_ml_audit"],
+    "intelSnippetTemplate": "{name}: Langflow/Nacos RCE → agent hijack → encrypt; {techniques}"
+  },
+  "knaithe": {
+    "objectiveHint": "ai_agent",
+    "techniqueChain": ["T1190", "T1059"],
+    "modules": ["ai_agent_audit", "ai_surface_scan", "intel_enrich", "web_exploit"],
+    "intelSnippetTemplate": "{name}: n8n/agentic RCE → autonomous ops; {techniques}"
+  },
+  "warlock": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1190", "T1486"],
+    "modules": ["web_exploit", "nuclei_scan", "nmap_scan"],
+    "intelSnippetTemplate": "{name}: SharePoint mass exploit → encrypt; {techniques}"
+  },
+  "sorry_ransom": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1190", "T1486"],
+    "modules": ["cpanel_audit", "yara_scan", "web_exploit"],
+    "intelSnippetTemplate": "{name}: cPanel CRLF → hosting encrypt; {techniques}"
+  },
+  "earth_krahang": {
+    "objectiveHint": "ai_agent",
+    "techniqueChain": ["T1190", "T1071", "T1027", "T1059"],
+    "modules": ["recon", "live_recon", "edge_audit", "cloud_enum", "ad_exploit"],
+    "intelSnippetTemplate": "{name}: edge/AI agent C2 → cloud dwell; {techniques}"
+  },
+  "apt33": {
+    "objectiveHint": "standard",
+    "techniqueChain": ["T1190", "T1195", "T1021"],
+    "modules": ["cicd_audit", "web_exploit", "nuclei_scan", "postex_pivot"],
+    "intelSnippetTemplate": "{name}: CI/CD → aerospace pivot; {techniques}"
+  },
+  "healthcare_tradecraft": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T0886", "T0830", "T0855", "T0866"],
+    "modules": ["institutional_recon", "iot_scada", "net_device_audit", "ot_scan"],
+    "intelSnippetTemplate": "{name}: HL7/DICOM recon → PACS port sweep → medical IoT pivot; {techniques}"
+  },
+  "finance_tradecraft": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1078", "T1048", "T1190", "T1552"],
+    "modules": ["institutional_recon", "net_device_audit", "ares_cloud_native"],
+    "intelSnippetTemplate": "{name}: SWIFT/ISO20022 read-only recon → core banking port map; {techniques}"
+  },
+  "edu_campus": {
+    "objectiveHint": "proximity_physical",
+    "techniqueChain": ["T1557", "T1078", "T1091", "T1200"],
+    "modules": ["wifi_audit", "institutional_recon", "net_device_audit"],
+    "intelSnippetTemplate": "{name}: eduroam SSID survey → LDAP/RADIUS → campus pivot; {techniques}"
+  },
+  "gov_perimeter": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1190", "T1078", "T1133", "T1557"],
+    "modules": ["net_device_audit", "institutional_recon", "ares_cloud_native"],
+    "intelSnippetTemplate": "{name}: F5/Citrix/Pulse VPN fingerprint → ZTA bypass probe; {techniques}"
+  },
+  "utility_scada": {
+    "objectiveHint": "ot_ics",
+    "techniqueChain": ["T0886", "T0855", "T0830", "T0866"],
+    "modules": ["ot_batch_scan", "institutional_recon", "iot_scada", "ics_impact_proof"],
+    "intelSnippetTemplate": "{name}: IEC 61850 MMS (102) + DNP3 sweep → substation impact proof; {techniques}"
+  },
+  "saas_idp": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1556", "T1078", "T1528", "T1539"],
+    "modules": ["ares_cloud_native", "institutional_recon", "oauth_audit", "oauth_consent_audit", "cloud_enum"],
+    "intelSnippetTemplate": "{name}: Entra/Okta/Google OAuth abuse paths → token replay; {techniques}"
+  },
+  "k12_campus": {
+    "objectiveHint": "proximity_physical",
+    "techniqueChain": ["T1557", "T1078", "T1091", "T1200"],
+    "modules": ["wifi_audit", "institutional_recon", "net_device_audit"],
+    "intelSnippetTemplate": "{name}: district WiFi survey → Chromebook MDM/SIS portal → FERPA-adjacent pivot; {techniques}"
+  },
+  "corp_office": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1078", "T1133", "T1190", "T1552"],
+    "modules": ["net_device_audit", "app_security_engine", "institutional_recon", "ares_recon"],
+    "intelSnippetTemplate": "{name}: M365 OAuth → branch VPN/VoIP/printer pivot; {techniques}"
+  },
+  "insurance_tradecraft": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1078", "T1190", "T1048", "T1552"],
+    "modules": ["institutional_recon", "net_device_audit", "ares_recon"],
+    "intelSnippetTemplate": "{name}: legacy claims/policy portal port map → credential spray; {techniques}"
+  },
+  "legal_dms": {
+    "objectiveHint": "standard",
+    "techniqueChain": ["T1190", "T1078", "T1530", "T1213"],
+    "modules": ["app_security_engine", "institutional_recon", "ares_recon"],
+    "intelSnippetTemplate": "{name}: DMS portal auth bypass → privileged matter doc access; {techniques}"
+  },
+  "telecom_office": {
+    "objectiveHint": "telecom",
+    "techniqueChain": ["T1190", "T1078", "T1048", "T1557"],
+    "modules": ["telecom_audit", "institutional_recon", "net_device_audit", "ares_ss7_exploit"],
+    "intelSnippetTemplate": "{name}: NOC OSS/BSS portal → SIP/Diameter/SIGTRAN fingerprint; {techniques}"
+  },
+  "ngo_tradecraft": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1078", "T1556", "T1528", "T1190"],
+    "modules": ["institutional_recon", "ares_cloud_native", "net_device_audit", "oauth_consent_audit"],
+    "intelSnippetTemplate": "{name}: donor/grant SaaS OAuth → shared credential pivot; {techniques}"
+  },
+  "apt29": {
+    "objectiveHint": "identity_first",
+    "techniqueChain": ["T1550.001", "T1078", "T1110", "T1071", "T1048", "T1528"],
+    "modules": ["oauth_consent_audit", "device_code_audit", "idp_audit", "cloud_token", "cloud_enum", "identity_attack", "lolbins_audit"],
+    "intelSnippetTemplate": "{name}: OAuth consent/ConsentFix → cloud dwell → exfil; {techniques}"
+  },
+  "fin7": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1566.001", "T1219", "T1059", "T1021", "T1486"],
+    "modules": ["helpdesk_social_auto", "social_eng_assess", "rmm_audit", "postex_harvest", "lateral_move", "web_exploit"],
+    "intelSnippetTemplate": "{name}: spear-phish → RMM → lateral → impact; {techniques}"
+  },
+  "alphv_blackcat": {
+    "objectiveHint": "ransomware_impact",
+    "techniqueChain": ["T1566.002", "T1557", "T1219", "T1558", "T1486"],
+    "modules": ["helpdesk_social_auto", "citrix_audit", "evilginx_lab", "rmm_audit", "postex_harvest", "raas_campaign"],
+    "intelSnippetTemplate": "{name}: vishing/AiTM → Citrix → RMM → Kerberos → encrypt; {techniques}"
+  }
+}
