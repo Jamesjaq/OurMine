@@ -34,7 +34,7 @@ import { writeArtifact } from "./mcp_artifacts.ts"
 import { isExecutableModule, normalizeModuleKey } from "./module_registry.ts"
 import { isBattleReady } from "./exec_options.ts"
 import { extortionModeFromEnv } from "./extortion_mode.ts"
-import { compressIntelMeta, compressIntelStaleness } from "./semantic_compression.ts"
+import { compressIntelMeta, compressIabStage } from "./semantic_compression.ts"
 
 const REPO_INTEL = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -438,11 +438,24 @@ function resolveProfile(
     ?? profileForPersona(persona, objective)
 }
 
+/** When KEV hits exist, prioritize zero-day fuzzer for n-day validation. */
+export function prioritizeKevFuzzerModules(
+  modules: string[],
+  kevHits: string[],
+): string[] {
+  if (!kevHits.length) return modules
+  const fuzzer = "ares_zero_day_fuzzer"
+  if (!isExecutableModule(fuzzer)) return modules
+  const rest = modules.filter((m) => normalizeModuleKey(m) !== fuzzer)
+  return [fuzzer, ...rest].slice(0, 16)
+}
+
 function mergeModules(
   profile: AptProfile | null,
   techniques: TechniqueRef[],
   stackCves: StackCveMatch[],
   ransomActions: RansomTtpAction[],
+  kevHits: string[] = [],
 ): string[] {
   const mappings = loadAptPlaybookMappings()
   const seen = new Set<string>()
@@ -464,7 +477,7 @@ function mergeModules(
   for (const c of stackCves) for (const m of c.tools) push(m)
   for (const r of ransomActions) for (const m of r.modules) push(m)
 
-  return out.slice(0, 16)
+  return prioritizeKevFuzzerModules(out, kevHits)
 }
 
 export function buildIntelDigest(opts: {
@@ -482,7 +495,9 @@ export function buildIntelDigest(opts: {
   staleWarning?: string | null
 }): string {
   const actor = (opts.profileName ?? opts.profileId ?? opts.objective).split(/[\s_-]/)[0]!.slice(0, 12)
-  const stage = opts.iabStage ? opts.iabStage.split("_")[0]!.slice(0, 6) : opts.techniques[0]?.id?.slice(0, 6) ?? "T1595"
+  const stage = opts.iabStage
+    ? compressIabStage(opts.iabStage)
+    : opts.techniques[0]?.id?.slice(0, 6) ?? "T1595"
   const nextMods = (opts.modules ?? opts.ransomActions[0]?.modules ?? []).slice(0, 2).join(",")
     || opts.stackCves[0]?.tools?.[0]
     || "recon"
@@ -544,6 +559,26 @@ export function buildIntelNextActions(
       rationale: `CISA KEV + ${c.product} stack match`,
       code: resolveIntelActionCode(mod, "ares_dispatch"),
     })
+  }
+
+  const kevCount = prefetch.stackCves.filter((x) => x.inKev).length
+  if (kevCount > 0 && isExecutableModule("ares_zero_day_fuzzer")) {
+    actions.unshift({
+      step: startStep,
+      label: "KEV-prioritized fuzzer",
+      tool: "ares_dispatch",
+      args: {
+        module: "ares_zero_day_fuzzer",
+        target: prefetch.target,
+        rounds: 32,
+        kev_cves: prefetch.stackCves.filter((x) => x.inKev).map((x) => x.cve).slice(0, 3),
+      },
+      mitre: "T1190",
+      phase: "exploit",
+      rationale: `KEV cache (${kevCount} hit(s)) — prioritize n-day fuzz targets`,
+      code: resolveIntelActionCode("ares_zero_day_fuzzer", "ares_dispatch"),
+    })
+    for (const a of actions) a.step = (a.step ?? 0) + 1
   }
 
   for (const hint of prefetch.pocHints.filter((p) => p.source === "gh_grep").slice(0, 1)) {
@@ -639,7 +674,7 @@ export async function runIntelPrefetch(
 
   const ransomActions = mapRansomTtps()
   const pocHints = await buildPocHints(stackCves, stackSignals, live)
-  const modules = mergeModules(profile, techniques, stackCves, ransomActions)
+  const modules = mergeModules(profile, techniques, stackCves, ransomActions, kevHits)
 
   const extortionOnly = extortionModeFromEnv().enabled
     || effectiveObjective === "extortion_only"
@@ -775,4 +810,6 @@ export default {
   simSwapAwareness,
   intelStalenessWarning,
   actorModuleMap,
+  INTEL_ACTION_CODES,
+  resolveIntelActionCode,
 }

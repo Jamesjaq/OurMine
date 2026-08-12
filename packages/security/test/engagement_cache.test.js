@@ -29,6 +29,7 @@ describe("engagement_cache", () => {
     assert.equal(first.cacheHit, false)
     assert.ok(first.cache.intelSnippet.length > 0)
     assert.ok(first.plan.recommendedPhases.length >= 2)
+    assert.ok(first.cache.phaseList.includes("→"))
 
     const second = buildCachedActionablePlan("corp-cache-test2.example.com", { objective: "identity_first" })
     assert.equal(second.cacheHit, true)

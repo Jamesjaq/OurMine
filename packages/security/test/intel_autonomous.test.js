@@ -72,11 +72,14 @@ describe("intel_autonomous", () => {
       objective: "hybrid_it_ot",
       live: false,
     })
-    assert.ok(r.intelDigest.length <= 150, `digest ${r.intelDigest.length} chars: ${r.intelDigest}`)
+    assert.ok(r.intelDigest.length <= 120, `digest ${r.intelDigest.length} chars: ${r.intelDigest}`)
+    assert.ok(r.intelDigest.includes("|"), `expected pipe-delimited digest: ${r.intelDigest}`)
     assert.ok(r.artifactId.startsWith("intel_prefetch_"))
     assert.ok(r.techniques.length >= 3)
     assert.ok(r.modules.length >= 3)
     assert.ok(r.recommendedNextActions.length >= 1)
+    assert.ok(r.recommendedNextActions.every((a) => a.code))
+    assert.ok(r.actionCodes?.length >= 1)
   })
 
   test("runIntelPrefetch matches stack CVEs from graph banners", async () => {
@@ -125,7 +128,7 @@ describe("engagement intel wiring", () => {
       aptHint: "Volt Typhoon",
     })
     assert.ok(r.intelDigest ?? r.intelSnippet)
-    assert.ok((r.intelDigest ?? r.intelSnippet).length <= 150)
+    assert.ok((r.intelDigest ?? r.intelSnippet).length <= 120)
     assert.ok(r.intelArtifactId?.startsWith("intel_prefetch_"))
     assert.ok(r.aptTechniques?.length >= 3)
     assert.equal(r.objective, "hybrid_it_ot")

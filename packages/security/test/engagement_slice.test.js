@@ -147,7 +147,7 @@ describe("engagement_slice", () => {
       aptHint: "Volt Typhoon",
     })
     assert.ok(r.intelDigest ?? r.intelSnippet)
-    assert.ok((r.intelDigest ?? r.intelSnippet).length <= 150)
+    assert.ok((r.intelDigest ?? r.intelSnippet).length <= 120)
     assert.ok(r.aptTechniques?.length >= 3)
     assert.equal(r.objective, "hybrid_it_ot")
     assert.ok(r.intelArtifactId?.startsWith("intel_prefetch_"))

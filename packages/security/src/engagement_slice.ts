@@ -66,6 +66,8 @@ export interface EngagementSliceResult {
   intelSnippet?: string
   intelDigest?: string
   intelArtifactId?: string
+  intelMeta?: Record<string, string | boolean>
+  actionCodes?: string[]
   aptTechniques?: Array<{ id: string; name: string }>
   cacheHit?: boolean
   parallelProbes?: number
@@ -386,6 +388,8 @@ function assembleSliceResult(opts: {
     intelSnippet: opts.intelDigest ?? opts.intelSnippet,
     intelDigest: opts.intelDigest ?? opts.intelSnippet,
     intelArtifactId: opts.intelArtifactId,
+    intelMeta: opts.intelPrefetch?.intelMeta,
+    actionCodes: opts.intelPrefetch?.actionCodes,
     aptTechniques: opts.aptTechniques,
     cacheHit: opts.cacheHit,
     parallelProbes: opts.parallelProbes,

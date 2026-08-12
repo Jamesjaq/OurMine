@@ -9,16 +9,30 @@ import type { AresPhase } from "./mcp_efficiency.ts"
 import type { ActionablePlan } from "./pentest_plan_builder.ts"
 import { buildActionablePlan } from "./pentest_plan_builder.ts"
 import type { FlowObjective, TargetPersona } from "./target_flow.ts"
-import { buildFlowProfile } from "./target_flow.ts"
+import { buildFlowProfile, phasesForObjective } from "./target_flow.ts"
 import { profileForPersona, preloadTechniquesForPersona } from "./apt_intel_feed.ts"
 
 const CACHE_DIR = ensureAresDir("cache")
+
+const PHASE_CODES: Record<AresPhase, string> = {
+  recon: "r",
+  identity: "i",
+  exploit: "e",
+  post_ex: "p",
+  apt: "a",
+}
+
+export function compactPhaseList(phases: AresPhase[]): string {
+  return phases.map((p) => PHASE_CODES[p] ?? p[0]).join("→")
+}
 
 export interface PersonaPlaybookCache {
   key: string
   persona: TargetPersona
   objective: FlowObjective
   recommendedPhases: AresPhase[]
+  /** Precomputed compact phase sequence — avoids per-turn phasesForObjective calls. */
+  phaseList: string
   workflow: string
   profileId?: string
   intelSnippet: string
@@ -40,7 +54,11 @@ export function readPlaybookCache(persona: TargetPersona, objective: FlowObjecti
   const fp = cachePath(cacheKey(persona, objective))
   if (!fs.existsSync(fp)) return null
   try {
-    return JSON.parse(fs.readFileSync(fp, "utf8")) as PersonaPlaybookCache
+    const parsed = JSON.parse(fs.readFileSync(fp, "utf8")) as PersonaPlaybookCache
+    if (!parsed.phaseList && parsed.recommendedPhases?.length) {
+      parsed.phaseList = compactPhaseList(parsed.recommendedPhases)
+    }
+    return parsed
   } catch {
     return null
   }
@@ -68,11 +86,16 @@ export function warmPlaybookCache(opts: {
     count: 5,
   })
 
+  const phases = opts.plan.recommendedPhases.length
+    ? opts.plan.recommendedPhases
+    : phasesForObjective(opts.objective)
+
   const entry: PersonaPlaybookCache = {
     key,
     persona: opts.persona,
     objective: opts.objective,
-    recommendedPhases: opts.plan.recommendedPhases,
+    recommendedPhases: phases,
+    phaseList: compactPhaseList(phases),
     workflow: opts.plan.workflow,
     profileId: opts.profileId ?? profile?.id,
     intelSnippet: opts.intelSnippet ?? `[${opts.objective}] ${techniques.map((t) => t.id).join("→")}`.slice(0, 200),
@@ -101,9 +124,10 @@ export function getPersonaPlaybook(
 
 /** Merge cached playbook into a target-specific plan — skips PTT rebuild for static fields. */
 export function applyPlaybookCache(plan: ActionablePlan, cache: PersonaPlaybookCache): ActionablePlan {
+  const phases = cache.recommendedPhases.length ? cache.recommendedPhases : plan.recommendedPhases
   return {
     ...plan,
-    recommendedPhases: cache.recommendedPhases.length ? cache.recommendedPhases : plan.recommendedPhases,
+    recommendedPhases: phases,
     workflow: cache.workflow || plan.workflow,
     gaps: [...new Set([...(plan.gaps ?? []), ...cache.gaps])],
   }
@@ -136,4 +160,5 @@ export default {
   getPersonaPlaybook,
   applyPlaybookCache,
   buildCachedActionablePlan,
+  compactPhaseList,
 }

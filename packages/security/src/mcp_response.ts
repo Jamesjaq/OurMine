@@ -9,6 +9,7 @@ import { EngagementMemory } from "./engagement_memory.ts"
 import {
   buildEngagementDelta,
   compressEngagementPayload,
+  compressIntelMeta,
   snapshotFromPayload,
 } from "./semantic_compression.ts"
 
@@ -67,13 +68,13 @@ export function normalizeToolPayload(payload: unknown): Record<string, unknown> 
   return p
 }
 
-function compactNextActions(actions: unknown): Array<{ s: number; t: string; a: Record<string, string> }> {
+function compactNextActions(actions: unknown): Array<{ s: number; t: string; c?: string; a?: Record<string, string> }> {
   if (!Array.isArray(actions)) return []
-  return (actions as PlanAction[]).slice(0, 4).map((a) => ({
-    s: a.step,
-    t: a.tool,
-    a: a.args ?? {},
-  }))
+  return (actions as PlanAction[]).slice(0, 4).map((a) => {
+    const base = { s: a.step, t: a.tool }
+    if (a.code) return { ...base, c: a.code }
+    return { ...base, a: a.args ?? {} }
+  })
 }
 
 /** Ultra-compact engagement slice response (target ≤400 bytes). Full detail in artifact. */
@@ -101,8 +102,20 @@ export function compactEngagementResponse(
   if (compressed.dryRun) compact.dry = true
   if (compressed.resumeToken) compact.rt = compressed.resumeToken
   if (compressed.recommendedNextPhase) compact.nxp = compressed.recommendedNextPhase
-  if (typeof compressed.intelDigest === "string") compact.is = compressed.intelDigest.slice(0, 80)
-  else if (typeof compressed.intelSnippet === "string") compact.is = compressed.intelSnippet.slice(0, 80)
+  if (typeof compressed.intelDigest === "string") compact.is = compressed.intelDigest.slice(0, 72)
+  else if (typeof compressed.intelSnippet === "string") compact.is = compressed.intelSnippet.slice(0, 72)
+  const prefetch = compressed.intelPrefetch as Record<string, unknown> | undefined
+  const intelMeta = (compressed.intelMeta ?? prefetch?.intelMeta) as Record<string, string | boolean> | undefined
+    ?? compressIntelMeta({
+      iabStage: (compressed.iabStage ?? prefetch?.iabStage) as string | undefined,
+      extortionOnly: compressed.extortionOnly === true || prefetch?.extortionOnly === true,
+      staleWarning: typeof (compressed.staleWarning ?? prefetch?.staleWarning) === "string"
+        ? String(compressed.staleWarning ?? prefetch?.staleWarning)
+        : undefined,
+    })
+  if (Object.keys(intelMeta).length) compact.im = intelMeta
+  const actionCodes = (compressed.actionCodes ?? prefetch?.actionCodes) as string[] | undefined
+  if (actionCodes?.length) compact.ac = actionCodes.slice(0, 3)
   if (compressed.intelFromMemory) compact.im = true
   if (compressed.cacheHit) compact.ch = true
   if (typeof compressed.parallelProbes === "number" && compressed.parallelProbes > 0) {
@@ -119,11 +132,11 @@ export function compactEngagementResponse(
   let out = JSON.stringify(compact)
   if (out.length > maxLen) {
     compact.s = String(compact.s).slice(0, 48)
-    compact.na = na.slice(0, 2).map(({ s, t }) => ({ s, t, a: {} }))
+    compact.na = na.slice(0, 2).map(({ s, t, c }) => (c ? { s, t, c } : { s, t, a: {} }))
     out = JSON.stringify(compact)
   }
   if (out.length > maxLen) {
-    compact.na = na.length ? [{ s: na[0]!.s, t: na[0]!.t, a: {} }] : []
+    compact.na = na.length ? [{ s: na[0]!.s, t: na[0]!.t, ...(na[0]!.c ? { c: na[0]!.c } : { a: {} }) }] : []
     compact.aid = String(compact.aid).slice(-12)
     out = JSON.stringify(compact)
   }

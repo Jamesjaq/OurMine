@@ -8,6 +8,7 @@ import {
   compressEngagementPayload,
   snapshotFromPayload,
   buildEngagementDelta,
+  compressIntelMeta,
 } from "../src/semantic_compression.ts"
 
 describe("semantic_compression", () => {
@@ -45,6 +46,19 @@ describe("semantic_compression", () => {
     assert.equal(delta.cd, 1)
     assert.equal(delta.nxp, "exploit")
     assert.equal(delta.bk, undefined)
+  })
+
+  test("compressIntelMeta packs 2-char keys", () => {
+    const meta = compressIntelMeta({
+      iabStage: "initial_access",
+      extortionOnly: true,
+      deviceCodeFindings: [{ severity: "high" }, { severity: "info" }],
+      staleWarning: "INTEL_STALE: ransomwatch cache 9d old (TTL 7d)",
+    })
+    assert.equal(meta.ib, "ia")
+    assert.equal(meta.eo, true)
+    assert.equal(meta.dc, "2h1")
+    assert.equal(meta.st, "9")
   })
 
   test("compressEngagementPayload shrinks large otHosts arrays", () => {

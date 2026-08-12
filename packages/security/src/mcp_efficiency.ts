@@ -12,6 +12,7 @@ export const EFFICIENT_TOOL_ALLOWLIST = new Set([
   "bash",
   "ares_engagement_slice",
   "ares_engagement_continue",
+  "ares_engagement_watch",
   "ares_autopilot",
   "ares_artifact_get",
   "ares_phase",
@@ -33,6 +34,35 @@ export const EFFICIENT_TOOL_ALLOWLIST = new Set([
   "ares_evasion_engine",
   "ares_opsec_throttle",
   "ares_iot_scada",
+])
+
+/** Verbose standalone audits excluded from default efficient surface — use ares_dispatch / ares_tool_search. */
+export const EFFICIENT_TOOL_DENYLIST = new Set([
+  "ares_lolbins_audit",
+  "ares_ebpf_audit",
+  "ares_uefi_bootkit_audit",
+  "ares_ai_agent_audit",
+  "ares_edge_appliance_audit",
+  "ares_cicd_k8s_audit",
+  "ares_adcs_audit",
+  "ares_esxi_audit",
+  "ares_opsec_review",
+  "ares_proof_export",
+  "ares_intel_watch",
+  "ares_vx_lookup",
+  "ares_stix_ingest",
+  "ares_auto_research",
+  "ares_scanner_parse",
+  "ares_firmware",
+  "ares_malware_dev",
+  "ares_yara_scan",
+  "ares_caldera_ttp",
+  "ares_atlas_ml",
+  "ares_supply_chain",
+  "ares_campaign",
+  "ares_raas_campaign",
+  "ares_pivot_replay",
+  "ares_topcut_assess",
 ])
 
 export type AresPhase = "recon" | "identity" | "exploit" | "post_ex" | "apt"
@@ -193,10 +223,11 @@ export const SEARCH_MODE_TOOL_ALLOWLIST = new Set([
 ])
 
 export function filterToolsForEfficiency<T extends { name: string }>(tools: T[]): T[] {
+  const deny = (t: T) => !EFFICIENT_TOOL_DENYLIST.has(t.name)
   if (isEfficientMode()) {
-    return tools.filter((t) => EFFICIENT_TOOL_ALLOWLIST.has(t.name))
+    return tools.filter((t) => EFFICIENT_TOOL_ALLOWLIST.has(t.name) && deny(t))
   }
-  return tools.filter((t) => SEARCH_MODE_TOOL_ALLOWLIST.has(t.name))
+  return tools.filter((t) => SEARCH_MODE_TOOL_ALLOWLIST.has(t.name) && deny(t))
 }
 
 export function searchModeMcpInstructions(toolCount: number, catalogSize: number): string {
@@ -230,6 +261,7 @@ export default {
   efficientMcpInstructions,
   searchModeMcpInstructions,
   EFFICIENT_TOOL_ALLOWLIST,
+  EFFICIENT_TOOL_DENYLIST,
   SEARCH_MODE_TOOL_ALLOWLIST,
   PHASE_MODULES,
 }

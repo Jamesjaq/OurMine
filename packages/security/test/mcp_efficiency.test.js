@@ -56,8 +56,9 @@ describe("mcp_efficiency", () => {
     process.env.OURMINE_MCP_EFFICIENT = "1"
   })
 
-  test("allowlist includes engagement continue", () => {
+  test("allowlist includes engagement continue and watch", () => {
     assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_engagement_continue"))
+    assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_engagement_watch"))
     assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_phase"))
     assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_dispatch"))
     assert.ok(EFFICIENT_TOOL_ALLOWLIST.has("ares_opsec_throttle"))
