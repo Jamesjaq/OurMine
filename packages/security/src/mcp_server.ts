@@ -2,7 +2,7 @@
 /**
  * OurMine ARES MCP Server
  *
- * Exposes all 77 ARES security modules + a bash executor as MCP tools.
+ * Exposes all ARES security modules + bridged tools + bash executor as MCP tools.
  * The OpenCode agent discovers and calls these natively — the LLM can
  * autonomously invoke recon, pentest, C2, malware analysis, YARA, etc.
  *
@@ -41,25 +41,13 @@ import { ContextGuard } from "./context_guard.ts"
 import { OpsecThrottleEngine } from "./opsec_throttle.ts"
 import { resolveLiveMode } from "./exec_options.ts"
 import { gateExecution } from "./opsec_gate.ts"
-
+import type { McpTool } from "./mcp_tool_types.ts"
+import { buildBridgedMcpTools } from "./mcp_bridged_tools.ts"
 const toolBroker = new ToolBroker()
 const globalThrottleEngine = new OpsecThrottleEngine()
 
 function mcpLive(): boolean {
   return resolveLiveMode()
-}
-
-// ─── Tool definitions ─────────────────────────────────────────────────────────
-
-interface McpTool {
-  name:        string
-  description: string
-  inputSchema: {
-    type:       "object"
-    properties: Record<string, { type: string; description: string; enum?: string[] }>
-    required?:  string[]
-  }
-  handler: (args: Record<string, unknown>) => Promise<unknown>
 }
 
 const LIVE_DEFAULT = resolveLiveMode()
@@ -1167,6 +1155,9 @@ tools.push(
     },
   },
 )
+
+const existingToolNames = new Set(tools.map((t) => t.name))
+tools.push(...buildBridgedMcpTools(existingToolNames, mcpLive))
 
 // ─── MCP server main loop ─────────────────────────────────────────────────────
 

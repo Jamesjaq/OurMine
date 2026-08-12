@@ -53,6 +53,27 @@ const DEPTH_MODULES = [
   "tier1_config.ts",
 ]
 
+const ARES_MODULES = [
+  "zero_day_fuzzer.ts",
+  "fileless_implant.ts",
+  "firmware_implant.ts",
+  "hypervisor_rootkit.ts",
+  "airgap_bridge.ts",
+  "rat_builder.ts",
+  "supply_chain_implant.ts",
+  "evasion_engine.ts",
+  "satellite_c2.ts",
+  "ss7_exploit.ts",
+  "hardware_implant.ts",
+  "kerberos_advanced.ts",
+  "persistence_advanced.ts",
+  "lateral_scale.ts",
+  "anti_forensics_advanced.ts",
+  "network_exploit.ts",
+  "cloud_native.ts",
+  "ai_ml_attacks.ts",
+]
+
 export async function assessOperationalDepth(): Promise<OperationalDepthReport> {
   const gaps: string[] = []
   const dimensions: DepthDimension[] = []
@@ -68,6 +89,25 @@ export async function assessOperationalDepth(): Promise<OperationalDepthReport> 
     score: moduleScore,
     weight: 2,
     notes: [`${present.length}/${DEPTH_MODULES.length} modules present`],
+  })
+
+  const aresDir = path.join(SRC, "ares")
+  const aresPresent = ARES_MODULES.filter((m) => fs.existsSync(path.join(aresDir, m)))
+  const bridgeSrcAres = fs.readFileSync(path.join(SRC, "module_bridge.ts"), "utf8")
+  const aresBridged = ARES_MODULES.filter((m) => {
+    const tool = `ares_${m.replace(".ts", "")}`
+    return bridgeSrcAres.includes(`${tool}:`)
+  })
+  const aresScore = clamp((aresPresent.length / ARES_MODULES.length) * 5 + (aresBridged.length / ARES_MODULES.length) * 5)
+  if (aresPresent.length < ARES_MODULES.length) {
+    gaps.push(`Missing ARES modules: ${ARES_MODULES.filter((m) => !aresPresent.includes(m)).join(", ")}`)
+  }
+  dimensions.push({
+    id: "ares_parity",
+    name: "ARES APT-parity engines",
+    score: aresScore,
+    weight: 2,
+    notes: [`${aresPresent.length}/${ARES_MODULES.length} modules`, `${aresBridged.length}/${ARES_MODULES.length} bridged`],
   })
 
   const { ValidationPlanner } = await import("./validation_planner.ts")

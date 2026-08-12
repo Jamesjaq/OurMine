@@ -74,11 +74,6 @@ are passed directly to the real OpenCode binary.${C.reset}
 // ─── OpenCode launch (bootstrap ARES MCP + pentest agent, then delegate) ───
 
 function launchOpenCode(args: string[]): void {
-  try {
-    bootstrapOpenCode()
-  } catch {
-    // never block OpenCode launch on bootstrap failures
-  }
   delegateToOpenCode(args)
 }
 
@@ -356,6 +351,14 @@ async function cmdRetest(target: string, findingId: string, isLive: boolean) {
 
 async function main() {
   const args    = process.argv.slice(2)
+
+  // Wire ARES MCP into OpenCode config on every OurMine invocation (instant MCP on startup)
+  try {
+    bootstrapOpenCode({ quiet: args.length > 0 })
+  } catch {
+    // never block on bootstrap
+  }
+
   const dryRun  = args.includes("--dry-run")
   const requireLive = args.includes("--require-live")
   const daemon = args.includes("--daemon")
