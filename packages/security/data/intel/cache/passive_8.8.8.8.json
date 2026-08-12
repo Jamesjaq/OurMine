@@ -1,0 +1,35 @@
+{
+  "hits": [
+    {
+      "source": "shodan",
+      "ip": "8.8.8.8",
+      "port": 53,
+      "service": "tcp",
+      "banner": "\nRecursion: enabled",
+      "tags": [
+        "shodan-live"
+      ]
+    },
+    {
+      "source": "shodan",
+      "ip": "8.8.8.8",
+      "port": 53,
+      "service": "udp",
+      "banner": "\nRecursion: enabled",
+      "tags": [
+        "shodan-live"
+      ]
+    },
+    {
+      "source": "shodan",
+      "ip": "8.8.8.8",
+      "port": 443,
+      "service": "tcp",
+      "banner": "HTTP/1.1 200 OK\r\nContent-Security-Policy: object-src 'none';base-uri 'self';script-src 'nonce-8o5s1JvKa4J2JN0dq73Bdg' 'strict-dynamic' 'report-sample' 'unsafe-eval' 'unsafe-inline' https: http:;report-uri https://csp.withgoogle.com/csp/honest_dns/1_0;frame-ancestors 'none'\r\nStrict-Transport-Security: max-age=31536000; includeSubDomains; preload\r\nX-Content-Type-Options: nosniff\r\nContent-Security-Policy-Report-Only: script-src 'none'; form-action 'none'; frame-src 'none'; report-uri https://csp.wi",
+      "tags": [
+        "shodan-live"
+      ]
+    }
+  ],
+  "cachedAt": "2026-08-12T14:48:39.632Z"
+}

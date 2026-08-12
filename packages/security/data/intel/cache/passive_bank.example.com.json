@@ -1,0 +1,34 @@
+{
+  "hits": [
+    {
+      "source": "cache",
+      "service": "passive-stub",
+      "banner": "Passive intel stub for bank.example.com — set SHODAN_API_KEY or CENSYS_API_ID for live lookup",
+      "tags": [
+        "stub",
+        "read-only"
+      ]
+    },
+    {
+      "source": "shodan",
+      "port": 443,
+      "service": "https",
+      "tags": [
+        "tls",
+        "web"
+      ],
+      "banner": "Historical HTTPS exposure (cached stub)"
+    },
+    {
+      "source": "censys",
+      "port": 8087,
+      "service": "swift-alliance",
+      "tags": [
+        "finance",
+        "banking"
+      ],
+      "banner": "SWIFT Alliance Access port heuristic (awareness only)"
+    }
+  ],
+  "cachedAt": "2026-08-12T13:21:59.889Z"
+}
