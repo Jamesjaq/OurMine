@@ -28,10 +28,35 @@ export function opencodeNamespacedTool(server: string, toolName: string): string
   return `${server}_${toolName}`
 }
 
+/** Canonical engagement orchestration — default pentest agent path (not pentest_run). */
+export const CANONICAL_PENTEST_TOOLS = [
+  "ares_engagement_slice",
+  "ares_engagement_continue",
+  "ares_autopilot",
+  "ares_artifact_get",
+  "ares_threat_intel",
+  "ares_pentest_plan",
+  "bash",
+] as const
+
+/** Legacy LLM-steered path — requires OURMINE_PENTEST_RUN=1 on the agent. */
+export const LEGACY_PENTEST_RUN_TOOL = "ares_pentest_run"
+
 /** Pentest agent re-enables after global `ares_*: false`. */
-export function buildPentestAgentToolAllowlist(opts: { ghGrep?: boolean } = {}): Record<string, boolean> {
+export function buildPentestAgentToolAllowlist(opts: { ghGrep?: boolean; allowPentestRun?: boolean } = {}): Record<string, boolean> {
   const allow: Record<string, boolean> = {}
+  const pentestRunEnabled =
+    opts.allowPentestRun === true
+    || process.env.OURMINE_PENTEST_RUN === "1"
+    || process.env.OURMINE_PENTEST_RUN === "true"
+
+  for (const tool of CANONICAL_PENTEST_TOOLS) {
+    allow[opencodeNamespacedTool(OPENCODE_ARES_SERVER, tool)] = true
+  }
+  // Supplementary efficient tools (recon, dispatch) without pentest_run by default
   for (const tool of EFFICIENT_TOOL_ALLOWLIST) {
+    if (tool === LEGACY_PENTEST_RUN_TOOL && !pentestRunEnabled) continue
+    if (CANONICAL_PENTEST_TOOLS.includes(tool)) continue
     allow[opencodeNamespacedTool(OPENCODE_ARES_SERVER, tool)] = true
   }
   allow[opencodeNamespacedTool(OPENCODE_ARES_SERVER, "ares_tool_search")] = true

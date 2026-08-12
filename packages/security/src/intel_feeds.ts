@@ -180,8 +180,9 @@ export function intelCacheAgeDays(feed: string): number | null {
 
 function postsToRecords(
   posts: { post_title?: string; group_name?: string; discovered?: string }[],
+  limit = 250,
 ): IntelRecord[] {
-  return posts.slice(0, 100).map((p) => ({
+  return posts.slice(0, limit).map((p) => ({
     source: "ransomwatch",
     type: "victim" as const,
     actor: p.group_name,

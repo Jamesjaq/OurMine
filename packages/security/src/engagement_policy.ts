@@ -247,6 +247,7 @@ export function evaluateEngagementPolicy(opts: {
   }
 
   const profileId = resolveAptProfile(aptHint ?? "")?.id
+    ?? aptHint?.trim().toLowerCase().replace(/\s+/g, "_")
   const extortion = profileId ? extortionModeForGroup(profileId) : extortionModeFromEnv()
   if (extortion.enabled) {
     const filtered = applyExtortionMode(prioritizeModules, extortion)

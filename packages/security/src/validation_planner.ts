@@ -31,6 +31,9 @@ export type ValidationStrategy =
   | "COAP_PROBE"          // ICS CoAP discovery probe (non-destructive)
   | "S7_PROBE"            // ICS S7comm handshake probe (non-destructive)
   | "NUCLEI_PROBE"        // Nuclei template re-run for web vuln validation
+  | "OAUTH_CONSENT_PROBE" // OAuth consent misconfiguration (policy only)
+  | "DEVICE_CODE_PROBE"   // Device-code endpoint reachable (no token issuance)
+  | "IAB_CRED_FORMAT"     // IAB credential format check (no login)
 
 export type ValidationRisk = "none" | "low" | "medium"
 
@@ -379,6 +382,39 @@ const CAPABILITY_REGISTRY: ValidationCapability[] = [
     supportedProtocols: ["s7", "tcp"],
     timeoutMs:          10_000,
   },
+  {
+    id:                 "oauth-consent-probe",
+    name:               "OAuth Consent Misconfiguration Probe",
+    strategy:           "OAUTH_CONSENT_PROBE",
+    matchPatterns:      ["oauth", "consent", "admin-consent", "multitenant", "openid"],
+    requiredTool:       "curl",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          8_000,
+  },
+  {
+    id:                 "device-code-probe",
+    name:               "OIDC Device Code Flow Probe",
+    strategy:           "DEVICE_CODE_PROBE",
+    matchPatterns:      ["device-code", "device_code", "oauth-device", "oidc-device", "T1528"],
+    requiredTool:       "curl",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["http", "https"],
+    timeoutMs:          8_000,
+  },
+  {
+    id:                 "iab-cred-format",
+    name:               "IAB Credential Format Validator",
+    strategy:           "IAB_CRED_FORMAT",
+    matchPatterns:      ["iab", "stealer-log", "stealer_log", "vpn-session", "session_cookie", "citrix_aaacookie"],
+    requiredTool:       "none",
+    riskLevel:          "none",
+    destructive:        false,
+    supportedProtocols: ["any"],
+    timeoutMs:          2_000,
+  },
 ]
 
 // ─── ValidationPlanner ───────────────────────────────────────────────────────
@@ -532,6 +568,22 @@ export class ValidationPlanner {
     } else if (cap.strategy === "NUCLEI_PROBE") {
       const url = `${protocol}://${opts.target.split(":")[0]}:${port}`
       plan.command = `nuclei -u ${url} -severity critical,high,medium -json -silent -timeout ${Math.floor(cap.timeoutMs / 1000)}`
+    } else if (cap.strategy === "OAUTH_CONSENT_PROBE") {
+      plan.httpOptions = {
+        method: "GET",
+        path: "/.well-known/openid-configuration",
+        expectedBodyContains: "authorization_endpoint",
+      }
+      plan.command = `curl -sS -m ${Math.floor(cap.timeoutMs / 1000)} ${protocol}://${opts.target.split(":")[0]}:${port}/.well-known/openid-configuration`
+    } else if (cap.strategy === "DEVICE_CODE_PROBE") {
+      plan.httpOptions = {
+        method: "GET",
+        path: "/.well-known/openid-configuration",
+        expectedBodyContains: "device_authorization_endpoint",
+      }
+      plan.command = `curl -sS -m ${Math.floor(cap.timeoutMs / 1000)} ${protocol}://${opts.target.split(":")[0]}:${port}/.well-known/openid-configuration`
+    } else if (cap.strategy === "IAB_CRED_FORMAT") {
+      plan.command = `# ${cap.strategy} — format validation in-process`
     }
 
     return { plan, capability: cap }

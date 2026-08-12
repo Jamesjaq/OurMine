@@ -190,6 +190,12 @@ export class ValidationEngine {
         )
       case "NUCLEI_PROBE":
         return this.nucleiProbe(plan, ip, port, t0)
+      case "OAUTH_CONSENT_PROBE":
+        return this.oauthConsentProbe(plan, ip, port, t0)
+      case "DEVICE_CODE_PROBE":
+        return this.deviceCodeProbe(plan, ip, port, t0)
+      case "IAB_CRED_FORMAT":
+        return this.iabCredFormatProbe(plan, t0)
       default:
         return {
           planId:      plan.planId,
@@ -431,6 +437,45 @@ export class ValidationEngine {
         `nuclei execution error: ${msg}`,
       )
     }
+  }
+
+  private static async oauthConsentProbe(plan: ValidationPlan, ip: string, port: number, t0: number): Promise<ValidationResult> {
+    const r = await this.httpProbe(plan, ip, port, t0)
+    if (r.outcome === "VALIDATION_SUCCESS") {
+      return buildResult(plan, t0, "VALIDATION_SUCCESS", r.evidence,
+        "OIDC discovery reachable — review consent/admin-consent policy separately (no token issued)")
+    }
+    return r
+  }
+
+  private static async deviceCodeProbe(plan: ValidationPlan, ip: string, port: number, t0: number): Promise<ValidationResult> {
+    const r = await this.httpProbe(plan, ip, port, t0)
+    const hasDevice = r.evidence.includes("device_authorization_endpoint")
+    return buildResult(plan, t0,
+      hasDevice ? "VALIDATION_SUCCESS" : "VALIDATION_NEGATIVE",
+      r.evidence,
+      hasDevice
+        ? "Device authorization endpoint advertised — assess user-code phishing risk (no token acquired)"
+        : "Device authorization endpoint not found in OIDC metadata",
+    )
+  }
+
+  private static iabCredFormatProbe(plan: ValidationPlan, t0: number): ValidationResult {
+    const sample = plan.command ?? ""
+    const patterns = [
+      { id: "session_cookie", re: /(?:session|cookie|aaacookie|citrix)[=:]\S+/i },
+      { id: "domain_password", re: /(?:password|passwd|pwd)[=:]\S+/i },
+      { id: "vpn_session", re: /(?:fortinet|pulse|vpn)[-_]?(?:session|token)/i },
+    ]
+    const hits = patterns.filter((p) => p.re.test(sample))
+    const valid = hits.length > 0 || sample.includes("iab") || sample.includes("stealer")
+    return buildResult(plan, t0,
+      valid ? "VALIDATION_SUCCESS" : "VALIDATION_NEGATIVE",
+      JSON.stringify({ hits: hits.map((h) => h.id), sampleLen: sample.length }),
+      valid
+        ? `IAB artifact format matches: ${hits.map((h) => h.id).join(", ") || "stealer/iab hint"}`
+        : "No recognizable IAB/stealer credential format in finding context",
+    )
   }
 
   private static hostInspect(plan: ValidationPlan, t0: number): ValidationResult {

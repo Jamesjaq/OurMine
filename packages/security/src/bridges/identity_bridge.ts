@@ -3,6 +3,12 @@ import { hostFromTarget } from "../agent_tools.ts"
 import { result, agentToolBridge } from "./_shared.ts"
 
 export const identity_bridge = {
+  hybrid_ad_audit: async (ctx, params) => {
+    const { hybridADAttackChain } = await import("../hybrid_ad_entra.ts")
+    const domain = String(params.domain ?? hostFromTarget(ctx.target))
+    const r = await hybridADAttackChain({ domain, dryRun: !ctx.live })
+    return result("hybrid_ad_audit", "hybridADAttackChain", ctx, r)
+  },
   oauth_audit: async (ctx, params) => {
     const mod = await import("../oauth_chain.ts")
     const raw = String(params.target ?? ctx.target)
