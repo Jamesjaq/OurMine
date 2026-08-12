@@ -1,0 +1,35 @@
+{
+  "includeBridge": [
+    "lolbins_audit", "oauth_consent_audit", "device_code_audit", "chaindrop_oidc",
+    "citrix_audit", "rmm_audit", "edge_audit", "passive_intel", "institutional_recon",
+    "iot_scada", "profinet_l2", "ot_segment_infer", "raas_leak_catalog", "impact_assess",
+    "engagement_report", "dry_run_simulator", "oauth_audit", "hybrid_ad_audit"
+  ],
+  "includeMcp": [
+    "ares_engagement_slice", "ares_threat_intel", "ares_recon", "ares_bountyhunter",
+    "ares_lolbins_audit", "ares_idp_oauth_audit", "ares_iot_scada", "ares_pentest_plan"
+  ],
+  "exclude": [
+    "tier1_orchestrator",
+    "raas_vss_wipe",
+    "raas_esxi_encrypt",
+    "raas_smb_spread",
+    "raas_gpo_spread",
+    "raas_gpo_deploy",
+    "raas_esxi_deploy",
+    "raas_wallet_wipe",
+    "esxi_lab_encrypt",
+    "implant_build",
+    "ares_firmware_implant",
+    "ares_hypervisor_rootkit",
+    "ares_satellite_c2",
+    "ares_ss7_exploit",
+    "ares_hardware_implant",
+    "ares_network_exploit",
+    "ares_rat_builder",
+    "ares_supply_chain_implant",
+    "persistence_install",
+    "cred_dump"
+  ],
+  "timeoutMs": 2000
+}

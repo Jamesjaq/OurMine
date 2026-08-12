@@ -1,0 +1,47 @@
+name: Security Fast CI
+
+on:
+  push:
+    branches: [main, develop, "cursor/**"]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  fast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install typescript@^5.8.3 @types/node@^22 --no-save --ignore-scripts
+      - run: npm run generate:index
+      - run: npm run test:fast
+
+  slow:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || contains(github.event.pull_request.labels.*.name, 'full-ci')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install typescript@^5.8.3 @types/node@^22 --no-save --ignore-scripts
+      - run: npm run generate:index
+      - run: npm test
+
+  intel-refresh:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install typescript@^5.8.3 @types/node@^22 --no-save --ignore-scripts
+      - name: Refresh intel cache
+        run: npm run intel:refresh || true
+        env:
+          OURMINE_INTEL_REFRESH: "1"

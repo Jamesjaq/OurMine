@@ -27,7 +27,7 @@
         { "port": 1521, "protocol": "tcp", "service": "Oracle-DB", "note": "Core ledger database (common)" },
         { "port": 1433, "protocol": "tcp", "service": "MSSQL", "note": "Treasury/reporting DB" }
       ],
-      "modules": ["institutional_recon", "net_device_audit", "recon"],
+      "modules": ["institutional_recon", "net_device_audit", "recon", "helpdesk_social_auto"],
       "aptProfileId": "finance_tradecraft",
       "persona": "enterprise_ad",
       "objective": "identity_first",
@@ -35,7 +35,7 @@
         "id": "inst-banking-swift",
         "severity": "info",
         "title": "SWIFT/ISO8583 read-only recon",
-        "detail": "Port 8087 (Alliance) and ISO 8583/20022 APIs — metadata/BIC enumeration only, no message injection",
+        "detail": "SWIFT Alliance (8087), ISO 20022/8583 APIs, wire-fraud helpdesk scenarios — metadata/BIC enumeration only",
         "ports": [8087, 443, 5000]
       }
     },

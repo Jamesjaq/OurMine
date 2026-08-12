@@ -44,8 +44,11 @@ export function buildOffensiveTools(): McpTool[] {
         },
         async handler({ provider }) {
           const live = mcpLive()
-          if (String(provider) === "aws") return security.cloud_token.fetchAWSMetadata({ live })
-          return security.cloud_token.fetchCloudCredentials({ provider: String(provider) as any, live })
+          const p = String(provider)
+          if (p === "aws") return security.cloud_token.fetchAWSMetadata({ live })
+          if (p === "gcp") return security.cloud_token.fetchGCPMetadata({ live })
+          if (p === "azure") return security.cloud_token.fetchAzureMetadata({ live })
+          return { provider: p, dryRun: !live, credentials: null, note: "ecs/lambda assessment stub" }
         },
       },
 

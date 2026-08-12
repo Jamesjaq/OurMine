@@ -171,4 +171,22 @@ describe("system_completeness", () => {
     const score = Math.round(((all.length - unresolved.length) / all.length) * 10)
     assert.ok(score >= 7, `completeness score ${score}/10; unresolved: ${unresolved.join(", ")}`)
   })
+
+  test("intel catalog gates — profiles, ransomware, MITRE", () => {
+    const aptPath = path.join(INTEL_DIR, "apt_profiles.json")
+    const aptRaw = JSON.parse(fs.readFileSync(aptPath, "utf8"))
+    const profiles = Array.isArray(aptRaw) ? aptRaw : (aptRaw.profiles ?? Object.values(aptRaw).filter((p) => p && typeof p === "object" && "id" in p))
+    assert.ok(profiles.length >= 50, `APT profiles ${profiles.length} < 50`)
+
+    const ransom = JSON.parse(fs.readFileSync(path.join(INTEL_DIR, "ransomware_groups.json"), "utf8"))
+    const groups = Array.isArray(ransom) ? ransom : (ransom.groups ?? [])
+    assert.ok(groups.length >= 18, `ransomware groups ${groups.length} < 18`)
+
+    const mitre = loadMitreTechniques()
+    assert.ok(mitre.length >= 200, `MITRE techniques ${mitre.length} < 200`)
+
+    const mappings = loadAptPlaybookMappings()
+    const playbookModCount = Object.values(mappings).reduce((n, m) => n + (m.modules?.length ?? 0), 0)
+    assert.ok(playbookModCount >= 80, `playbook module refs ${playbookModCount} < 80`)
+  })
 })

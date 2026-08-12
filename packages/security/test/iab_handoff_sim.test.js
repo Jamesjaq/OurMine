@@ -6,6 +6,11 @@ import assert from "node:assert/strict"
 import { runIabChain, applyIabChainToGraph } from "../src/iab_handoff_sim.ts"
 import { CredentialGraph } from "../src/credential_graph.ts"
 import { runBridgedModule } from "../src/module_bridge.ts"
+import { AttackSurfaceGraph } from "../src/attack_surface.ts"
+
+function bridgeCtx(live = false) {
+  return { target: "corp.example.com", live, graph: new AttackSurfaceGraph("corp.example.com") }
+}
 
 describe("iab_handoff_sim", () => {
   test("runIabChain produces 3 staged evidence items", () => {
@@ -27,12 +32,8 @@ describe("iab_handoff_sim", () => {
   })
 
   test("bridge module returns compact payload", async () => {
-    const r = await runBridgedModule(
-      { target: "corp.example.com", live: false, sessionId: "test" },
-      "iab_handoff_sim",
-      { target: "corp.example.com" },
-    )
-    assert.ok(r.success)
+    const r = await runBridgedModule(bridgeCtx(), "iab_handoff_sim", { target: "corp.example.com" })
+    assert.ok(r?.success)
     assert.ok(r.output.length <= 8000)
   })
 })

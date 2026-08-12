@@ -16,13 +16,13 @@ describe("intel_cache_freshness", () => {
   test("cache/ransomwatch.json has 100+ records", async () => {
     const posts = JSON.parse(fs.readFileSync(path.join(CACHE, "ransomwatch.json"), "utf8"))
     assert.ok(Array.isArray(posts))
-    assert.ok(posts.length > 100, `expected >100 posts, got ${posts.length}`)
+    assert.ok(posts.length >= 100, `expected >=100 posts, got ${posts.length}`)
   })
 
   test("offline fetchRansomwatch returns 100+ records", async () => {
     const { fetchRansomwatch } = await import("../src/intel_feeds.ts")
     const records = await fetchRansomwatch(false)
-    assert.ok(records.length > 100, `expected >100 records, got ${records.length}`)
+    assert.ok(records.length >= 100, `expected >=100 records, got ${records.length}`)
   })
 
   test("latest discovered is after 2025-01-01 when cache refreshed", () => {

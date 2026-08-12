@@ -58,7 +58,7 @@ export function buildEngagementTools(): McpTool[] {
             scope: scope ? String(scope) : undefined,
             objective: objective ? String(objective) : undefined,
             aptHint: actor ? String(actor) : undefined,
-            phase: phase ? String(phase) as import("./mcp_efficiency.ts").AresPhase : undefined,
+            phase: phase ? String(phase) as import("../../mcp_efficiency.ts").AresPhase : undefined,
           })
         },
       },
@@ -75,10 +75,10 @@ export function buildEngagementTools(): McpTool[] {
           required: ["resumeToken"],
         },
         async handler({ resumeToken, phase }) {
-          const { runEngagementContinue } = await import("./engagement_slice.ts")
+          const { runEngagementContinue } = await import("../../engagement_slice.ts")
           return runEngagementContinue({
             resumeToken: String(resumeToken),
-            phase: phase ? String(phase) as import("./mcp_efficiency.ts").AresPhase : undefined,
+            phase: phase ? String(phase) as import("../../mcp_efficiency.ts").AresPhase : undefined,
           })
         },
       },
@@ -155,7 +155,7 @@ export function buildEngagementTools(): McpTool[] {
         },
         async handler({ target, live: liveArg }) {
           const live = liveArg ?? mcpLive()
-          const { runWatchCycle } = await import("./engagement_watch.ts")
+          const { runWatchCycle } = await import("../../engagement_watch.ts")
           return runWatchCycle({ target: String(target), intervalMinutes: 60, live })
         },
       },
@@ -174,7 +174,7 @@ export function buildEngagementTools(): McpTool[] {
         },
         async handler({ target, findingId, live: liveArg }) {
           const live = liveArg ?? mcpLive()
-          const { retestFinding } = await import("./engagement_watch.ts")
+          const { retestFinding } = await import("../../engagement_watch.ts")
           return retestFinding(String(target), String(findingId), { live })
         },
       }

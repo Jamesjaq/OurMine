@@ -6,6 +6,11 @@ import assert from "node:assert/strict"
 import { auditChainDropOidc } from "../src/chaindrop_oidc.ts"
 import { runBridgedModule } from "../src/module_bridge.ts"
 import { loadAptPlaybookMappings } from "../src/apt_intel_feed.ts"
+import { AttackSurfaceGraph } from "../src/attack_surface.ts"
+
+function bridgeCtx(live = false) {
+  return { target: ".", live, graph: new AttackSurfaceGraph(".") }
+}
 
 describe("chaindrop_oidc", () => {
   test("dry-run detects OIDC env patterns", () => {
@@ -22,12 +27,8 @@ describe("chaindrop_oidc", () => {
   })
 
   test("bridge returns compact JSON", async () => {
-    const r = await runBridgedModule(
-      { target: ".", live: false, sessionId: "test" },
-      "chaindrop_oidc",
-      { target: "github.com/org/repo" },
-    )
-    assert.ok(r.success)
+    const r = await runBridgedModule(bridgeCtx(), "chaindrop_oidc", { target: "github.com/org/repo" })
+    assert.ok(r?.success)
     assert.ok(r.output.length <= 8000)
   })
 })

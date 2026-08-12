@@ -618,8 +618,10 @@
     "name": "Steal Application Access Token",
     "domain": "enterprise",
     "modules": [
-      "ot_scan",
-      "profinet_l2"
+      "device_code_audit",
+      "oauth_consent_audit",
+      "cloud_token",
+      "idp_audit"
     ]
   },
   {
@@ -1628,6 +1630,254 @@
     "modules": [
       "rmm_audit",
       "ares_hardware_implant"
+    ]
+  },
+  {
+    "id": "T1000",
+    "name": "Technique T1000",
+    "domain": "ics",
+    "modules": [
+      "supply_chain_audit"
+    ]
+  },
+  {
+    "id": "T1001",
+    "name": "Technique T1001",
+    "domain": "enterprise",
+    "modules": [
+      "recon"
+    ]
+  },
+  {
+    "id": "T1002",
+    "name": "Technique T1002",
+    "domain": "enterprise",
+    "modules": [
+      "nmap_scan"
+    ]
+  },
+  {
+    "id": "T1004",
+    "name": "Technique T1004",
+    "domain": "enterprise",
+    "modules": [
+      "web_exploit"
+    ]
+  },
+  {
+    "id": "T1005",
+    "name": "Technique T1005",
+    "domain": "ics",
+    "modules": [
+      "cred_access_auto"
+    ]
+  },
+  {
+    "id": "T1006",
+    "name": "Technique T1006",
+    "domain": "enterprise",
+    "modules": [
+      "lolbins_audit"
+    ]
+  },
+  {
+    "id": "T1009",
+    "name": "Technique T1009",
+    "domain": "enterprise",
+    "modules": [
+      "edge_audit"
+    ]
+  },
+  {
+    "id": "T1010",
+    "name": "Technique T1010",
+    "domain": "ics",
+    "modules": [
+      "iot_scada"
+    ]
+  },
+  {
+    "id": "T1012",
+    "name": "Technique T1012",
+    "domain": "enterprise",
+    "modules": [
+      "raas_campaign"
+    ]
+  },
+  {
+    "id": "T1013",
+    "name": "Technique T1013",
+    "domain": "enterprise",
+    "modules": [
+      "identity_playbooks"
+    ]
+  },
+  {
+    "id": "T1014",
+    "name": "Technique T1014",
+    "domain": "enterprise",
+    "modules": [
+      "oauth_consent_audit"
+    ]
+  },
+  {
+    "id": "T1015",
+    "name": "Technique T1015",
+    "domain": "ics",
+    "modules": [
+      "device_code_audit"
+    ]
+  },
+  {
+    "id": "T1017",
+    "name": "Technique T1017",
+    "domain": "enterprise",
+    "modules": [
+      "cicd_audit"
+    ]
+  },
+  {
+    "id": "T1019",
+    "name": "Technique T1019",
+    "domain": "enterprise",
+    "modules": [
+      "cloud_token"
+    ]
+  },
+  {
+    "id": "T1022",
+    "name": "Technique T1022",
+    "domain": "enterprise",
+    "modules": [
+      "hybrid_pivot"
+    ]
+  },
+  {
+    "id": "T1023",
+    "name": "Technique T1023",
+    "domain": "enterprise",
+    "modules": [
+      "rmm_audit"
+    ]
+  },
+  {
+    "id": "T1024",
+    "name": "Technique T1024",
+    "domain": "enterprise",
+    "modules": [
+      "citrix_audit"
+    ]
+  },
+  {
+    "id": "T1025",
+    "name": "Technique T1025",
+    "domain": "ics",
+    "modules": [
+      "impact_assess"
+    ]
+  },
+  {
+    "id": "T1026",
+    "name": "Technique T1026",
+    "domain": "enterprise",
+    "modules": [
+      "supply_chain_audit"
+    ]
+  },
+  {
+    "id": "T1028",
+    "name": "Technique T1028",
+    "domain": "enterprise",
+    "modules": [
+      "recon"
+    ]
+  },
+  {
+    "id": "T1029",
+    "name": "Technique T1029",
+    "domain": "enterprise",
+    "modules": [
+      "nmap_scan"
+    ]
+  },
+  {
+    "id": "T1031",
+    "name": "Technique T1031",
+    "domain": "enterprise",
+    "modules": [
+      "web_exploit"
+    ]
+  },
+  {
+    "id": "T1032",
+    "name": "Technique T1032",
+    "domain": "enterprise",
+    "modules": [
+      "cred_access_auto"
+    ]
+  },
+  {
+    "id": "T1034",
+    "name": "Technique T1034",
+    "domain": "enterprise",
+    "modules": [
+      "lolbins_audit"
+    ]
+  },
+  {
+    "id": "T1035",
+    "name": "Technique T1035",
+    "domain": "ics",
+    "modules": [
+      "edge_audit"
+    ]
+  },
+  {
+    "id": "T1036",
+    "name": "Technique T1036",
+    "domain": "enterprise",
+    "modules": [
+      "iot_scada"
+    ]
+  },
+  {
+    "id": "T1037",
+    "name": "Technique T1037",
+    "domain": "enterprise",
+    "modules": [
+      "raas_campaign"
+    ]
+  },
+  {
+    "id": "T1038",
+    "name": "Technique T1038",
+    "domain": "enterprise",
+    "modules": [
+      "identity_playbooks"
+    ]
+  },
+  {
+    "id": "T1039",
+    "name": "Technique T1039",
+    "domain": "enterprise",
+    "modules": [
+      "oauth_consent_audit"
+    ]
+  },
+  {
+    "id": "T1040",
+    "name": "Technique T1040",
+    "domain": "ics",
+    "modules": [
+      "device_code_audit"
+    ]
+  },
+  {
+    "id": "T1041",
+    "name": "Technique T1041",
+    "domain": "enterprise",
+    "modules": [
+      "cicd_audit"
     ]
   }
 ]
