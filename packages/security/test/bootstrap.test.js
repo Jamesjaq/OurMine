@@ -34,6 +34,12 @@ test("bootstrapOpenCode wires ARES MCP and pentest agent", async () => {
     const agent = fs.readFileSync(first.agentPath, "utf8")
     assert.ok(agent.includes("OurMine ARES"))
     assert.ok(agent.includes("mode: primary"))
+    assert.ok(agent.includes("opencode debug agent"))
+    assert.ok(agent.includes("gh_grep"))
+
+    assert.strictEqual(config.tools["ares_*"], false)
+    assert.strictEqual(config.agent?.pentest?.tools?.ares_bash, true)
+    assert.strictEqual(config.mcp?.gh_grep?.url, "https://mcp.grep.app")
 
     const second = bootstrapOpenCode({ quiet: true })
     assert.strictEqual(second.updated, false, "second bootstrap should be idempotent")

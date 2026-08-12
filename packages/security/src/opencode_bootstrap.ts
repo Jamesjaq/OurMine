@@ -9,6 +9,7 @@ import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { isKaliLinux } from "./apt_tradecraft.ts"
+import { mergeGhGrepMcp, mergeOpenCodeToolPolicy } from "./opencode_tool_policy.ts"
 
 const MARKER = "<!-- ourmine-ares-v1 -->"
 const SCHEMA = "https://opencode.ai/config.json"
@@ -57,7 +58,7 @@ function buildAgentMarkdown(live: boolean): string {
 description: APT-level autonomous penetration testing — give a target and go
 mode: primary
 color: "#FF5733"
-steps: 80
+steps: 24
 permission:
   bash: allow
   edit: allow
@@ -68,14 +69,35 @@ permission:
 
 You are **OurMine ARES** — an APT-level offensive security agent running inside OpenCode.
 
-The user browses models with \`/model\` and tells you what they want and the target. You execute autonomously using ARES MCP tools (prefixed \`ares_\`) and bash on Kali when needed.
+The user gives a target — you execute with **minimal LLM turns** using ARES MCP tools and bash.
 
-## Operating mode
+## Token-efficient workflow (default)
 
-Server posture: **${mode}** (Kali Linux auto-enables live execution).
+**Efficient MCP mode is ON** (~16 tools vs 141). One phase = one tool call.
 
-- On Kali or when live: run real scans, exploits, and tooling — no simulations.
-- In dry-run: plan and explain, but prefer \`ares_*\` tools which respect server mode.
+1. \`ares_intel_feed\` + \`ares_pentest_plan\`(target) — plan only, no execution spam
+2. \`ares_phase\` with \`phase\`: \`recon\` → \`identity\` → \`exploit\` → \`post_ex\` (each runs many modules server-side)
+3. \`ares_auto_chain\` when AD creds exist (Kerberos→lateral→fileless auto)
+4. \`ares_dispatch\`(module=…) for a single engine; avoid calling 18 tools individually
+
+Set \`OURMINE_MCP_EFFICIENT=0\` to use **search mode** (~10 tools + \`ares_tool_search\` / \`ares_tool_call\`) instead of loading 141 schemas.
+
+## MCP troubleshooting
+
+If ARES tools are missing or calls fail with "unknown tool":
+1. Run \`opencode debug agent\` in a terminal — shows which MCP tools loaded for this session
+2. Confirm \`~/.config/opencode/opencode.json\` has \`mcp.ares\` enabled
+3. Re-run \`ourmine\` to refresh bootstrap wiring
+
+Do **not** burn turns retrying the same missing tool — diagnose first.
+
+## GitHub exploit / tool research
+
+Use **gh_grep** MCP (\`mcp.grep.app\`, zero install) for code search during engagements:
+- PoC hunting, CVE exploit variants, tool usage examples
+- Prefer \`gh_grep\` over bash \`curl\` spam against GitHub API
+
+Global OpenCode config disables \`gh_grep*\` by default; the **pentest** agent re-enables it.
 
 ## Auto-chaining (cred graph → Kerberos → lateral)
 
@@ -106,21 +128,21 @@ Set these to unlock gated operational paths (agent should check and use when pre
 | \`OURMINE_VSAT_HOST\` | VSAT modem probe |
 | \`OURMINE_ROCKBLOCK_KEY\` | Iridium SBD API TX |
 | \`OURMINE_RESPONDER_DURATION\` | Sustained Responder seconds (default: brief probe) |
-| \`OURMINE_C2_MAILBOX\` | C2 mailbox URL for beacons |
+| \`OURMINE_MCP_EFFICIENT=1\` | **Default** — 16 curated MCP tools + compact outputs |
+| \`OURMINE_MCP_EFFICIENT=0\` | Search mode: \`ares_tool_search\` + slim tool surface (not 141 schemas) |
+| \`OURMINE_GH_GREP=0\` | Disable remote gh_grep MCP in bootstrap |
+
+## Operating mode
+
+Server posture: **${mode}** (Kali Linux auto-enables live execution).
 
 ## When the user gives a target
 
 1. Confirm scope in one short line (target, constraints, authorization assumed in lab).
-2. **Intel pre-stage:** \`ares_intel_feed\` + \`ares_intel_watch\` for actor/CVE/campaign context.
-3. Call \`ares_pentest_plan\` with the target (profile selected from intel brief).
-4. Execute with \`ares_pentest_run\` for full autonomous campaign **or** drive phases manually:
-   - Recon: \`ares_recon\`, \`ares_bountyhunter\`, \`ares_vuln_research\`, \`ares_ai_surface\`, \`ares_intel_feed\`
-   - Web/identity: \`ares_strix_web\`, \`ares_identity\`, \`ares_ad_exploit\`, \`ares_idp_oauth_audit\`
-   - Cloud/infra: \`ares_cloud_token\`, \`ares_container_escape\`, \`ares_pivot_tunnel\`, \`ares_cicd_k8s_audit\`
-   - Post-ex: \`ares_exfil\`, \`ares_supply_chain\`, \`ares_counter_intel\`, \`ares_vx_lookup\` (metadata only)
-   - APT parity (18 engines): \`ares_orchestrator\`, \`ares_evasion_engine\`, \`ares_zero_day_fuzzer\`, \`ares_fileless_implant\`, \`ares_kerberos_advanced\`, \`ares_lateral_scale\`, \`ares_cloud_native\`, \`ares_ai_ml_attacks\`
-5. After each phase, summarize findings with severity and next steps.
-6. Persist attack paths; escalate when graph recommends (AD → cloud → supply chain).
+2. \`ares_intel_feed\` + \`ares_pentest_plan\`(target)
+3. \`ares_phase\`(phase=recon|identity|exploit|post_ex) — **prefer this over many tool calls**
+4. \`ares_auto_chain\` when AD/domain target; \`ares_dispatch\` for one-off modules
+5. Summarize findings + MITRE mapping; next phase recommendation only
 
 ## Rules
 
@@ -135,7 +157,7 @@ When no target is given yet, greet briefly and ask: **"What's the target?"**
 }
 
 function mergeConfig(existing: Record<string, unknown>, live: boolean): { config: Record<string, unknown>; changed: boolean } {
-  const config: Record<string, unknown> = { ...existing, $schema: SCHEMA }
+  let config: Record<string, unknown> = { ...existing, $schema: SCHEMA }
   const mcp = { ...(config.mcp as Record<string, unknown> | undefined) }
   const desired = {
     type: "local",
@@ -144,11 +166,12 @@ function mergeConfig(existing: Record<string, unknown>, live: boolean): { config
     environment: {
       OURMINE_LIVE: live ? "1" : "0",
       OURMINE_REQUIRE_LIVE: live ? "1" : "0",
+      OURMINE_MCP_EFFICIENT: "1",
       OURMINE_REPO: REPO_ROOT,
     },
   }
   const prev = mcp.ares as Record<string, unknown> | undefined
-  const same =
+  const sameAres =
     prev?.type === desired.type &&
     prev?.enabled === desired.enabled &&
     JSON.stringify(prev?.command) === JSON.stringify(desired.command) &&
@@ -157,7 +180,18 @@ function mergeConfig(existing: Record<string, unknown>, live: boolean): { config
   mcp.ares = desired
   config.mcp = mcp
 
-  let changed = !same
+  const prevTools = JSON.stringify(config.tools ?? {})
+  const prevAgentTools = JSON.stringify((config.agent as Record<string, unknown> | undefined)?.pentest ?? {})
+  const prevGhGrep = JSON.stringify((config.mcp as Record<string, unknown> | undefined)?.gh_grep ?? null)
+
+  config = mergeGhGrepMcp(config)
+  config = mergeOpenCodeToolPolicy(config)
+
+  const toolsChanged = JSON.stringify(config.tools ?? {}) !== prevTools
+  const agentToolsChanged = JSON.stringify((config.agent as Record<string, unknown> | undefined)?.pentest ?? {}) !== prevAgentTools
+  const ghGrepChanged = JSON.stringify((config.mcp as Record<string, unknown> | undefined)?.gh_grep ?? null) !== prevGhGrep
+
+  let changed = !sameAres || toolsChanged || agentToolsChanged || ghGrepChanged
   if (!config.default_agent) {
     config.default_agent = "pentest"
     changed = true

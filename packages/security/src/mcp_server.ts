@@ -43,6 +43,14 @@ import { resolveLiveMode } from "./exec_options.ts"
 import { gateExecution } from "./opsec_gate.ts"
 import type { McpTool } from "./mcp_tool_types.ts"
 import { buildBridgedMcpTools } from "./mcp_bridged_tools.ts"
+import {
+  compactToolOutput,
+  efficientMcpInstructions,
+  filterToolsForEfficiency,
+  isEfficientMode,
+  searchModeMcpInstructions,
+} from "./mcp_efficiency.ts"
+import { buildToolSearchTools } from "./mcp_tool_search.ts"
 const toolBroker = new ToolBroker()
 const globalThrottleEngine = new OpsecThrottleEngine()
 
@@ -1159,9 +1167,15 @@ tools.push(
 const existingToolNames = new Set(tools.map((t) => t.name))
 tools.push(...buildBridgedMcpTools(existingToolNames, mcpLive))
 
+const allTools = tools
+const baseExposed = filterToolsForEfficiency(allTools)
+const fullToolMap = new Map(allTools.map((t) => [t.name, t]))
+const searchTools = isEfficientMode() ? [] : buildToolSearchTools(fullToolMap)
+const toolsExposed = isEfficientMode() ? baseExposed : [...baseExposed, ...searchTools]
+
 // ─── MCP server main loop ─────────────────────────────────────────────────────
 
-const toolMap = new Map(tools.map(t => [t.name, t]))
+const toolMap = new Map(toolsExposed.map((t) => [t.name, t]))
 
 async function handleRequest(req: any) {
   const { id, method, params } = req
@@ -1173,19 +1187,9 @@ async function handleRequest(req: any) {
         protocolVersion: "2024-11-05",
         serverInfo: { name: "ourmine-ares", version: "1.0.0" },
         capabilities: { tools: {} },
-        instructions: `You are equipped with OurMine ARES — a full offensive security suite with ${tools.length} hacking tools and a bash executor.
-
-You can autonomously:
-- Run reconnaissance (recon, OSINT, subdomain enum)
-- Exploit vulnerabilities (web, AD, cloud, IoT, mobile)
-- Execute shell commands via ares_bash (allowlisted) or OpenCode native bash (full shell — install packages, pipes, scripts)
-- Edit packages/security/src to tweak modules or scaffold new bridged tools when ares_* handlers are insufficient
-- Generate payloads and C2 infrastructure
-- Run full autonomous pentest campaigns
-
-Security posture: Live on Kali / OURMINE_LIVE=1 / --live. Otherwise dry-run unless explicit live opt-in.
-
-Always think step-by-step. Use ares_intel_feed + ares_pentest_plan first, then execute phases. Prefer ares_* when they fit; fall back to bash and source edits when they do not.`,
+        instructions: isEfficientMode()
+          ? efficientMcpInstructions(toolsExposed.length)
+          : searchModeMcpInstructions(toolsExposed.length, allTools.length),
       })
       break
 
@@ -1195,7 +1199,7 @@ Always think step-by-step. Use ares_intel_feed + ares_pentest_plan first, then e
 
     case "tools/list":
       ok(id, {
-        tools: tools.map(t => ({
+        tools: toolsExposed.map((t) => ({
           name:        t.name,
           description: t.description,
           inputSchema: t.inputSchema,
@@ -1217,10 +1221,13 @@ Always think step-by-step. Use ares_intel_feed + ares_pentest_plan first, then e
 
       try {
         const result = await tool.handler(toolArgs)
+        const text = isEfficientMode()
+          ? compactToolOutput(result, 1500)
+          : JSON.stringify(result, null, 2)
         ok(id, {
           content: [{
             type: "text",
-            text: JSON.stringify(result, null, 2),
+            text,
           }],
         })
       } catch (e: any) {
@@ -1265,7 +1272,7 @@ export function startMcpServer(): void {
   })
 
   process.stdin.on("end", () => process.exit(0))
-  process.stderr.write(`[ourmine-ares MCP] started — ${tools.length} tools available\n`)
+  process.stderr.write(`[ourmine-ares MCP] started — ${toolsExposed.length} tools (${allTools.length} total, efficient=${isEfficientMode()})\n`)
 }
 
 const isMain =

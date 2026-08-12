@@ -6,6 +6,7 @@ import * as crypto from "node:crypto"
 import * as path from "node:path"
 import type { AgentToolContext, ToolRunResult } from "./agent_tools.ts"
 import { hostFromTarget } from "./agent_tools.ts"
+import { compactToolOutput, isEfficientMode } from "./mcp_efficiency.ts"
 
 function result(
   tool: string,
@@ -14,12 +15,13 @@ function result(
   payload: unknown,
   success = true,
 ): ToolRunResult {
+  const raw = JSON.stringify(payload).slice(0, 4000)
   return {
     tool,
     command,
     dryRun: !ctx.live,
     success,
-    output: JSON.stringify(payload).slice(0, 4000),
+    output: isEfficientMode() ? compactToolOutput(payload) : raw,
   }
 }
 
@@ -699,6 +701,32 @@ export const MODULE_BRIDGE: Record<
       skipHarvest: params.skip_harvest === true || params.skip_harvest === "true",
     })
     return result("ares_auto_chain", "runAresAutoChain", ctx, r, r.phases.some((p) => p.success && !p.skipped))
+  },
+  ares_dispatch: async (ctx, params) => {
+    const module = String(params.module ?? params.action ?? "")
+    if (!module) {
+      return result("ares_dispatch", "route", ctx, { error: "module required" }, false)
+    }
+    const candidates = [module, module.startsWith("ares_") ? module : `ares_${module}`, module.replace(/^ares_/, "")]
+    for (const name of [...new Set(candidates)]) {
+      const fn = MODULE_BRIDGE[name]
+      if (fn) {
+        const r = await fn(ctx, params)
+        return { ...r, tool: "ares_dispatch", command: `→${name}` }
+      }
+    }
+    return result("ares_dispatch", "route", ctx, { error: `unknown module: ${module}` }, false)
+  },
+  ares_phase: async (ctx, params) => {
+    const { runAresPhase } = await import("./ares/phase_runner.ts")
+    const phase = String(params.phase ?? "recon") as import("./mcp_efficiency.ts").AresPhase
+    const r = await runAresPhase({
+      phase,
+      target: String(params.target ?? hostFromTarget(ctx.target)),
+      live: ctx.live,
+      domain: params.domain as string | undefined,
+    })
+    return result("ares_phase", `phase:${phase}`, ctx, r, r.succeeded > 0)
   },
 }
 
