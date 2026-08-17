@@ -1,0 +1,7 @@
+# OurMine v2.0.0
+
+OurMine v2 separates the real-world security product from its validation infrastructure. Production execution targets explicitly authorized environments and no longer imports or depends on the former bundled lab tree. VM-backed validation assets now live under `validation/vm`, root scripts use explicit `validation:vm:*` names, and the validation setup refuses to run unless `OURMINE_VALIDATION_VM=1` is set inside a disposable VM worker.
+
+The release repairs scanner executable dispatch, structured failure reporting, strict validation target parsing, tunnel lifecycle cleanup, runtime capability probing, workspace installation metadata, and several false-success paths. It adds the persistent `SecurityWorldModel`, trusted capability/effect contracts, hypothesis generation and criticism, effect-based capability composition, observe–experiment–verify orchestration, and separated analyst/planner/critic/experimenter/verifier roles.
+
+The release includes proof registries and audit documentation. The Phase-1 registry remains conservative: broad security namespaces are not promoted without independent evidence. Pure Phase-2 and regression validation passes 37/37 tests. The current sandbox does not provide a VM runtime, so no VM-backed live proof is claimed in this release. The broad repository typecheck remains blocked by memory exhaustion and is documented as an outstanding engineering issue.

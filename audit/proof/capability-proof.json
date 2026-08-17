@@ -1,0 +1,4282 @@
+{
+  "generatedAt": "2026-08-17T10:01:06.740Z",
+  "policy": "No capability is PROVEN without independent lab evidence.",
+  "counts": {
+    "UNPROVEN": 203
+  },
+  "capabilities": [
+    {
+      "capability": "ad_engine",
+      "implementation": "packages/security/src/ad_engine.ts",
+      "exportedSymbols": [
+        "ADNode",
+        "makeADNode",
+        "ADEdge",
+        "makeADEdge",
+        "BloodHoundGraph",
+        "loadBloodHoundDump",
+        "EdgeKind",
+        "ADAttackPath",
+        "AttackPathPlanner",
+        "attackPathToAction"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ad_exploit",
+      "implementation": "packages/security/src/ad_exploit.ts",
+      "exportedSymbols": [
+        "DCSyncResult",
+        "KerberosTicket",
+        "LDAPUser",
+        "KerberosHashEntry",
+        "PassTheHashResult",
+        "ADExploitOptions",
+        "dcSync",
+        "passTheHash",
+        "forgeGoldenTicket",
+        "forgeSilverTicket",
+        "kerberoast",
+        "asrepRoast",
+        "enumeratePrivilegedUsers"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "adcs_audit",
+      "implementation": "packages/security/src/adcs_audit.ts",
+      "exportedSymbols": [
+        "ADCSConfig",
+        "ADCSVulnerability",
+        "ADCSAuditResult",
+        "auditADCS"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "agent_resilience",
+      "implementation": "packages/security/src/agent_resilience.ts",
+      "exportedSymbols": [
+        "ToolCallAttempt",
+        "ContextCheckpoint",
+        "AgentResilienceEngine",
+        "resilienceEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "agent_tools",
+      "implementation": "packages/security/src/agent_tools.ts",
+      "exportedSymbols": [
+        "brokerExecute",
+        "AgentFinding",
+        "AgentToolContext",
+        "ToolRunResult",
+        "hostFromTarget",
+        "nmapScan",
+        "gobusterDir",
+        "nucleiScan",
+        "runReconTool",
+        "validateSuspectedFindings",
+        "executeGraphRecommendation",
+        "runIdentityAttack",
+        "runAdExploit",
+        "runWebExploit",
+        "runCloudEnum",
+        "runContainerAudit",
+        "runPrivescCheck",
+        "runYaraScan",
+        "runLiveRecon",
+        "runLiveAdAttack",
+        "runMasscan",
+        "runCredSpray",
+        "runSqlmapScan",
+        "runPostExHarvest",
+        "runLateralMove",
+        "runSupplyChainAudit",
+        "runLockfileScan",
+        "runPostExPivot",
+        "runEvilginxLab",
+        "runEnum4linux",
+        "runNiktoScan",
+        "runFfufScan",
+        "executeAgentTool",
+        "graphFindingsToAgentFindings"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ai_agent_audit",
+      "implementation": "packages/security/src/ai_agent_audit.ts",
+      "exportedSymbols": [
+        "PromptInjectionPayload",
+        "GuardrailTestResult",
+        "AIAgentAuditConfig",
+        "AIAgentAuditReport",
+        "BENCHMARK_PAYLOADS",
+        "auditAIAgentGuardrails",
+        "auditAIAgentGuardrailsSync"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ai_manipulation",
+      "implementation": "packages/security/src/ai_manipulation.ts",
+      "exportedSymbols": [
+        "AiAuditOptions",
+        "AiAuditResult",
+        "AiSecurityAnalyzer"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ai_recon",
+      "implementation": "packages/security/src/ai_recon.ts",
+      "exportedSymbols": [
+        "ReconTarget",
+        "EmailPattern",
+        "EmployeeRecord",
+        "DNSRecord",
+        "WHOISData",
+        "TechStackFingerprint",
+        "ReconResult",
+        "AIReconOptions",
+        "inferEmailPatterns",
+        "runRecon"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "aitm_proxy",
+      "implementation": "packages/security/src/aitm_proxy.ts",
+      "exportedSymbols": [
+        "ProxyCapture",
+        "AiTMOptions",
+        "generateSelfSignedCert",
+        "AiTMProxy"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "anti_analysis",
+      "implementation": "packages/security/src/anti_analysis.ts",
+      "exportedSymbols": [
+        "EnvironmentProfile",
+        "AntiAnalysisOptions",
+        "profileEnvironment",
+        "shouldExecute",
+        "jitterSleep"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "anti_forensics",
+      "implementation": "packages/security/src/anti_forensics.ts",
+      "exportedSymbols": [
+        "AntiForensicsOptions",
+        "AntiForensicsResult",
+        "AntiForensicsEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "app_security_engine",
+      "implementation": "packages/security/src/app_security_engine.ts",
+      "exportedSymbols": [
+        "HttpAuthState",
+        "ApiEndpointSchema",
+        "ApiSchemaSummary",
+        "ApplicationSecurityEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "apt_playbook",
+      "implementation": "packages/security/src/apt_playbook.ts",
+      "exportedSymbols": [
+        "PlaybookInfra",
+        "PlaybookNodeStatus",
+        "PlaybookPrecondition",
+        "PlaybookNode",
+        "PlaybookGraph",
+        "loadPlaybookInfra",
+        "buildPlaybookFromProfile",
+        "evaluatePreconditions",
+        "nextPlaybookNode",
+        "markNodeDone",
+        "loadPlaybook",
+        "listPlaybooks"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "apt_tradecraft",
+      "implementation": "packages/security/src/apt_tradecraft.ts",
+      "exportedSymbols": [
+        "TargetIntelBriefLite",
+        "AptOpsecProfile",
+        "AptProfile",
+        "loadAptProfiles",
+        "APT_PROFILES",
+        "TradecraftRecommendation",
+        "recommendFromTradecraft",
+        "shouldEscalatePostExploit"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/_base",
+      "implementation": "packages/security/src/ares/_base.ts",
+      "exportedSymbols": [
+        "ARES_ARTIFACT_DIR",
+        "ensureAresDir",
+        "liveRequired",
+        "brokerExec",
+        "writeArtifact"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/_chain",
+      "implementation": "packages/security/src/ares/_chain.ts",
+      "exportedSymbols": [
+        "AdChainContext",
+        "ChainPhaseResult",
+        "AresAutoChainResult",
+        "OrchestratorModulePlan",
+        "resolveAdChainContext",
+        "planOrchestratorModules",
+        "harvestAdCredentials",
+        "runAresAutoChain",
+        "credentialSummary"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/_integrations",
+      "implementation": "packages/security/src/ares/_integrations.ts",
+      "exportedSymbols": [
+        "ExecStep",
+        "step",
+        "runCmd",
+        "runIfTool",
+        "loadBestCredential",
+        "loadAdContext",
+        "c2Material",
+        "writeJsonArtifact",
+        "parseAflCrashes",
+        "execEvasionPlans"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/_operational",
+      "implementation": "packages/security/src/ares/_operational.ts",
+      "exportedSymbols": [
+        "brokerExecLong",
+        "spawnBackground",
+        "stopBackground",
+        "ensureLabFuzzHarness",
+        "findPatternOffset",
+        "minimizeCrash",
+        "reproCrashInSandbox",
+        "deployRemoteShell",
+        "queryBgpPrefix",
+        "startResponderChain",
+        "enableUsbGadget",
+        "flashFirmwareBackup",
+        "isWindows",
+        "runPlatformCmd",
+        "acousticModemEncode",
+        "sdrTransmitProbe",
+        "harvestCodesignCerts",
+        "runDiamondTicket"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/ai_ml_attacks",
+      "implementation": "packages/security/src/ares/ai_ml_attacks.ts",
+      "exportedSymbols": [
+        "AiMlAttackResult",
+        "runAiMlAttacks"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/airgap_bridge",
+      "implementation": "packages/security/src/ares/airgap_bridge.ts",
+      "exportedSymbols": [
+        "AirgapBridgeResult",
+        "runAirgapBridge"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/anti_forensics_advanced",
+      "implementation": "packages/security/src/ares/anti_forensics_advanced.ts",
+      "exportedSymbols": [
+        "AntiForensicsAdvancedResult",
+        "runAntiForensicsAdvanced"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/cloud_native",
+      "implementation": "packages/security/src/ares/cloud_native.ts",
+      "exportedSymbols": [
+        "CloudNativeResult",
+        "runCloudNativeAttack"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/evasion_engine",
+      "implementation": "packages/security/src/ares/evasion_engine.ts",
+      "exportedSymbols": [
+        "EvasionEngineResult",
+        "runEvasionEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/fileless_implant",
+      "implementation": "packages/security/src/ares/fileless_implant.ts",
+      "exportedSymbols": [
+        "FilelessImplantResult",
+        "buildFilelessImplant"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/firmware_implant",
+      "implementation": "packages/security/src/ares/firmware_implant.ts",
+      "exportedSymbols": [
+        "FirmwareImplantResult",
+        "buildUefiImplantScaffold",
+        "deployFirmwareImplant"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/hardware_implant",
+      "implementation": "packages/security/src/ares/hardware_implant.ts",
+      "exportedSymbols": [
+        "HardwareImplantResult",
+        "deployHardwareImplant"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/hypervisor_rootkit",
+      "implementation": "packages/security/src/ares/hypervisor_rootkit.ts",
+      "exportedSymbols": [
+        "HypervisorRootkitResult",
+        "deployHypervisorRootkit"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/index",
+      "implementation": "packages/security/src/ares/index.ts",
+      "exportedSymbols": [
+        "ARES_MODULE_NAMES",
+        "AresModuleName"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/kerberos_advanced",
+      "implementation": "packages/security/src/ares/kerberos_advanced.ts",
+      "exportedSymbols": [
+        "KerberosAdvancedResult",
+        "runKerberosAdvanced"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/lateral_scale",
+      "implementation": "packages/security/src/ares/lateral_scale.ts",
+      "exportedSymbols": [
+        "LateralScaleResult",
+        "runLateralScale"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/network_exploit",
+      "implementation": "packages/security/src/ares/network_exploit.ts",
+      "exportedSymbols": [
+        "NetworkExploitResult",
+        "runNetworkExploit"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/orchestrator",
+      "implementation": "packages/security/src/ares/orchestrator.ts",
+      "exportedSymbols": [
+        "AresOrchestratorResult",
+        "runAresOrchestrator"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/persistence_advanced",
+      "implementation": "packages/security/src/ares/persistence_advanced.ts",
+      "exportedSymbols": [
+        "PersistenceAdvancedResult",
+        "installAdvancedPersistence"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/phase_runner",
+      "implementation": "packages/security/src/ares/phase_runner.ts",
+      "exportedSymbols": [
+        "PhaseStepResult",
+        "AresPhaseResult",
+        "runAresPhase"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/rat_builder",
+      "implementation": "packages/security/src/ares/rat_builder.ts",
+      "exportedSymbols": [
+        "RatBuilderResult",
+        "buildRat"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/satellite_c2",
+      "implementation": "packages/security/src/ares/satellite_c2.ts",
+      "exportedSymbols": [
+        "SatelliteC2Result",
+        "deploySatelliteC2"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/ss7_exploit",
+      "implementation": "packages/security/src/ares/ss7_exploit.ts",
+      "exportedSymbols": [
+        "Ss7ExploitResult",
+        "runSs7Exploit"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/supply_chain_implant",
+      "implementation": "packages/security/src/ares/supply_chain_implant.ts",
+      "exportedSymbols": [
+        "SupplyChainImplantResult",
+        "runSupplyChainImplant"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ares/zero_day_fuzzer",
+      "implementation": "packages/security/src/ares/zero_day_fuzzer.ts",
+      "exportedSymbols": [
+        "FuzzCrash",
+        "ZeroDayFuzzResult",
+        "runZeroDayFuzzer"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "atlas_arsenal",
+      "implementation": "packages/security/src/atlas_arsenal.ts",
+      "exportedSymbols": [
+        "PromptInjectionResult",
+        "AtlasAttackResult",
+        "AtlasScanResult",
+        "generateJailbreakPrompts"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "attack_navigator",
+      "implementation": "packages/security/src/attack_navigator.ts",
+      "exportedSymbols": [
+        "NavigatorTechnique",
+        "NavigatorLayer",
+        "FindingLike",
+        "findingsToTechniques",
+        "exportNavigatorLayer",
+        "coverageScore"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "attack_surface",
+      "implementation": "packages/security/src/attack_surface.ts",
+      "exportedSymbols": [
+        "Confidence",
+        "Severity",
+        "CapLevel",
+        "Evidence",
+        "ServiceNode",
+        "EndpointNode",
+        "VulnNode",
+        "AssetNode",
+        "AttackPath",
+        "AttackSurfaceGraph"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "auth_primitives",
+      "implementation": "packages/security/src/auth_primitives.ts",
+      "exportedSymbols": [
+        "SECURE_FLAGS",
+        "SessionAnalysis",
+        "analyzeCookies",
+        "checkCsrfToken",
+        "SAML_NS",
+        "SamlPrimitives"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "auto_research",
+      "implementation": "packages/security/src/auto_research.ts",
+      "exportedSymbols": [
+        "ResearchTarget",
+        "CveRecord",
+        "PatchAnalysis",
+        "ZeroDayHeuristic",
+        "ExploitTemplate",
+        "ResearchResult",
+        "analyzePatchDiff",
+        "researchCve"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "autonomous_pivot",
+      "implementation": "packages/security/src/autonomous_pivot.ts",
+      "exportedSymbols": [
+        "ScopeEnvelope",
+        "AutonomousPivotResult",
+        "isAutonomousPivotEnabled",
+        "PivotObjective",
+        "objectiveMet",
+        "runAutonomousPivot"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "bountyhunter",
+      "implementation": "packages/security/src/bountyhunter.ts",
+      "exportedSymbols": [
+        "BountyTarget",
+        "Endpoint",
+        "SecretFinding",
+        "VulnFinding",
+        "ReconReport",
+        "BountyHunterOptions",
+        "extractSecrets",
+        "discoverSubdomains",
+        "probeHosts",
+        "harvestJSSecrets",
+        "runRecon",
+        "recon"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "browser_ext",
+      "implementation": "packages/security/src/browser_ext.ts",
+      "exportedSymbols": [
+        "ExtensionType",
+        "ExtensionManifest",
+        "ContentScriptEntry",
+        "WebAccessibleResource",
+        "GeneratedFile",
+        "DryRunResult",
+        "LiveResult",
+        "ExtensionResult",
+        "BuildExtensionOptions",
+        "buildMaliciousExtensionManifest"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2",
+      "implementation": "packages/security/src/c2.ts",
+      "exportedSymbols": [
+        "AgentStatus",
+        "Platform",
+        "Agent",
+        "TaskResult",
+        "Task",
+        "ProxyConfig",
+        "C2Options",
+        "ProxyRotator",
+        "AgentClient",
+        "Operator"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_autonomous",
+      "implementation": "packages/security/src/c2_autonomous.ts",
+      "exportedSymbols": [
+        "C2AutonomousOpts",
+        "C2AutonomousPumpResult",
+        "isAutonomousC2Enabled",
+        "queueAutonomousTask",
+        "runAutonomousC2Pump"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_channels",
+      "implementation": "packages/security/src/c2_channels.ts",
+      "exportedSymbols": [
+        "ChannelConfig",
+        "C2Message",
+        "ChannelResult",
+        "TelegramChannel",
+        "DiscordChannel",
+        "GraphChannel",
+        "DeadDropChannel",
+        "AIServiceChannel",
+        "createChannel"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_dwell_ops",
+      "implementation": "packages/security/src/c2_dwell_ops.ts",
+      "exportedSymbols": [
+        "DwellPersistencePlan",
+        "C2DwellResult",
+        "planDwellPersistence",
+        "runC2DwellOps"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_dwell_scheduler",
+      "implementation": "packages/security/src/c2_dwell_scheduler.ts",
+      "exportedSymbols": [
+        "DwellTick",
+        "DwellScheduleResult",
+        "runDwellSchedule"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_infra",
+      "implementation": "packages/security/src/c2_infra.ts",
+      "exportedSymbols": [
+        "RedirectorConfig",
+        "FirewallRule",
+        "DomainFrontConfig",
+        "AcmeCertificateRequest",
+        "AcmeCertificateResult",
+        "C2InfrastructureResult",
+        "provisionC2Infrastructure"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_ops",
+      "implementation": "packages/security/src/c2_ops.ts",
+      "exportedSymbols": [
+        "ClientHelloProfile",
+        "getProfile",
+        "listProfiles",
+        "fingerprintIsRecognizable",
+        "curlTlsFlags",
+        "goTlsConfig",
+        "RotationStrategy",
+        "ProxyRotator",
+        "C2Callback",
+        "C2Operator",
+        "MythicClient",
+        "SliverClient"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_platform",
+      "implementation": "packages/security/src/c2_platform.ts",
+      "exportedSymbols": [
+        "LOST_AFTER",
+        "ServiceTransport",
+        "BeaconSession",
+        "C2Task",
+        "LegitC2Server",
+        "InMemoryTransport",
+        "HttpServiceTransport",
+        "TelegramTransport",
+        "GithubGistTransport",
+        "SlackWebhookTransport",
+        "GoogleCalendarTransport",
+        "NotionTransport",
+        "base32Encode",
+        "base32Decode",
+        "MqttClient",
+        "MqttTransport",
+        "EXEC_TIMEOUT",
+        "OUTPUT_CAP",
+        "ExecuteFn",
+        "defaultExecute",
+        "LegitC2Beacon"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "c2_rotation",
+      "implementation": "packages/security/src/c2_rotation.ts",
+      "exportedSymbols": [
+        "C2ChannelOption",
+        "RotationDecision",
+        "rankChannels",
+        "selectC2Channel",
+        "applyChannelRotation"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "caldera_ttp",
+      "implementation": "packages/security/src/caldera_ttp.ts",
+      "exportedSymbols": [
+        "Executor",
+        "Ability",
+        "Adversary",
+        "ExecutionResult",
+        "CalderaOptions",
+        "renderTemplate",
+        "loadAdversary",
+        "loadAbilities",
+        "executeAbility",
+        "executeAdversary"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "campaign",
+      "implementation": "packages/security/src/campaign.ts",
+      "exportedSymbols": [
+        "CampaignObjective",
+        "CampaignPhase",
+        "CampaignSummary",
+        "CampaignRunResult",
+        "RedTeamCampaign",
+        "runCampaign"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "campaign_loop",
+      "implementation": "packages/security/src/campaign_loop.ts",
+      "exportedSymbols": [
+        "CampaignObjective",
+        "CampaignLoopResult",
+        "runCampaignLoop"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "capability_policy",
+      "implementation": "packages/security/src/capability_policy.ts",
+      "exportedSymbols": [
+        "CapabilityType",
+        "CapabilityRequest",
+        "CapabilityEvaluation",
+        "CapabilityPolicyEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "carding",
+      "implementation": "packages/security/src/carding.ts",
+      "exportedSymbols": [
+        "validateLuhn"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cdp_client",
+      "implementation": "packages/security/src/cdp_client.ts",
+      "exportedSymbols": [
+        "CdpSessionOptions",
+        "CdpClient"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cicd_k8s_audit",
+      "implementation": "packages/security/src/cicd_k8s_audit.ts",
+      "exportedSymbols": [
+        "CICDConfig",
+        "CICDK8sFinding",
+        "CICDK8sAuditResult",
+        "auditCICDAndK8s"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cicd_supplychain",
+      "implementation": "packages/security/src/cicd_supplychain.ts",
+      "exportedSymbols": [
+        "CicdFinding",
+        "CicdAuditOptions",
+        "CicdAuditResult",
+        "CicdSupplyChainAuditor"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cloud",
+      "implementation": "packages/security/src/cloud.ts",
+      "exportedSymbols": [
+        "MetadataResult",
+        "METADATA_ENDPOINTS",
+        "MetadataExploit",
+        "AWSRecon",
+        "AzureRecon",
+        "GCPRecon",
+        "IAMIdentity",
+        "IAMEnumerator",
+        "PrivEscPath",
+        "CloudPrivEsc"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cloud_token",
+      "implementation": "packages/security/src/cloud_token.ts",
+      "exportedSymbols": [
+        "CloudCredential",
+        "CloudTokenOptions",
+        "fetchAWSMetadata",
+        "fetchGCPMetadata",
+        "fetchAzureMetadata"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "collection_engine",
+      "implementation": "packages/security/src/collection_engine.ts",
+      "exportedSymbols": [
+        "DataClassification",
+        "CollectedArtifact",
+        "CollectionStageResult",
+        "stageCollection"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "container",
+      "implementation": "packages/security/src/container.ts",
+      "exportedSymbols": [
+        "ContainerAuditResult",
+        "EscapeTechnique",
+        "EscapeResult",
+        "auditContainer",
+        "escapeContainerCGroups",
+        "escape"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "container_k8s",
+      "implementation": "packages/security/src/container_k8s.ts",
+      "exportedSymbols": [
+        "K8sAuditOptions",
+        "K8sAuditResult",
+        "K8sSecurityAuditor",
+        "auditCluster"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "context_guard",
+      "implementation": "packages/security/src/context_guard.ts",
+      "exportedSymbols": [
+        "ContextGuard"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "counter_intel",
+      "implementation": "packages/security/src/counter_intel.ts",
+      "exportedSymbols": [
+        "CounterIntelResult",
+        "auditDefenses",
+        "detect"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "covert_c2",
+      "implementation": "packages/security/src/covert_c2.ts",
+      "exportedSymbols": [
+        "CovertChannelConfig",
+        "CovertC2Engine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cred_access_auto",
+      "implementation": "packages/security/src/cred_access_auto.ts",
+      "exportedSymbols": [
+        "CredAccessResult",
+        "runAutonomousCredAccess"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cred_dump",
+      "implementation": "packages/security/src/cred_dump.ts",
+      "exportedSymbols": [
+        "CredDumpOptions",
+        "CredentialArtifact",
+        "CredDumpResult",
+        "CredentialDumpingEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "cred_parse",
+      "implementation": "packages/security/src/cred_parse.ts",
+      "exportedSymbols": [
+        "ParsedDumpAccount",
+        "parseSecretsdumpLine",
+        "parseSecretsdumpOutput",
+        "extractDomainSid"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "credential_graph",
+      "implementation": "packages/security/src/credential_graph.ts",
+      "exportedSymbols": [
+        "CredentialType",
+        "CredentialRole",
+        "DomainContext",
+        "CredentialNode",
+        "PivotEdge",
+        "BloodHoundPathRef",
+        "CredentialGraph"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "crypto_token",
+      "implementation": "packages/security/src/crypto_token.ts",
+      "exportedSymbols": [
+        "CapabilityTokenPayload",
+        "CapabilityTokenEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "deaddrop",
+      "implementation": "packages/security/src/deaddrop.ts",
+      "exportedSymbols": [
+        "xorCipher",
+        "CryptoEnvelope",
+        "DropTransport",
+        "HttpUrlDrop",
+        "GithubReadmeDrop",
+        "DnsTxtDrop",
+        "TelegramChannelDrop",
+        "InMemoryDrop",
+        "ResolvedInstruction",
+        "DeadDropResolver",
+        "parseInstructionJson",
+        "parseInstructionKv",
+        "buildDropInstruction"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "dev_target",
+      "implementation": "packages/security/src/dev_target.ts",
+      "exportedSymbols": [
+        "DevSecret",
+        "auditLocalDevEnvironment"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "dry_run_simulator",
+      "implementation": "packages/security/src/dry_run_simulator.ts",
+      "exportedSymbols": [
+        "SimulatedPhase",
+        "DryRunSimulation",
+        "simulateEngagement"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ebpf_audit",
+      "implementation": "packages/security/src/ebpf_audit.ts",
+      "exportedSymbols": [
+        "EBPFProgram",
+        "EBPFMap",
+        "LDPreloadEntry",
+        "EBPFAuditResult",
+        "auditEBPFAndPersistence"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "edge_appliance_audit",
+      "implementation": "packages/security/src/edge_appliance_audit.ts",
+      "exportedSymbols": [
+        "EdgeApplianceConfig",
+        "EdgeApplianceFinding",
+        "TLSInfo",
+        "VPNLeakIndicator",
+        "FirmwareCheck",
+        "ManagementInterface",
+        "EdgeApplianceAuditResult",
+        "auditEdgeAppliance"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "edr_evasion",
+      "implementation": "packages/security/src/edr_evasion.ts",
+      "exportedSymbols": [
+        "EDRBypass",
+        "EDREvasionEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "edr_feedback_loop",
+      "implementation": "packages/security/src/edr_feedback_loop.ts",
+      "exportedSymbols": [
+        "EdrFeedbackResult",
+        "runEdrFeedbackLoop"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "engagement_memory",
+      "implementation": "packages/security/src/engagement_memory.ts",
+      "exportedSymbols": [
+        "BlueTeamEvent",
+        "FailedAttempt",
+        "EngagementSnapshot",
+        "EngagementMemory"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "engagement_watch",
+      "implementation": "packages/security/src/engagement_watch.ts",
+      "exportedSymbols": [
+        "WatchConfig",
+        "WatchSnapshot",
+        "DeltaReport",
+        "RetestResult",
+        "captureSnapshot",
+        "computeDelta",
+        "runWatchCycle",
+        "startWatch",
+        "retestFinding"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "esxi_audit",
+      "implementation": "packages/security/src/esxi_audit.ts",
+      "exportedSymbols": [
+        "ESXiCredentials",
+        "ESXiConfig",
+        "ESXiFinding",
+        "ESXiVMInfo",
+        "ESXiDatastoreInfo",
+        "ESXiAuditResult",
+        "auditESXi"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "evasion",
+      "implementation": "packages/security/src/evasion.ts",
+      "exportedSymbols": [
+        "LoLBin",
+        "Chain",
+        "listLoLBins",
+        "getLoLBin",
+        "listChains",
+        "buildChain",
+        "chainTechniqueIds",
+        "searchLoLBins",
+        "asLoLBinDict",
+        "renderChainCommands",
+        "BypassTechnique",
+        "listBypasses",
+        "getBypass",
+        "renderBypassPayload",
+        "buildPowerShellStager",
+        "asBypassDict",
+        "AMSI_PATCH_BYTES",
+        "amsiPatchC",
+        "etwPatchC",
+        "syscallLoaderC",
+        "csharpReflectionLoader",
+        "powershellReflectionBypass",
+        "EvasionArtifact",
+        "EvasionExecutor"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "evilginx_lab",
+      "implementation": "packages/security/src/evilginx_lab.ts",
+      "exportedSymbols": [
+        "EvilginxLabOptions",
+        "EvilginxLabResult",
+        "isEvilginxAvailable",
+        "evilginxBinary",
+        "generatePhishletYaml",
+        "runLabSession"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "exec_options",
+      "implementation": "packages/security/src/exec_options.ts",
+      "exportedSymbols": [
+        "isKaliLinux",
+        "resolveLiveMode",
+        "resolveDryRun",
+        "resolveLive",
+        "requireLiveMode"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "exfil",
+      "implementation": "packages/security/src/exfil.ts",
+      "exportedSymbols": [
+        "ExfilOptions",
+        "chunkData",
+        "exfiltrateDNS",
+        "StagedExfilResult",
+        "runStagedExfilTest"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "exfil_channels",
+      "implementation": "packages/security/src/exfil_channels.ts",
+      "exportedSymbols": [
+        "TransportResult",
+        "sendSlackWebhook"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "exploit_adapter",
+      "implementation": "packages/security/src/exploit_adapter.ts",
+      "exportedSymbols": [
+        "ExploitModule",
+        "ExploitAttempt",
+        "listExploitModules",
+        "recordAttempt",
+        "getTelemetryStats",
+        "runExploitModule",
+        "recommendAndRun",
+        "analyzeErrorPage"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "exploit_synthesis",
+      "implementation": "packages/security/src/exploit_synthesis.ts",
+      "exportedSymbols": [
+        "PolyglotPayload",
+        "DeserScaffold",
+        "SynthesisResult",
+        "generatePolyglotPayloads",
+        "buildDeserScaffold",
+        "synthesizeFromIndicator",
+        "adaptiveModuleRank"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "financial",
+      "implementation": "packages/security/src/financial.ts",
+      "exportedSymbols": [
+        "SWIFTMessage",
+        "parseMT103"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "financial_fraud",
+      "implementation": "packages/security/src/financial_fraud.ts",
+      "exportedSymbols": [
+        "FraudScoreResult",
+        "evaluateFraudRisk",
+        "recordFailedAttempt",
+        "recordSuccessfulAttempt",
+        "clearVelocityStore"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "financial_ops",
+      "implementation": "packages/security/src/financial_ops.ts",
+      "exportedSymbols": [
+        "TransactionNode",
+        "analyzeTransactions",
+        "detectStructuring"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "finding_lifecycle",
+      "implementation": "packages/security/src/finding_lifecycle.ts",
+      "exportedSymbols": [
+        "FINDING_STATES",
+        "FindingState",
+        "FindingStateMachine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "firmware",
+      "implementation": "packages/security/src/firmware.ts",
+      "exportedSymbols": [
+        "FirmwareSection",
+        "analyzeFirmware"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "http_state_fuzzer",
+      "implementation": "packages/security/src/http_state_fuzzer.ts",
+      "exportedSymbols": [
+        "HttpMethod",
+        "HttpStep",
+        "FuzzParam",
+        "StateMachineFlow",
+        "StepResult",
+        "FuzzSession",
+        "FuzzRunResult",
+        "buildCurlCommand",
+        "parseCurlResponse",
+        "runStateMachineFlow",
+        "defaultAuthBypassFlow",
+        "defaultL4CanaryFlow",
+        "defaultSessionFlow"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "hybrid_ad_entra",
+      "implementation": "packages/security/src/hybrid_ad_entra.ts",
+      "exportedSymbols": [
+        "HybridAttackResult",
+        "SyncAccountInfo",
+        "PHSAgentStatus",
+        "SeamlessSSOStatus",
+        "HybridADResult",
+        "HybridAttackOptions",
+        "hybridADAttackChain",
+        "abusePasswordHashSync",
+        "abuseSeamlessSSO",
+        "enumerateHybridAccounts",
+        "simulatePasswordHashSyncAbuse",
+        "simulateSeamlessSSOAbuse"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "identity",
+      "implementation": "packages/security/src/identity.ts",
+      "exportedSymbols": [
+        "KerberosHashEntry",
+        "MFABypassResult",
+        "CredentialAbuse",
+        "IdentityOptions",
+        "kerberoast",
+        "asrepRoast",
+        "bypassMFA",
+        "stuffCredentials",
+        "EntraToken",
+        "inspectJWT",
+        "execute"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "identity_chain",
+      "implementation": "packages/security/src/identity_chain.ts",
+      "exportedSymbols": [
+        "IdentityChainPhase",
+        "IdentityChainStep",
+        "IdentityChainState",
+        "initIdentityChain",
+        "advanceIdentityChain",
+        "runIdentityChain"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "identity_playbooks",
+      "implementation": "packages/security/src/identity_playbooks.ts",
+      "exportedSymbols": [
+        "PlaybookResult",
+        "runMfaFatigueProbe",
+        "runVishingPlaybook",
+        "runAiAgentAbuseChain",
+        "runFullIdentityPlaybook"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "identity_prt",
+      "implementation": "packages/security/src/identity_prt.ts",
+      "exportedSymbols": [
+        "ESTS_COOKIE",
+        "PRT_COOKIE",
+        "CLIENT_ID_AZURE_CLI",
+        "loadCookieDecryptionKey",
+        "decryptCookieValue",
+        "ChromeCookie",
+        "extractChromeCookies",
+        "findEntraCookies",
+        "TokenExchangeOpts",
+        "TokenExchange",
+        "parseJwt",
+        "buildRsaCngBlob",
+        "KeyCredential",
+        "buildKeyCredentialBlob",
+        "parseKeyCredentialBlob",
+        "generatePkinitCert",
+        "newShadowCredentialPair",
+        "writeShadowCredential"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "identity_theft",
+      "implementation": "packages/security/src/identity_theft.ts",
+      "exportedSymbols": [
+        "PIIMatch",
+        "IdentityScanResult",
+        "SyntheticIdentity",
+        "BreachCheckResult",
+        "detectPII",
+        "maskPII",
+        "validateSSN",
+        "validateSIN",
+        "validateCreditCard",
+        "generateSyntheticIdentity",
+        "checkBreach"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "idp_oauth_audit",
+      "implementation": "packages/security/src/idp_oauth_audit.ts",
+      "exportedSymbols": [
+        "IdPConfig",
+        "IdPFinding",
+        "OAuthAppRegistration",
+        "FIDO2PolicyStatus",
+        "AuthenticationMethodPolicy",
+        "TokenBindingPolicy",
+        "IdPAuditResult",
+        "IdPAuditOptions",
+        "auditIdPAndOAuth"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "impact_engine",
+      "implementation": "packages/security/src/impact_engine.ts",
+      "exportedSymbols": [
+        "ImpactProof",
+        "ImpactDemonstrationEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "implant_gen",
+      "implementation": "packages/security/src/implant_gen.ts",
+      "exportedSymbols": [
+        "BuildResult",
+        "CSHARP_CSPROJ",
+        "NativeImplantGenerator"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "index",
+      "implementation": "packages/security/src/index.ts",
+      "exportedSymbols": [],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "infra",
+      "implementation": "packages/security/src/infra.ts",
+      "exportedSymbols": [
+        "RedirectorManager",
+        "CDN_CONFIGS",
+        "DomainFronting",
+        "KNOWN_PROVIDERS",
+        "BulletproofManager",
+        "InfraProvisioner"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "insider",
+      "implementation": "packages/security/src/insider.ts",
+      "exportedSymbols": [
+        "InsiderBehaviorEvent",
+        "InsiderOptions",
+        "AuthLogEntry",
+        "FileAccessLogEntry",
+        "RiskEvaluation",
+        "BehavioralBaseline",
+        "parseAuthLog",
+        "parseFileAccessLog",
+        "buildBaseline",
+        "detectVolumeAnomalies",
+        "analyzeTimeOfDay",
+        "detectFrequencyAnomalies",
+        "evaluateInsiderRisk",
+        "MonitoringSession",
+        "startMonitoring",
+        "evaluateSession"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "intel_feeds",
+      "implementation": "packages/security/src/intel_feeds.ts",
+      "exportedSymbols": [
+        "IntelRecord",
+        "CvePriorityEntry",
+        "VxFamilyEntry",
+        "TargetIntelBrief",
+        "loadCvePriority",
+        "loadVxFamilyIndex",
+        "loadRansomwareGroups",
+        "lookupVxFamily",
+        "lookupHash",
+        "fetchKevCache",
+        "fetchRansomwatch",
+        "matchActiveCampaigns",
+        "watchOrg",
+        "TaxiiFeedConfig",
+        "loadTaxiiFeeds",
+        "pollStixFeeds",
+        "enrichTarget",
+        "pollFeeds",
+        "scanAiSurface",
+        "auditCpanel",
+        "injectIntelIntoGraph",
+        "matchIocsOnGraph",
+        "ingestStixTaxii"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "iot_scada",
+      "implementation": "packages/security/src/iot_scada.ts",
+      "exportedSymbols": [
+        "ScadaResult",
+        "ModbusResult",
+        "readModbusCoils",
+        "readModbusHoldingRegisters",
+        "writeModbusCoil",
+        "writeModbusRegister",
+        "probeDnp3",
+        "probeMqtt",
+        "bacnetWhoIs",
+        "ScadaActionRequest",
+        "executeScadaAction"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "lab_http_harness",
+      "implementation": "packages/security/src/lab_http_harness.ts",
+      "exportedSymbols": [
+        "LabHttpHarness",
+        "startTier1LabServer"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "lateral",
+      "implementation": "packages/security/src/lateral.ts",
+      "exportedSymbols": [
+        "Credential",
+        "TopologyHost",
+        "CredentialStore",
+        "TopologyGraph",
+        "AuthResult",
+        "AuthFn",
+        "lateralSpread",
+        "tryAuthDefault",
+        "quickSpread"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_ad_attacks",
+      "implementation": "packages/security/src/live_ad_attacks.ts",
+      "exportedSymbols": [
+        "AdTarget",
+        "AdFinding",
+        "LiveAdEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_cred_attacks",
+      "implementation": "packages/security/src/live_cred_attacks.ts",
+      "exportedSymbols": [
+        "CredentialTarget",
+        "CrackResult",
+        "LiveCredAttacks"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_exec",
+      "implementation": "packages/security/src/live_exec.ts",
+      "exportedSymbols": [
+        "isLiveExecution",
+        "requireLiveExecution",
+        "liveOrError"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_executor",
+      "implementation": "packages/security/src/live_executor.ts",
+      "exportedSymbols": [
+        "LiveOpts",
+        "isLive",
+        "isDryRun",
+        "requireTool",
+        "ExecResult",
+        "execLive",
+        "execTool",
+        "toolReady"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_pivot",
+      "implementation": "packages/security/src/live_pivot.ts",
+      "exportedSymbols": [
+        "PivotFinding",
+        "PivotResult",
+        "LivePivotEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_postex",
+      "implementation": "packages/security/src/live_postex.ts",
+      "exportedSymbols": [
+        "PostExFinding",
+        "LivePostExEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_privesc",
+      "implementation": "packages/security/src/live_privesc.ts",
+      "exportedSymbols": [
+        "PrivescVector",
+        "LivePrivescChecker"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_recon",
+      "implementation": "packages/security/src/live_recon.ts",
+      "exportedSymbols": [
+        "ReconFinding",
+        "LiveReconEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_scanner",
+      "implementation": "packages/security/src/live_scanner.ts",
+      "exportedSymbols": [
+        "ServiceInfo",
+        "ScanResult",
+        "LiveNetworkScanner"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "live_web_exploit",
+      "implementation": "packages/security/src/live_web_exploit.ts",
+      "exportedSymbols": [
+        "ScanTarget",
+        "WebFinding",
+        "LiveWebExploitEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "llm_client",
+      "implementation": "packages/security/src/llm_client.ts",
+      "exportedSymbols": [
+        "LLMMessage",
+        "LLMOptions",
+        "LLMResponse",
+        "llmComplete",
+        "llmChat",
+        "llmClassify",
+        "llmExtract",
+        "hasLLMKey",
+        "listProviders"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "lolbins",
+      "implementation": "packages/security/src/lolbins.ts",
+      "exportedSymbols": [
+        "LOLBinCategory",
+        "LOLBin",
+        "LOLBinChain",
+        "LOLBinsEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "lolbins_audit",
+      "implementation": "packages/security/src/lolbins_audit.ts",
+      "exportedSymbols": [
+        "LOLBinEntry",
+        "LOLBinsAuditResult",
+        "auditLOLBins"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "malware_dev",
+      "implementation": "packages/security/src/malware_dev.ts",
+      "exportedSymbols": [
+        "xorEncode",
+        "generateProcessHollowingStub"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "mcp_bridged_tools",
+      "implementation": "packages/security/src/mcp_bridged_tools.ts",
+      "exportedSymbols": [
+        "buildBridgedMcpTools"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "mcp_dispatch",
+      "implementation": "packages/security/src/mcp_dispatch.ts",
+      "exportedSymbols": [
+        "adExploitExecute",
+        "c2Execute",
+        "strixExecute",
+        "vulnResearch",
+        "autoResearch",
+        "hybridAdEntraExecute",
+        "oauthChainExecute",
+        "webmailExploitExecute",
+        "exfiltrate",
+        "pivotTunnelExecute",
+        "socialEngGenerate",
+        "toolkitGeneratePayload",
+        "malwareDevExecute",
+        "iotScadaExecute",
+        "mobileExecute",
+        "firmwareAnalyze",
+        "calderaTtpExecute",
+        "atlasArsenalExecute",
+        "devTargetExecute",
+        "supplyChainExecute",
+        "campaignExecute",
+        "raasCampaignExecute",
+        "campaignPlan"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "mcp_efficiency",
+      "implementation": "packages/security/src/mcp_efficiency.ts",
+      "exportedSymbols": [
+        "isEfficientMode",
+        "EFFICIENT_TOOL_ALLOWLIST",
+        "AresPhase",
+        "PHASE_MODULES",
+        "compactToolOutput",
+        "SEARCH_MODE_TOOL_ALLOWLIST",
+        "filterToolsForEfficiency",
+        "searchModeMcpInstructions",
+        "efficientMcpInstructions"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "mcp_server",
+      "implementation": "packages/security/src/mcp_server.ts",
+      "exportedSymbols": [
+        "startMcpServer"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "mcp_tool_search",
+      "implementation": "packages/security/src/mcp_tool_search.ts",
+      "exportedSymbols": [
+        "ToolCatalogEntry",
+        "searchToolCatalog",
+        "buildToolSearchTools"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "mcp_tool_types",
+      "implementation": "packages/security/src/mcp_tool_types.ts",
+      "exportedSymbols": [
+        "McpTool"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "meterpreter",
+      "implementation": "packages/security/src/meterpreter.ts",
+      "exportedSymbols": [
+        "MeterpreterSession",
+        "TlvHeader",
+        "SysinfoResult",
+        "UidResult",
+        "HashdumpEntry",
+        "ScreenshotResult",
+        "MeterpreterOptions",
+        "buildTlvPacket",
+        "parseTlvPackets",
+        "decodeTlvValue",
+        "dispatchCommand",
+        "sysinfo",
+        "getuid",
+        "hashdump",
+        "screenshot",
+        "MeterpreterManager",
+        "createManager",
+        "registerSession",
+        "listSessions",
+        "removeSession",
+        "PayloadSpec",
+        "generateMsfvenomCmd"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "mobile",
+      "implementation": "packages/security/src/mobile.ts",
+      "exportedSymbols": [
+        "MobileDevice",
+        "listADBDevices"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "module_bridge",
+      "implementation": "packages/security/src/module_bridge.ts",
+      "exportedSymbols": [
+        "MODULE_BRIDGE",
+        "bridgedToolNames",
+        "runBridgedModule"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "module_helpers",
+      "implementation": "packages/security/src/module_helpers.ts",
+      "exportedSymbols": [
+        "ModuleFinding",
+        "ModuleEnvelope",
+        "moduleEnvelope",
+        "realFinding",
+        "dryRunSkipped",
+        "stubFinding",
+        "requireToolOrDryRun",
+        "requireToolOrThrow"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "msf_client",
+      "implementation": "packages/security/src/msf_client.ts",
+      "exportedSymbols": [
+        "MsfPayloadOpts",
+        "MsfSearchResult",
+        "MetasploitClient"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "multi_cloud_asm",
+      "implementation": "packages/security/src/multi_cloud_asm.ts",
+      "exportedSymbols": [
+        "CloudAsset",
+        "MultiCloudAsmResult",
+        "fuseMultiCloudAsm"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "multi_lang",
+      "implementation": "packages/security/src/multi_lang.ts",
+      "exportedSymbols": [
+        "PayloadTargetOS",
+        "ObfuscationMethod",
+        "PayloadOptions",
+        "StagerOptions",
+        "GeneratedPayload",
+        "obfuscatePayload",
+        "generatePolyglotPayload",
+        "generateDownloadStager",
+        "generateAllPayloads"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "net_device",
+      "implementation": "packages/security/src/net_device.ts",
+      "exportedSymbols": [
+        "NetworkDeviceAudit",
+        "NetworkPortInfo",
+        "ManagementInterfaceInfo",
+        "SSHConfigInfo",
+        "DefaultCredentialResult",
+        "NetworkFinding",
+        "auditNetworkDevice"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "oauth_chain",
+      "implementation": "packages/security/src/oauth_chain.ts",
+      "exportedSymbols": [
+        "OAuthVulnerability",
+        "OAuthChainOptions",
+        "PkceDowngradeResult",
+        "DeviceCodeAbuseResult",
+        "CsrfBypassResult",
+        "RedirectUriBypassResult",
+        "checkOAuthRedirectBypass",
+        "testPkceDowngrade",
+        "generatePkcePair",
+        "testCsrfBypass",
+        "performDeviceCodeFlow",
+        "deviceCodeAbuseCheck",
+        "OAuthAuditResult",
+        "auditOAuthChain",
+        "auditOAuthChainAsync",
+        "simulateDeviceCodeAbuse"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "opencode_bootstrap",
+      "implementation": "packages/security/src/opencode_bootstrap.ts",
+      "exportedSymbols": [
+        "BootstrapResult",
+        "bootstrapOpenCode",
+        "repoRoot",
+        "mcpServerPath"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "opencode_tool_policy",
+      "implementation": "packages/security/src/opencode_tool_policy.ts",
+      "exportedSymbols": [
+        "OPENCODE_ARES_SERVER",
+        "OPENCODE_GH_GREP_SERVER",
+        "PENTEST_AGENT_NAME",
+        "SEARCH_MODE_TOOL_ALLOWLIST",
+        "opencodeNamespacedTool",
+        "buildPentestAgentToolAllowlist",
+        "buildGlobalToolDenylist",
+        "ghGrepEnabled",
+        "mergeOpenCodeToolPolicy",
+        "mergeGhGrepMcp"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "operational_depth_score",
+      "implementation": "packages/security/src/operational_depth_score.ts",
+      "exportedSymbols": [
+        "DepthDimension",
+        "OperationalDepthReport",
+        "assessOperationalDepth",
+        "formatDepthReport"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "opsec",
+      "implementation": "packages/security/src/opsec.ts",
+      "exportedSymbols": [
+        "OpsecReview",
+        "opsecReviewAsDict",
+        "reviewAction",
+        "evaluatePayload",
+        "BeaconTimingProfile",
+        "BEACON_PROFILES",
+        "DEFAULT_BEACON_PROFILE",
+        "jitterDelta",
+        "nextBeaconInterval",
+        "describeProfile"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "opsec_gate",
+      "implementation": "packages/security/src/opsec_gate.ts",
+      "exportedSymbols": [
+        "GateResult",
+        "gateExecution"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "opsec_throttle",
+      "implementation": "packages/security/src/opsec_throttle.ts",
+      "exportedSymbols": [
+        "ThrottleConfig",
+        "OpsecThrottleEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "parameter_analyzer",
+      "implementation": "packages/security/src/parameter_analyzer.ts",
+      "exportedSymbols": [
+        "ParameterMutationTest",
+        "DiffResult",
+        "ParameterAnalyzer"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "pdf_report",
+      "implementation": "packages/security/src/pdf_report.ts",
+      "exportedSymbols": [
+        "renderPdfBuffer",
+        "writePdfReport",
+        "writePdfReportBest"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "pentagi_docker",
+      "implementation": "packages/security/src/pentagi_docker.ts",
+      "exportedSymbols": [
+        "DockerExecutionOptions",
+        "runInDocker"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "pentestgpt_agent",
+      "implementation": "packages/security/src/pentestgpt_agent.ts",
+      "exportedSymbols": [
+        "Phase",
+        "TaskStatus",
+        "PentestTask",
+        "Finding",
+        "PentestPlan",
+        "MemoryEntry",
+        "AgentConfig",
+        "ToolDefinition",
+        "AgentStep",
+        "AgentMemory",
+        "buildDefaultPlan",
+        "PentestAgent"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "pentestgpt_ptt",
+      "implementation": "packages/security/src/pentestgpt_ptt.ts",
+      "exportedSymbols": [
+        "NodeStatus",
+        "TreeNode",
+        "TestTree",
+        "PTTOptions",
+        "buildDefaultTree",
+        "buildIntelCampaignTree",
+        "flattenTree",
+        "readyNodes",
+        "updateNode",
+        "expandNode",
+        "treeSummary"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "persistence",
+      "implementation": "packages/security/src/persistence.ts",
+      "exportedSymbols": [
+        "PersistenceMechanism",
+        "PersistenceEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "physical",
+      "implementation": "packages/security/src/physical.ts",
+      "exportedSymbols": [
+        "DuckyToken",
+        "BadUSBPayload",
+        "HIDReportDescriptor",
+        "HIDCollection",
+        "RFIDCloneResult",
+        "MagstripeData",
+        "parseDuckyScript",
+        "compileDuckyScript",
+        "generateHIDReportDescriptor",
+        "generateHIDReportDescriptorBytes",
+        "detectRFIDTechnology",
+        "cloneRFIDCard",
+        "parseMagstripe"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "pivot_replay",
+      "implementation": "packages/security/src/pivot_replay.ts",
+      "exportedSymbols": [
+        "ReplayResult",
+        "BloodHoundCollectOpts",
+        "BloodHoundPath",
+        "collectBloodHound",
+        "parseBloodHoundPaths",
+        "parseBloodHoundDir",
+        "ingestBloodHoundIntoGraph",
+        "replayPassTheHash",
+        "replayPasswordAuthAsync",
+        "replayCredentialGraphWithBloodHound",
+        "replayCredentialGraph"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "pivot_tunnel",
+      "implementation": "packages/security/src/pivot_tunnel.ts",
+      "exportedSymbols": [
+        "TunnelConfig",
+        "createPortForwarder",
+        "createPortForwarderAsync"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "policy_daemon",
+      "implementation": "packages/security/src/policy_daemon.ts",
+      "exportedSymbols": [
+        "POLICY_SOCKET_PATH",
+        "PolicyDaemonRequest",
+        "PolicyDaemonResponse",
+        "PolicyDaemon",
+        "requestPolicyToken"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "polymorphic",
+      "implementation": "packages/security/src/polymorphic.ts",
+      "exportedSymbols": [
+        "PolymorphicVariant",
+        "shannonEntropy",
+        "PolymorphicEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "privesc",
+      "implementation": "packages/security/src/privesc.ts",
+      "exportedSymbols": [
+        "PrivescTechnique",
+        "PrivilegeEscalator"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "privesc_chains",
+      "implementation": "packages/security/src/privesc_chains.ts",
+      "exportedSymbols": [
+        "PrivescChainStep",
+        "PrivescChainResult",
+        "runPrivescChains"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "proof_pack",
+      "implementation": "packages/security/src/proof_pack.ts",
+      "exportedSymbols": [
+        "ProofPackEntry",
+        "ProofPack",
+        "buildProofPack",
+        "writeProofPack"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "proof_report",
+      "implementation": "packages/security/src/proof_report.ts",
+      "exportedSymbols": [
+        "renderHtmlReport",
+        "writeHtmlReport"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "raas_advanced",
+      "implementation": "packages/security/src/raas_advanced.ts",
+      "exportedSymbols": [
+        "LeakUploadResult",
+        "RaasOpts",
+        "onionV3FromPublicKey",
+        "TorPortalResult",
+        "provisionTorPortal",
+        "uploadToS3",
+        "uploadViaTor",
+        "EsxiLabEncryptResult",
+        "runLabEsxiEncryptWithRecovery",
+        "buildEsxiEncryptorStub",
+        "EsxiDeployResult",
+        "deployEsxiEncryptor",
+        "GpoModifyResult",
+        "modifyGpoLogonScript",
+        "uploadLeakManifestAdvanced"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "raas_engine",
+      "implementation": "packages/security/src/raas_engine.ts",
+      "exportedSymbols": [
+        "RaasOpts",
+        "LeakCatalogEntry",
+        "PaymentBundle",
+        "VssWipeResult",
+        "EsxiEncryptResult",
+        "SmbSpreadResult",
+        "GpoSpreadResult",
+        "RaasCampaignReport",
+        "deleteVolumeShadowCopies",
+        "buildLeakCatalog",
+        "generateLeakPortalHtml",
+        "generatePaymentBundle",
+        "encryptEsxiDatastores",
+        "spreadViaSmb",
+        "LeakUploadResult",
+        "uploadLeakManifest",
+        "deployGpoLogonScript",
+        "spreadViaGpo",
+        "runRaasCampaign",
+        "assessRaasReadiness"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "raas_wallet",
+      "implementation": "packages/security/src/raas_wallet.ts",
+      "exportedSymbols": [
+        "WalletChain",
+        "WalletRecord",
+        "WalletVaultOpts",
+        "WalletBalanceResult",
+        "WalletToolchainStatus",
+        "WalletInstallResult",
+        "checkWalletToolchain",
+        "ensureWalletToolchain",
+        "generateBtcWallet",
+        "generateXmrWallet",
+        "createWalletPair",
+        "loadWallet",
+        "listWallets",
+        "getWalletBalance",
+        "wipeWallet",
+        "wipeAllWallets",
+        "walletTerminalSummary"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "ransomware",
+      "implementation": "packages/security/src/ransomware.ts",
+      "exportedSymbols": [
+        "RansomwareConfig",
+        "EncryptedFile",
+        "RansomwareKey",
+        "SimulationReport",
+        "generateKey",
+        "encryptFile",
+        "decryptFile",
+        "findTargetFiles",
+        "generateRansomNote",
+        "runEncryptionLab"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "repl",
+      "implementation": "packages/security/src/repl.ts",
+      "exportedSymbols": [
+        "startRepl"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "runtime_capability",
+      "implementation": "packages/security/src/runtime_capability.ts",
+      "exportedSymbols": [
+        "CapabilityProbe",
+        "ToolFallback",
+        "RuntimeCapabilityReport",
+        "resolveToolFallback",
+        "resolveScanCommand",
+        "assessRuntimeCapabilities",
+        "pickAvailableTool"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "runtime_exec",
+      "implementation": "packages/security/src/runtime_exec.ts",
+      "exportedSymbols": [
+        "ExecEvent",
+        "EventHandler",
+        "Spinner",
+        "ExecutionDisplay",
+        "ShellOptions",
+        "execShell",
+        "SubagentConfig",
+        "runSubagent"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "sandbox_runner",
+      "implementation": "packages/security/src/sandbox_runner.ts",
+      "exportedSymbols": [
+        "SandboxConfig",
+        "SandboxResult",
+        "SandboxRunner"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "scanner_parsers",
+      "implementation": "packages/security/src/scanner_parsers.ts",
+      "exportedSymbols": [
+        "ParsedPort",
+        "ParsedVulnerability",
+        "parseMasscanJson",
+        "parseNucleiJson",
+        "parseNmapOutput",
+        "parseNessusCsv",
+        "ParsedEndpoint",
+        "parseGobusterOutput",
+        "parse"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "segment_tunnel_orchestrator",
+      "implementation": "packages/security/src/segment_tunnel_orchestrator.ts",
+      "exportedSymbols": [
+        "SegmentTunnel",
+        "TunnelOrchestrationResult",
+        "orchestrateSegmentTunnels"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "skills",
+      "implementation": "packages/security/src/skills.ts",
+      "exportedSymbols": [
+        "SecuritySkill",
+        "ToolAvailability",
+        "SkillExecutionResult",
+        "TaxonomyNode",
+        "detectAllTools",
+        "getSkillAvailability",
+        "listSkills",
+        "getSkillById",
+        "searchSkills",
+        "buildTaxonomyIndex",
+        "executeSkill",
+        "executeSkillChain"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "social_eng",
+      "implementation": "packages/security/src/social_eng.ts",
+      "exportedSymbols": [
+        "EngagementType",
+        "PhishingEmail",
+        "VishingScript",
+        "CampaignResult",
+        "SocialEngOptions",
+        "generatePhishingEmail",
+        "generateVishingScript",
+        "generateSmishingMessage"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "social_eng_auto",
+      "implementation": "packages/security/src/social_eng_auto.ts",
+      "exportedSymbols": [
+        "AutomatedCampaignOptions",
+        "CampaignResult",
+        "sendSpearphishEmail",
+        "runAutomatedCampaign"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "stego_c2",
+      "implementation": "packages/security/src/stego_c2.ts",
+      "exportedSymbols": [
+        "embedImageLsb",
+        "extractImageLsb",
+        "generateC2Image",
+        "extractC2Image",
+        "detectStego",
+        "StegoAlgorithm",
+        "CarrierFormat",
+        "STEGO_ALGORITHMS",
+        "CARRIER_FORMATS"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "stix_ingest",
+      "implementation": "packages/security/src/stix_ingest.ts",
+      "exportedSymbols": [
+        "StixObject",
+        "StixBundle",
+        "parseStixBundle",
+        "stixToIntelRecords",
+        "fetchTaxiiCollection",
+        "matchStixOnGraph",
+        "ingestTaxiiFeed"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "strix_engine",
+      "implementation": "packages/security/src/strix_engine.ts",
+      "exportedSymbols": [
+        "PageResult",
+        "Form",
+        "ReflectionResult",
+        "StrixOptions",
+        "BrowserSession",
+        "CaidoClient",
+        "AttackJob",
+        "StrixCoordinator"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "strix_session",
+      "implementation": "packages/security/src/strix_session.ts",
+      "exportedSymbols": [
+        "AuthSession",
+        "CrawlResult",
+        "StrixSessionStore",
+        "AuthenticatedBrowser"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "supply_chain",
+      "implementation": "packages/security/src/supply_chain.ts",
+      "exportedSymbols": [
+        "SupplyChainAuditResult",
+        "InstallScript",
+        "SupplyChainIssue",
+        "RegistryPackageInfo",
+        "auditPackage",
+        "auditPackageList",
+        "analyze",
+        "LockfileScanResult",
+        "scanLockfile"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "supply_chain_exec",
+      "implementation": "packages/security/src/supply_chain_exec.ts",
+      "exportedSymbols": [
+        "SupplyChainExecStep",
+        "SupplyChainExecResult",
+        "executeSupplyChainChain"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "telecom_audit",
+      "implementation": "packages/security/src/telecom_audit.ts",
+      "exportedSymbols": [
+        "TelecomFinding",
+        "TelecomAuditResult",
+        "auditTelecom"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "tier1_config",
+      "implementation": "packages/security/src/tier1_config.ts",
+      "exportedSymbols": [
+        "isTier1Enabled",
+        "enableTier1Mode",
+        "tier1MaxSteps"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "tier1_depth_metrics",
+      "implementation": "packages/security/src/tier1_depth_metrics.ts",
+      "exportedSymbols": [
+        "Tier1Metrics",
+        "collectTier1Metrics",
+        "formatTier1Metrics"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "tier1_orchestrator",
+      "implementation": "packages/security/src/tier1_orchestrator.ts",
+      "exportedSymbols": [
+        "Tier1OrchestratorResult",
+        "runTier1Orchestrator"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "tier1_validation",
+      "implementation": "packages/security/src/tier1_validation.ts",
+      "exportedSymbols": [
+        "IdorBolaResult",
+        "PrivescProofResult",
+        "ExploitReplayEnvelope",
+        "proveIdorBola",
+        "proveControlledPrivesc",
+        "replayExploitWithRollback",
+        "runTier1ValidationSuite"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "tool_broker",
+      "implementation": "packages/security/src/tool_broker.ts",
+      "exportedSymbols": [
+        "ExecPolicy",
+        "ToolBroker"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "tool_detection",
+      "implementation": "packages/security/src/tool_detection.ts",
+      "exportedSymbols": [
+        "ToolInfo",
+        "checkTools",
+        "requireTools",
+        "getToolPath",
+        "isToolAvailable",
+        "toolSummary"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "toolkit",
+      "implementation": "packages/security/src/toolkit.ts",
+      "exportedSymbols": [
+        "PayloadLanguage",
+        "PayloadType",
+        "Payload",
+        "Tool",
+        "CVEInfo",
+        "PayloadGenerator",
+        "inventoryTools",
+        "lookupCVE",
+        "searchExploitDB"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "top_cut_score",
+      "implementation": "packages/security/src/top_cut_score.ts",
+      "exportedSymbols": [
+        "TopCutDimension",
+        "TopCutReport",
+        "assessTopCut",
+        "formatTopCutReport"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "uefi_bootkit_audit",
+      "implementation": "packages/security/src/uefi_bootkit_audit.ts",
+      "exportedSymbols": [
+        "UEFIFinding",
+        "UEFIBootkitIndicator",
+        "UEFIAuditResult",
+        "auditUEFIAndBootkit"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "validation_engine",
+      "implementation": "packages/security/src/validation_engine.ts",
+      "exportedSymbols": [
+        "ValidationRequest",
+        "EngineResult",
+        "ValidationEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "validation_planner",
+      "implementation": "packages/security/src/validation_planner.ts",
+      "exportedSymbols": [
+        "ValidationStrategy",
+        "ValidationRisk",
+        "ValidationCapability",
+        "ValidationPlan",
+        "ValidationOutcome",
+        "ValidationResult",
+        "ValidationPlanner"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "vuln_research",
+      "implementation": "packages/security/src/vuln_research.ts",
+      "exportedSymbols": [
+        "CisaKevEntry",
+        "checkCisaKev"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "web_exploit",
+      "implementation": "packages/security/src/web_exploit.ts",
+      "exportedSymbols": [
+        "WebVuln",
+        "WebExploitEngine"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "webmail_exploit",
+      "implementation": "packages/security/src/webmail_exploit.ts",
+      "exportedSymbols": [
+        "WebmailAudit",
+        "WebmailFinding",
+        "WebmailEndpoint",
+        "PasswordSprayResult",
+        "InboxRulePersistence",
+        "WebmailAuditOptions",
+        "auditWebmailPersistence",
+        "simulateInboxRulePersistence"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": true,
+        "hasExternalEffect": true,
+        "hasEvidence": true,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "which",
+      "implementation": "packages/security/src/which.ts",
+      "exportedSymbols": [
+        "which",
+        "whichOrNull"
+      ],
+      "executionSignals": {
+        "hasLivePath": true,
+        "hasDryRunPath": false,
+        "hasExternalEffect": true,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "yara",
+      "implementation": "packages/security/src/yara.ts",
+      "exportedSymbols": [
+        "YaraMatch",
+        "engineAvailable",
+        "extractRuleName",
+        "extractMeta",
+        "extractLiterals",
+        "YaraEngine",
+        "scanText",
+        "scanPayload"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": false,
+        "hasSyntheticRisk": true
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    },
+    {
+      "capability": "yara_rules",
+      "implementation": "packages/security/src/yara_rules.ts",
+      "exportedSymbols": [
+        "BUILTIN_RULES",
+        "RULESETS",
+        "rulesForRuleset",
+        "sanitizeRuleName",
+        "escapeString",
+        "ruleFromStrings",
+        "generateRuleFromFinding"
+      ],
+      "executionSignals": {
+        "hasLivePath": false,
+        "hasDryRunPath": false,
+        "hasExternalEffect": false,
+        "hasEvidence": true,
+        "hasSyntheticRisk": false
+      },
+      "status": "UNPROVEN",
+      "proof": null
+    }
+  ]
+}

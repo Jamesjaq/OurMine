@@ -59,8 +59,13 @@ export async function assessTopCut(): Promise<TopCutReport> {
     ...bridgedToolNames(),
   ]
   const dispatchResults = await Promise.all(campaignTools.map(async (t) => {
-    const r = await executeAgentTool(ctx, t, {})
-    return { tool: t, ok: !r.error?.includes("unknown tool") }
+    try {
+      const r = await executeAgentTool(ctx, t, {})
+      return { tool: t, ok: !r.error?.includes("unknown tool"), error: r.error }
+    } catch (error) {
+      const message = String(error)
+      return { tool: t, ok: !message.includes("unknown tool"), error: message }
+    }
   }))
   const wiredTools = dispatchResults.filter((d) => d.ok).length
   const toolScore = clamp((wiredTools / campaignTools.length) * 10)

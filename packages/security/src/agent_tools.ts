@@ -52,6 +52,17 @@ function toolUnavailable(ctx: AgentToolContext, tool: string, command: string): 
   return { tool, command, dryRun: false, success: false, output: "", error: msg }
 }
 
+function operationResultSucceeded(result: unknown, live: boolean): boolean {
+  if (!live || result == null) return false
+  if (Array.isArray(result)) return result.length > 0
+  if (typeof result !== "object") return false
+  const value = result as Record<string, unknown>
+  if (value.dryRun === true) return false
+  if (typeof value.success === "boolean") return value.success
+  if (typeof value.error === "string" && value.error.length > 0) return false
+  return Object.keys(value).length > 0
+}
+
 export interface ToolRunResult {
   tool: string
   command: string
@@ -112,7 +123,7 @@ export async function nmapScan(
   }
 
   const t0 = Date.now()
-  const res = await brokerExecute(ctx, "nmap_scan", command)
+  const res = await brokerExecute(ctx, toolUsed, command)
   if (res.blocked) {
     return { tool: "nmap_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
   }
@@ -122,7 +133,7 @@ export async function nmapScan(
     const portNum = parseInt(ports.split(",")[0]?.split("-")[0] ?? "8080", 10)
     const fallback = resolveScanCommand(host, portNum)
     if (fallback.command && fallback.tool !== "nmap") {
-      const fb = await brokerExecute(ctx, "nmap_scan", fallback.command)
+      const fb = await brokerExecute(ctx, fallback.tool, fallback.command)
       raw = `[nmap fallback: ${fallback.note}]\n` + fb.stdout + fb.stderr
       command = fallback.command
       toolUsed = fallback.tool
@@ -157,7 +168,7 @@ export async function gobusterDir(
   const dryRun = !ctx.live
   const host = hostFromTarget(ctx.target)
   const url = opts.url ?? normalizeUrl(ctx.target, 8080)
-  const wordlist = opts.wordlist ?? path.resolve("lab/wordlist.txt")
+  const wordlist = opts.wordlist ?? process.env.OURMINE_WORDLIST ?? "/usr/share/wordlists/dirb/common.txt"
   const command = `gobuster dir -u ${url} -w ${wordlist} --no-progress`
 
   if (!ctx.live) {
@@ -169,7 +180,7 @@ export async function gobusterDir(
   }
 
   const t0 = Date.now()
-  const res = await brokerExecute(ctx, "gobuster_dir", command)
+  const res = await brokerExecute(ctx, "gobuster", command)
   if (res.blocked) {
     return { tool: "gobuster_dir", command, dryRun: false, success: false, output: "", error: res.stderr }
   }
@@ -206,7 +217,7 @@ export async function nucleiScan(
   }
 
   const t0 = Date.now()
-  const res = await brokerExecute(ctx, "nuclei_scan", command)
+  const res = await brokerExecute(ctx, "nuclei", command)
   if (res.blocked) {
     return { tool: "nuclei_scan", command, dryRun: false, success: false, output: "", error: res.stderr }
   }
@@ -238,12 +249,14 @@ export async function runReconTool(
     dns: result.dnsRecords.length,
     dryRun: result.dryRun,
   })
+  const collected = result.subdomains.length + result.employees.length + result.dnsRecords.length + result.techStack.length + result.breachHits.length + result.emailPatterns.length
   return {
     tool: "recon",
     command: `ai_recon.runRecon(${domain})`,
     dryRun: result.dryRun,
-    success: true,
+    success: !result.dryRun && (collected > 0 || result.whois !== null),
     output,
+    error: result.dryRun ? "live mode required" : collected === 0 && result.whois === null ? "no reconnaissance data collected" : undefined,
     graphDelta: {},
   }
 }
@@ -281,7 +294,7 @@ export async function validateSuspectedFindings(ctx: AgentToolContext): Promise<
     tool: "validate_findings",
     command: "ValidationEngine.validate(all SUSPECTED)",
     dryRun: !ctx.live,
-    success: true,
+    success: ctx.live && results.length > 0,
     output: results.join("\n") || "no suspected findings to validate",
     graphDelta: {
       vulns: summary.vulns.confirmed,
@@ -359,7 +372,7 @@ export async function runIdentityAttack(
     tool: "identity_attack",
     command: `identity.execute(${attack})`,
     dryRun: !ctx.live,
-    success: true,
+    success: operationResultSucceeded(result, ctx.live),
     output: JSON.stringify(result).slice(0, 4000),
   }
 }
@@ -381,7 +394,7 @@ export async function runAdExploit(
     tool: "ad_exploit",
     command: `ad_exploit.${params.technique ?? "dcsync"}`,
     dryRun: !ctx.live,
-    success: true,
+    success: operationResultSucceeded(result, ctx.live),
     output: JSON.stringify(result).slice(0, 4000),
   }
 }
@@ -423,7 +436,7 @@ export async function runCloudEnum(ctx: AgentToolContext): Promise<ToolRunResult
     tool: "cloud_enum",
     command: "cloud_token.fetchAWSMetadata",
     dryRun: !ctx.live,
-    success: true,
+    success: result !== null && !result.dryRun,
     output: JSON.stringify(result).slice(0, 4000),
   }
 }
@@ -467,7 +480,7 @@ export async function runYaraScan(ctx: AgentToolContext, scanPath: string): Prom
     tool: "yara_scan",
     command: `yara.scanText(${scanPath})`,
     dryRun: !ctx.live,
-    success: true,
+    success: ctx.live && fs.existsSync(scanPath),
     output: JSON.stringify(matches),
     graphDelta: { vulns: matches.length },
   }
@@ -705,7 +718,7 @@ export async function runEvilginxLab(ctx: AgentToolContext, params: Record<strin
     tool: "evilginx_lab",
     command: `evilginx_lab.runLabSession(${targetUrl})`,
     dryRun: result.dryRun,
-    success: true,
+    success: !result.dryRun && result.mode !== "config_only",
     output: JSON.stringify({
       mode: result.mode,
       evilginxAvailable: result.evilginxAvailable,
@@ -1050,10 +1063,34 @@ export async function executeAgentTool(
     pivot_replay: () => runPivotReplay(ctx, params),
   }
   const fn = map[toolName]
-  if (fn) return fn()
-  const { runBridgedModule } = await import("./module_bridge.ts")
-  const bridged = await runBridgedModule(ctx, toolName, params)
-  if (bridged) return bridged
+  if (fn) {
+    try {
+      return await fn()
+    } catch (error) {
+      return {
+        tool: toolName,
+        command: toolName,
+        dryRun: !ctx.live,
+        success: false,
+        output: "",
+        error: error instanceof Error ? error.message : String(error),
+      }
+    }
+  }
+  try {
+    const { runBridgedModule } = await import("./module_bridge.ts")
+    const bridged = await runBridgedModule(ctx, toolName, params)
+    if (bridged) return bridged
+  } catch (error) {
+    return {
+      tool: toolName,
+      command: toolName,
+      dryRun: !ctx.live,
+      success: false,
+      output: "",
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
   return { tool: toolName, command: toolName, dryRun: !ctx.live, success: false, output: "", error: `unknown tool: ${toolName}` }
 }
 

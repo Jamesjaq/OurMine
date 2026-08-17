@@ -1,0 +1,1 @@
+ERROR: VM-only validation requires OURMINE_VALIDATION_VM=1 inside a disposable VM worker.

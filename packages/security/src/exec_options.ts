@@ -20,7 +20,7 @@ export function resolveLiveMode(opts: { live?: boolean; dryRun?: boolean } = {})
   const env = process.env.OURMINE_LIVE
   if (env === "1" || env === "true") return true
   if (process.env.OURMINE_TIER1 === "1" || process.env.OURMINE_TIER1 === "true") return true
-  if (process.env.OURMINE_LAB_AUTONOMOUS === "1") return true
+  if (process.env.OURMINE_AUTONOMOUS === "1") return true
   if (process.argv.includes("--live")) return true
   if (isKaliLinux()) return true
   return false

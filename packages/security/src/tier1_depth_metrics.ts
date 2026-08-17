@@ -33,7 +33,9 @@ export async function collectTier1Metrics(): Promise<Tier1Metrics> {
   let campaignRuns = 0
 
   try {
-    const benchPath = path.resolve("lab/results/tier1_benchmark.json")
+    const benchPath = process.env.OURMINE_BENCHMARK_PATH
+      ? path.resolve(process.env.OURMINE_BENCHMARK_PATH)
+      : path.resolve(".ourmine/benchmarks/tier1_benchmark.json")
     if (fs.existsSync(benchPath)) {
       const bench = JSON.parse(fs.readFileSync(benchPath, "utf8")) as {
         l4Flow?: { proven?: boolean; level?: string }
@@ -72,15 +74,13 @@ export async function collectTier1Metrics(): Promise<Tier1Metrics> {
     }
   } catch { /* empty */ }
 
-  const { simulateEngagement } = await import("./dry_run_simulator.ts")
-  const sim = await simulateEngagement("tier1.local")
-
-  const totalFindings = confirmed + falsePos || 1
+  const totalFindings = confirmed + falsePos
   const l3ValidationRate = l3Attempts ? l3Success / l3Attempts : 0.5
   const l4ValidationRate = l4Attempts ? l4Success / l4Attempts : 0.4
   const multiHostSuccessRate = campaignRuns ? Math.min(1, hostsCompromised / Math.max(1, campaignRuns * 2)) : 0.3
-  const falsePositiveRate = falsePos / totalFindings
-  const objectiveCompletionPct = campaignRuns ? objectiveMet / campaignRuns : 0.35
+  const falsePositiveRate = totalFindings ? falsePos / totalFindings : 0
+  const objectiveCompletionPct = campaignRuns ? objectiveMet / campaignRuns : 0
+  const workflowEstimatePct = campaignRuns ? Math.min(100, objectiveCompletionPct * 100) : 0
 
   const overallRaw =
     l3ValidationRate * 15 +
@@ -88,7 +88,7 @@ export async function collectTier1Metrics(): Promise<Tier1Metrics> {
     multiHostSuccessRate * 15 +
     (1 - falsePositiveRate) * 10 +
     objectiveCompletionPct * 20 +
-    (sim.estimatedWorkflowPct / 100) * 20
+    (workflowEstimatePct / 100) * 20
 
   const srcDir = path.dirname(fileURLToPath(import.meta.url))
   const tier1Files = [
@@ -108,7 +108,7 @@ export async function collectTier1Metrics(): Promise<Tier1Metrics> {
     meanStepsToObjective: 12,
     falsePositiveRate,
     objectiveCompletionPct,
-    workflowEstimatePct: sim.estimatedWorkflowPct,
+    workflowEstimatePct,
     tier,
     overall,
   }

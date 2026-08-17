@@ -458,7 +458,8 @@ async function main() {
         await cmdTier1(target, isLive)
         break
       case "tier1bench":
-        await import("../lab/tier1_benchmark.ts").then((m) => m.runTier1Benchmark())
+        console.error("tier1bench is validation-only and must be run by the isolated VM validation worker")
+        process.exitCode = 2
         break
       case "retest": {
         const findingId = rest[1]

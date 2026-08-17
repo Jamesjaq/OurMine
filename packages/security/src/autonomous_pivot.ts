@@ -75,7 +75,7 @@ class CredStore implements CredentialStore {
 export function isAutonomousPivotEnabled(): boolean {
   return process.env.OURMINE_AUTONOMOUS_PIVOT === "1"
     || process.env.OURMINE_AUTONOMOUS_PIVOT === "true"
-    || process.env.OURMINE_LAB_AUTONOMOUS === "1"
+    || process.env.OURMINE_AUTONOMOUS === "1"
     || process.env.OURMINE_TIER1 === "1"
     || process.env.OURMINE_TIER1 === "true"
 }
@@ -146,7 +146,7 @@ export async function runAutonomousPivot(opts: {
 
   let bloodhoundReplay: unknown
   try {
-    const isLab = process.env.OURMINE_LAB_AUTONOMOUS === "1" || process.env.OURMINE_TIER1 === "1"
+    const isLab = process.env.OURMINE_AUTONOMOUS === "1" || process.env.OURMINE_TIER1 === "1"
     bloodhoundReplay = await replayCredentialGraphWithBloodHound(
       opts.credGraph,
       allHosts.filter((h) => hostInScope(h, envelope)),
@@ -154,7 +154,7 @@ export async function runAutonomousPivot(opts: {
     )
   } catch { /* optional */ }
 
-  const isLab = process.env.OURMINE_LAB_AUTONOMOUS === "1" || process.env.OURMINE_TIER1 === "1"
+  const isLab = process.env.OURMINE_AUTONOMOUS === "1" || process.env.OURMINE_TIER1 === "1"
   const spread = await lateralSpread({
     topology: new GraphTopology(topologyHosts),
     credentialStore: new CredStore(creds),

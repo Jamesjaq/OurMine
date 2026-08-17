@@ -498,15 +498,14 @@ export class AttackSurfaceGraph {
     )
   }
 
-  /** Load a persisted graph. */
-  static load(filePath: string): AttackSurfaceGraph {
-    const data = JSON.parse(fs.readFileSync(filePath, "utf8"))
+  /** Rehydrate a graph from its serialized JSON representation. */
+  static fromJSON(data: any): AttackSurfaceGraph {
     const g = new AttackSurfaceGraph(data.target, data.sessionId)
     for (const [ip, assetData] of Object.entries(data.assets ?? {})) {
-      const a  = g.upsertAsset(ip)
+      const a = g.upsertAsset(ip)
       const ad = assetData as any
-      a.notes     = ad.notes     ?? []
-      a.evidence  = ad.evidence  ?? []
+      a.notes = ad.notes ?? []
+      a.evidence = ad.evidence ?? []
       a.endpoints = ad.endpoints ?? []
       for (const [portStr, svcData] of Object.entries(ad.services ?? {})) {
         a.services.set(parseInt(portStr, 10), svcData as ServiceNode)
@@ -514,6 +513,11 @@ export class AttackSurfaceGraph {
     }
     g.paths = data.paths ?? []
     return g
+  }
+
+  /** Load a persisted graph. */
+  static load(filePath: string): AttackSurfaceGraph {
+    return AttackSurfaceGraph.fromJSON(JSON.parse(fs.readFileSync(filePath, "utf8")))
   }
 }
 

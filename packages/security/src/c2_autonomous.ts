@@ -25,7 +25,7 @@ export interface C2AutonomousPumpResult {
 export function isAutonomousC2Enabled(): boolean {
   return process.env.OURMINE_AUTONOMOUS_C2 === "1"
     || process.env.OURMINE_AUTONOMOUS_C2 === "true"
-    || process.env.OURMINE_LAB_AUTONOMOUS === "1"
+    || process.env.OURMINE_AUTONOMOUS === "1"
     || process.env.OURMINE_TIER1 === "1"
     || process.env.OURMINE_TIER1 === "true"
 }

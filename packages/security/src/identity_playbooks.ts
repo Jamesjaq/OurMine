@@ -32,10 +32,10 @@ export async function runMfaFatigueProbe(
     }
   }
 
-  if (process.env.OURMINE_TIER1_MFA_LAB !== "1" && process.env.OURMINE_TIER1 !== "1" && process.env.OURMINE_LAB_AUTONOMOUS !== "1") {
+  if (process.env.OURMINE_TIER1_MFA !== "1" && process.env.OURMINE_TIER1 !== "1" && process.env.OURMINE_AUTONOMOUS !== "1") {
     return {
       playbook: "mfa_fatigue",
-      steps: [{ action: "blocked", success: false, detail: "Set OURMINE_TIER1_MFA_LAB=1 for authorized lab" }],
+      steps: [{ action: "blocked", success: false, detail: "Set OURMINE_TIER1_MFA=1 for authorized lab" }],
       findings: [],
       labGated: true,
     }

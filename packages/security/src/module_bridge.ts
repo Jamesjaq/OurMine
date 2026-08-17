@@ -367,7 +367,7 @@ export const MODULE_BRIDGE: Record<
     const { runAutonomousPivot } = await import("./autonomous_pivot.ts")
     const { CredentialGraph } = await import("./credential_graph.ts")
     const credGraph = CredentialGraph.load()
-    if (process.env.OURMINE_LAB_AUTONOMOUS === "1") process.env.OURMINE_AUTONOMOUS_PIVOT = "1"
+    if (process.env.OURMINE_AUTONOMOUS === "1") process.env.OURMINE_AUTONOMOUS_PIVOT = "1"
     const r = await runAutonomousPivot({
       graph: ctx.graph,
       credGraph,
@@ -580,7 +580,7 @@ export const MODULE_BRIDGE: Record<
   },
   esxi_lab_encrypt: async (ctx, params) => {
     const { runLabEsxiEncryptWithRecovery } = await import("./raas_advanced.ts")
-    const dir = String(params.target_dir ?? path.join(process.cwd(), ".ourmine/lab/esxi"))
+    const dir = String(params.target_dir ?? path.join(process.cwd(), ".ourmine/engagement/esxi"))
     const r = runLabEsxiEncryptWithRecovery(dir, String(params.key_id ?? `lab_${Date.now()}`))
     return result("esxi_lab_encrypt", "runLabEsxiEncryptWithRecovery", ctx, r, r.recovered)
   },

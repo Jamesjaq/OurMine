@@ -142,6 +142,42 @@ test("ValidationPlanner — HTTP finding generates valid plan", () => {
 
 // ─── 8. ValidationPlanner: idempotency fingerprint is deterministic ───────────
 
+test("ValidationPlanner — rejects malformed or out-of-scope targets", () => {
+  const malformed = ValidationPlanner.plan({
+    findingId: "bad-target",
+    templateId: "http-probe",
+    service: "http",
+    target: "127.0.0.1:80;id",
+    authorizedScope: "127.0.0.1",
+  })
+  assert.strictEqual(malformed.plan, null)
+  assert.match(malformed.reason, /INVALID_TARGET/)
+
+  const outOfScope = ValidationPlanner.plan({
+    findingId: "other-host",
+    templateId: "http-probe",
+    service: "http",
+    target: "127.0.0.2:80",
+    authorizedScope: "127.0.0.1",
+  })
+  assert.strictEqual(outOfScope.plan, null)
+  assert.match(outOfScope.reason, /OUT_OF_SCOPE/)
+})
+
+test("ValidationPlanner — stateful read-only plans include a bounded command", () => {
+  const result = ValidationPlanner.plan({
+    findingId: "idor-test",
+    templateId: "idor",
+    service: "http",
+    target: "127.0.0.1:8080",
+    authorizedScope: "127.0.0.1",
+  })
+  assert.ok(result.plan)
+  assert.strictEqual(result.plan.destructive, false)
+  assert.match(result.plan.command ?? "", /^curl /)
+  assert.match(result.plan.command ?? "", /127\.0\.0\.1:8080/)
+})
+
 test("ValidationPlanner — same inputs produce same fingerprint", () => {
   const opts = {
     findingId: "fp-test", templateId: "http-probe",

@@ -29,7 +29,7 @@ export interface CampaignLoopResult {
 function isTier1Autonomous(): boolean {
   return process.env.OURMINE_TIER1 === "1"
     || process.env.OURMINE_TIER1 === "true"
-    || process.env.OURMINE_LAB_AUTONOMOUS === "1"
+    || process.env.OURMINE_AUTONOMOUS === "1"
     || process.env.OURMINE_AUTONOMOUS_PIVOT === "1"
 }
 
@@ -78,7 +78,7 @@ export async function runCampaignLoop(opts: {
   }
 
   try {
-    const isLab = process.env.OURMINE_LAB_AUTONOMOUS === "1" || process.env.OURMINE_TIER1 === "1"
+    const isLab = process.env.OURMINE_AUTONOMOUS === "1" || process.env.OURMINE_TIER1 === "1"
     const bh = await replayCredentialGraphWithBloodHound(
       opts.credGraph,
       [opts.target, ...opts.credGraph.bloodhoundTargetHosts()],

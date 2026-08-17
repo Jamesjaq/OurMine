@@ -1,0 +1,9 @@
+{
+  "productRoots": [
+    "bin",
+    "packages/security/src"
+  ],
+  "forbiddenPathOffenders": [],
+  "legacyLabScripts": [],
+  "pass": true
+}

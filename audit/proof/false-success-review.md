@@ -1,0 +1,110 @@
+# False-Success Review
+
+This is a static triage list. No site is treated as proven without lab evidence.
+
+- \:     return { stdout, stderr: "", success: true };
+- \:       return { cmd, output: r.stdout + r.stderr, success: true, dryRun: false };
+- \:     success: true,
+- \:     success: true,
+- \:     success: true,
+- \:     success: true,
+- \:     return { tool: "stix_ingest", command: "pollStixFeeds", dryRun: !ctx.live, success: true, output: JSON.stringify({ count: records.length }).slice(0, 4000) }
+- \:     return { tool: "stix_ingest", command: `ingestStixTaxii(${collectionId})`, dryRun: !ctx.live, success: true, output: JSON.stringify(result).slice(0, 4000) }
+- \:   return { tool: "stix_ingest", command: "loadTaxiiFeeds", dryRun: !ctx.live, success: true, output: JSON.stringify(loadTaxiiFeeds()).slice(0, 4000) }
+- \:     success: true,
+- \:   return { tool: "cpanel_audit", command: "auditCpanel", dryRun: !ctx.live, success: true, output: r.output }
+- \:   return { tool: "ai_agent_audit", command: "auditAIAgentGuardrails", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+- \:   return { tool: "ai_manipulation_test", command: "AiSecurityAnalyzer.analyzePromptSecurity", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+- \:   return { tool: "atlas_ml_audit", command: "atlas_arsenal", dryRun: !ctx.live, success: true, output: JSON.stringify({ prompts: prompts.length }).slice(0, 4000) }
+- \:   return { tool: "esxi_audit", command: "auditESXi", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+- \:   return { tool: "edge_audit", command: "auditEdgeAppliance", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+- \:   return { tool: "cicd_audit", command: "auditCICDAndK8s", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+- \:   return { tool: "idp_audit", command: "auditIdPAndOAuth", dryRun: !ctx.live, success: true, output: JSON.stringify(r).slice(0, 4000) }
+- \:   return { tool: "social_eng_assess", command: "social_eng checklist", dryRun: !ctx.live, success: true, output: JSON.stringify(email).slice(0, 4000) }
+- \:     success: true,
+- \:     success: true,
+- \:       return { tool: "vuln_research", command: `checkCisaKev(${query})`, dryRun: !ctx.live, success: true, output: JSON.stringify({ query, inKev }) }
+- \:   if (VM_VENDORS.some((v) => cpuModel.includes(v))) return true;
+- \:     if (VM_MAC_PREFIXES.some((prefix) => iface.mac.toLowerCase().startsWith(prefix))) return true;
+- \:       if (VM_VENDORS.some((v) => product.includes(v))) return true;
+- \:   if (os.cpus().length < 2) return true;
+- \:   if (os.totalmem() < 2 * 1024 ** 3) return true;
+- \:           if (content.includes("docker") || content.includes("lxc")) return true;
+- \:         return true;
+- \:   if (os.uptime() < 300) return true;
+- \:       if (match && parseInt(match[1]) > 0) return true;
+- \:     return true;
+- \:       if (ok) return { success: true, method: "resolvectl flush-caches" };
+- \:         return { success: true, method: "systemd-resolve --flush-caches" };
+- \:           return { success: true, method: "nscd cache flush attempted" };
+- \:         success: true,
+- \:     if (ok) return { success: true, method: "ipconfig /flushdns" };
+- \:       return { success: true, method: "swapoff/mkswap/swapon cycle" };
+- \:   return true
+- \:       return true
+- \:   return true
+- \:     phases.push({ phase: "cred_harvest", success: true, summary: "krbtgt already in graph", skipped: true, skipReason: "krbtgt present" })
+- \:     { name: "ares_zero_day_fuzzer", run: async () => { const r = await runZeroDayFuzzer({ live: true, target: "lab", rounds: 16 }); return { summary: r.summary, success: true } } },
+- \:     steps.push({ module: "ares_intel_feed", success: true, summary: JSON.stringify(intel).slice(0, 120) })
+- \:     steps.push({ module: "ares_recon", success: true, summary: JSON.stringify(recon).slice(0, 120) })
+- \:     steps.push({ module: "ares_bountyhunter", success: true, summary: JSON.stringify(bh).slice(0, 120) })
+- \:     steps.push({ module: "ares_vuln_research", success: true, summary: `kev=${vuln}` })
+- \:   if (h === envelope.primary.toLowerCase()) return true
+- \:     if (a === h) return true
+- \:     if (a.includes("/") && h.startsWith(a.split("/")[0]!)) return true
+- \:     if (h.endsWith(a.replace(/^\./, ""))) return true
+- \:         return { success: true, method: "lab_loopback", detail: `lab authorized pivot to ${hostIp}` }
+- \:     if (cred) opts.credGraph.ingestLateralResult(h, JSON.stringify({ success: true, method: "autonomous" }), cred.id)
+- \:       return { success: true, messageId: "dry-run-001", dryRun: true };
+- \:     if (!this.live) return { success: true, messageId: "dry-discord-001", dryRun: true };
+- \:     if (!this.live) return { success: true, messageId: "dry-graph-001", dryRun: true };
+- \:       phases.push({ phase: "segment_tunnel", success: true, detail: `SOCKS pivot toward ${assets[1]}` })
+- \:     if (fs.existsSync("/.dockerenv")) return true;
+- \:     if (fs.existsSync("/var/run/secrets/kubernetes.io/serviceaccount")) return true;
+- \:     if (/docker|kubepods|lxc|containerd/i.test(cgroup)) return true;
+- \:     return { success: true, output: `release_agent triggered via ${cgroupDir}` };
+- \:       success: true,
+- \:     return true
+- \:         this.recordPivot({ from: "local", to: host, method: result.method ?? "lateral", credentialId: credId, success: true })
+- \:   if (opts.live === true) return true
+- \:   if (env === "1" || env === "true") return true
+- \:   if (process.env.OURMINE_TIER1 === "1" || process.env.OURMINE_TIER1 === "true") return true
+- \:   if (process.env.OURMINE_LAB_AUTONOMOUS === "1") return true
+- \:   if (process.argv.includes("--live")) return true
+- \:   if (isKaliLinux()) return true
+- \:   stages.push({ stage: "chunk", success: true, detail: `${chunkData(data, opts.chunkSize ?? 32).length} chunks prepared` })
+- \:     stages.push({ stage: "dlp_analysis", success: true, detail: `${dlpBypassIndicators.length} indicator(s)` })
+- \:   steps.push({ action: "guardrail_audit", success: true, detail: JSON.stringify(audit).slice(0, 120) })
+- \:     return true
+- \:     if (opts.sector === "healthcare" && (p.id === "medusa" || p.id === "qilin")) return true
+- \:     if (p.cvePriority?.some((cve) => priorityCves.some((pc) => pc.cve === cve))) return true
+- \:     if (p.id === "jadepuffer" || p.id === "gtg_1002" || p.id === "knaithe") return true
+- \:     return { unitId, fc: 1, data: Array.from(resp.subarray(9, 9 + byteCount)), dryRun: false, success: true }
+- \:     return { unitId, fc: 3, data: regs, dryRun: false, success: true }
+- \:     return { unitId, fc: 5, data: [value ? 1 : 0], dryRun: false, success: true }
+- \:     return { unitId, fc: 6, data: [value], dryRun: false, success: true }
+- \:   return true;
+- \:       return { success: true, method: "ssh_key", detail: `authenticated as ${username}@${hostIp}` };
+- \:       return { success: true, method: "smbclient", detail: `authenticated as ${username}@${hostIp}` };
+- \:         return { success: true, username: match[1].trim(), password: (match[2] || '').trim(), tool: 'hydra', output: combined.slice(0, 500) }
+- \:           results.push({ success: true, hash: parts[0], cracked: parts[1], tool: 'john', output: line })
+- \:         return { success: true, hash, cracked: plain, tool: 'hashcat', output: cracked }
+- \:           results.push({ success: true, username: pair.user, password: pair.pass, tool: 'http-stuff', output: resp.slice(0, 200) })
+- \:     return { stdout, stderr: "", success: true }
+- \:     return true
+- \:       return { success: true, filePath: outFile, rawBytes: bytes }
+- \:   return true
+- \:           result = { tool: toolName, command: toolName, dryRun: !this.config.live, success: true, output: outputStr };
+- \:   return true;
+- \:   return true;
+- \:       success: true,
+- \:           success: true,
+- \:       return { success: true, token: issued.token }
+- \:       success: true,
+- \:       success: true,
+- \:     return true;
+- \:     success: true,
+- \:         steps.push({ action: "lockfile_match", success: true, detail: `Found in ${lf}`, artifact: fp })
+- \:         steps.push({ action: "lifecycle_script_audit", success: true, detail: scripts.join(", ") })
+- \:   if (NO_EXEC_PROBE.has(name)) return true
+- \:   if (name.startsWith("impacket-")) return true

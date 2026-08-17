@@ -5,10 +5,17 @@
 import * as net from "node:net";
 
 export interface TunnelConfig {
-  localPort: number;
-  remoteHost: string;
-  remotePort: number;
-  type: "socks5" | "port_forward" | "chisel";
+  localPort: number
+  remoteHost: string
+  remotePort: number
+  type: "socks5" | "port_forward" | "chisel"
+}
+
+export interface TunnelResult {
+  status: string
+  dryRun: boolean
+  localPort?: number
+  close?: () => Promise<void>
 }
 
 function listenEphemeral(server: net.Server, startPort: number, host = "127.0.0.1"): Promise<number> {
@@ -31,7 +38,7 @@ function listenEphemeral(server: net.Server, startPort: number, host = "127.0.0.
   })
 }
 
-export function createPortForwarder(config: TunnelConfig, live = false): { status: string; dryRun: boolean; localPort?: number } {
+export function createPortForwarder(config: TunnelConfig, live = false): TunnelResult {
   if (!live) {
     return {
       status: `[DRY-RUN] Forwarding localhost:${config.localPort} -> ${config.remoteHost}:${config.remotePort}`,
@@ -51,14 +58,20 @@ export function createPortForwarder(config: TunnelConfig, live = false): { statu
   let boundPort = config.localPort
   try {
     server.listen(boundPort, "127.0.0.1")
+    server.unref()
   } catch (err) {
     return { status: `Failed: ${(err as Error).message}`, dryRun: false }
   }
 
-  return { status: `Listening on 127.0.0.1:${boundPort}`, dryRun: false, localPort: boundPort };
+  return {
+    status: `Listening on 127.0.0.1:${boundPort}`,
+    dryRun: false,
+    localPort: boundPort,
+    close: () => new Promise((resolve) => server.close(() => resolve())),
+  };
 }
 
-export async function createPortForwarderAsync(config: TunnelConfig, live = false): Promise<{ status: string; dryRun: boolean; localPort?: number }> {
+export async function createPortForwarderAsync(config: TunnelConfig, live = false): Promise<TunnelResult> {
   if (!live) {
     return {
       status: `[DRY-RUN] Forwarding localhost:${config.localPort} -> ${config.remoteHost}:${config.remotePort}`,
@@ -77,8 +90,15 @@ export async function createPortForwarderAsync(config: TunnelConfig, live = fals
 
   try {
     const boundPort = await listenEphemeral(server, config.localPort)
-    return { status: `Listening on 127.0.0.1:${boundPort}`, dryRun: false, localPort: boundPort }
+    server.unref()
+    return {
+      status: `Listening on 127.0.0.1:${boundPort}`,
+      dryRun: false,
+      localPort: boundPort,
+      close: () => new Promise((resolve) => server.close(() => resolve())),
+    }
   } catch (err) {
+    server.close()
     return { status: `Failed: ${(err as Error).message}`, dryRun: false }
   }
 }

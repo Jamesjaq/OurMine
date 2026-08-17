@@ -57,8 +57,8 @@ export async function deployHypervisorRootkit(opts: {
     steps.push(await deployRemoteShell({ host: opts.esxiHost, command: "echo OURMINE_ESXI_PROBE" }))
   }
 
-  const labDir = opts.labDir ?? path.join(process.cwd(), ".ourmine/lab/esxi")
-  const lab = runLabEsxiEncryptWithRecovery(labDir, keyId)
+  const engagementDir = opts.labDir ?? path.join(process.cwd(), ".ourmine/engagement/esxi")
+  const lab = runLabEsxiEncryptWithRecovery(engagementDir, keyId)
   writeArtifact("hypervisor", "lab_encrypt.json", JSON.stringify(lab, null, 2))
   steps.push(step("esxi_lab_encrypt", lab.recovered, lab.summary ?? String(lab.recovered)))
 

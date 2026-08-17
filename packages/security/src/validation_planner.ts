@@ -333,9 +333,19 @@ export class ValidationPlanner {
     protocol?:      string
   }): { plan: ValidationPlan; capability: ValidationCapability } | { plan: null; reason: string } {
 
-    // 1. Scope check — target must be within authorized scope
-    if (!opts.target.startsWith(opts.authorizedScope) &&
-        !opts.authorizedScope.startsWith(opts.target.split(":")[0]!)) {
+    // 1. Parse and scope-check a strict host:port target before any command is built.
+    // This prevents shell metacharacters from crossing the validation boundary.
+    const targetMatch = opts.target.match(/^([A-Za-z0-9.-]+|\[[0-9A-Fa-f:]+\]):(\d{1,5})$/)
+    if (!targetMatch) {
+      return { plan: null, reason: `INVALID_TARGET: expected host:port, got ${opts.target}` }
+    }
+    const targetHost = targetMatch[1]!.replace(/^\[|\]$/g, "")
+    const targetPort = Number(targetMatch[2])
+    if (targetPort < 1 || targetPort > 65535) {
+      return { plan: null, reason: `INVALID_TARGET: port out of range in ${opts.target}` }
+    }
+    const scopeHost = opts.authorizedScope.replace(/^https?:\/\//, "").split(":")[0]!.replace(/^\[|\]$/g, "")
+    if (targetHost !== scopeHost) {
       return { plan: null, reason: `OUT_OF_SCOPE: ${opts.target} not in authorized scope ${opts.authorizedScope}` }
     }
 
@@ -403,10 +413,12 @@ export class ValidationPlanner {
       plan.stateFuzzFlowId = cap.strategy === "L3_BYPASS" ? "auth-bypass-chain" : "session-chain"
       plan.l3SafetyEnvelope = "read_only"
       plan.httpOptions = { method: "GET", path: "/" }
+      plan.command = `curl -sS --max-time ${cap.timeoutMs / 1000} -o /dev/null -w "%{http_code} %{size_download}" ${protocol}://${opts.target}/ 2>&1`
     } else if (cap.strategy === "L4_CONTROLLED_IMPACT") {
       plan.stateFuzzFlowId = "l4-canary-chain"
       plan.l3SafetyEnvelope = "read_only"
       plan.httpOptions = { method: "GET", path: "/api/v1/users" }
+      plan.command = `curl -sS --max-time ${cap.timeoutMs / 1000} -o /dev/null -w "%{http_code} %{size_download}" ${protocol}://${opts.target}/api/v1/users 2>&1`
     } else if (cap.strategy === "IDOR_BOLA") {
       plan.stateFuzzFlowId = "idor-bola-multi-user"
       plan.l3SafetyEnvelope = "read_only"

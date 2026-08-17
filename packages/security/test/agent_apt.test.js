@@ -83,7 +83,9 @@ test("executeAgentTool dispatches full registry", async () => {
   const ctx = { target: "127.0.0.1", graph: new AttackSurfaceGraph("127.0.0.1"), broker: new ToolBroker(), live: false }
   const res = await executeAgentTool(ctx, "recon", { domain: "example.com" })
   assert.strictEqual(res.tool, "recon")
-  assert.strictEqual(res.success, true)
+  assert.strictEqual(res.success, false)
+  assert.strictEqual(res.dryRun, true)
+  assert.match(res.error ?? "", /live|dry/i)
 })
 
 test("supply_chain scanLockfile detects poison indicators", async () => {

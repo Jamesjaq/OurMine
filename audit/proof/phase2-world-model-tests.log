@@ -1,0 +1,143 @@
+(node:32077) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# (node:32083) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: State Machine — legal forward transitions
+ok 1 - State Machine — legal forward transitions
+  ---
+  duration_ms: 1.708741
+  ...
+# Subtest: State Machine — SUSPECTED → CONFIRMED is ILLEGAL
+ok 2 - State Machine — SUSPECTED → CONFIRMED is ILLEGAL
+  ---
+  duration_ms: 0.487248
+  ...
+# Subtest: State Machine — CONFIRMED can retest or remediate
+ok 3 - State Machine — CONFIRMED can retest or remediate
+  ---
+  duration_ms: 0.202502
+  ...
+# Subtest: State Machine — FALSE_POSITIVE has no further transitions
+ok 4 - State Machine — FALSE_POSITIVE has no further transitions
+  ---
+  duration_ms: 0.919142
+  ...
+# Subtest: State Machine — VALIDATING → UNVERIFIED (not FALSE_POSITIVE on failure)
+ok 5 - State Machine — VALIDATING → UNVERIFIED (not FALSE_POSITIVE on failure)
+  ---
+  duration_ms: 0.207313
+  ...
+# Subtest: ValidationPlanner — OUT_OF_SCOPE blocks planning
+ok 6 - ValidationPlanner — OUT_OF_SCOPE blocks planning
+  ---
+  duration_ms: 0.468512
+  ...
+# Subtest: ValidationPlanner — no matching capability → null plan
+ok 7 - ValidationPlanner — no matching capability → null plan
+  ---
+  duration_ms: 0.442605
+  ...
+# Subtest: ValidationPlanner — HTTP finding generates valid plan
+ok 8 - ValidationPlanner — HTTP finding generates valid plan
+  ---
+  duration_ms: 0.92667
+  ...
+# Subtest: ValidationPlanner — rejects malformed or out-of-scope targets
+ok 9 - ValidationPlanner — rejects malformed or out-of-scope targets
+  ---
+  duration_ms: 0.391884
+  ...
+# Subtest: ValidationPlanner — stateful read-only plans include a bounded command
+ok 10 - ValidationPlanner — stateful read-only plans include a bounded command
+  ---
+  duration_ms: 0.5311
+  ...
+# Subtest: ValidationPlanner — same inputs produce same fingerprint
+ok 11 - ValidationPlanner — same inputs produce same fingerprint
+  ---
+  duration_ms: 0.284319
+  ...
+# Subtest: parseGobusterOutput — parses all endpoint types correctly
+ok 12 - parseGobusterOutput — parses all endpoint types correctly
+  ---
+  duration_ms: 0.412342
+  ...
+# Subtest: AttackSurfaceGraph.ingestGobuster — creates EndpointNodes with heuristics
+ok 13 - AttackSurfaceGraph.ingestGobuster — creates EndpointNodes with heuristics
+  ---
+  duration_ms: 1.340161
+  ...
+# Subtest: AttackSurfaceGraph.ingestGobuster — idempotent on re-run
+ok 14 - AttackSurfaceGraph.ingestGobuster — idempotent on re-run
+  ---
+  duration_ms: 0.36108
+  ...
+# Subtest: analyzeAttackPaths — admin endpoint triggers attack path
+ok 15 - analyzeAttackPaths — admin endpoint triggers attack path
+  ---
+  duration_ms: 0.454251
+  ...
+# Subtest: analyzeAttackPaths — excludes FALSE_POSITIVE vulns
+ok 16 - analyzeAttackPaths — excludes FALSE_POSITIVE vulns
+  ---
+  duration_ms: 0.393439
+  ...
+# Subtest: VulnNode — CONFIRMED has multiple evidence nodes
+ok 17 - VulnNode — CONFIRMED has multiple evidence nodes
+  ---
+  duration_ms: 0.233006
+  ...
+# Subtest: Graph — CONFIRMED finding upgrades attack path severity
+ok 18 - Graph — CONFIRMED finding upgrades attack path severity
+  ---
+  duration_ms: 0.43609
+  ...
+# Subtest: recommendNextActions — routes suspected vulns to validation_engine
+ok 19 - recommendNextActions — routes suspected vulns to validation_engine
+  ---
+  duration_ms: 0.441878
+  ...
+# Subtest: ingestNuclei — idempotent on same template-id
+ok 20 - ingestNuclei — idempotent on same template-id
+  ---
+  duration_ms: 0.304684
+  ...
+# Subtest: ValidationEngine — validate HTTP service on localhost:80 (live if available)
+ok 21 - ValidationEngine — validate HTTP service on localhost:80 (live if available)
+  ---
+  duration_ms: 1.023711
+  ...
+#   ✓ Closed-loop: 3 services, 1 vulns, 2 endpoints, 1 paths
+#     Vulns: confirmed=0 suspected=0 unverified=0 falsePos=1
+# Subtest: Closed-loop integration — all stages execute in sequence
+ok 22 - Closed-loop integration — all stages execute in sequence
+  ---
+  duration_ms: 45.943069
+  ...
+# (node:32084) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: world model syncs attack-surface facts with provenance and status
+ok 23 - world model syncs attack-surface facts with provenance and status
+  ---
+  duration_ms: 7.441277
+  ...
+# Subtest: world model keeps inferred uncertainty separate from verification
+ok 24 - world model keeps inferred uncertainty separate from verification
+  ---
+  duration_ms: 0.52593
+  ...
+# Subtest: only trusted primitives enter the reasoning registry and state persists
+ok 25 - only trusted primitives enter the reasoning registry and state persists
+  ---
+  duration_ms: 4.122281
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 248.526519

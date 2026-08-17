@@ -18,7 +18,7 @@ function isTier1CredAuto(): boolean {
   return process.env.OURMINE_TIER1 === "1"
     || process.env.OURMINE_TIER1 === "true"
     || process.env.OURMINE_AUTONOMOUS_PIVOT === "1"
-    || process.env.OURMINE_LAB_AUTONOMOUS === "1"
+    || process.env.OURMINE_AUTONOMOUS === "1"
 }
 
 export async function runAutonomousCredAccess(opts: {

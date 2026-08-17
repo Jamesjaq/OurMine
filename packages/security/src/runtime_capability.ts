@@ -40,7 +40,7 @@ const FALLBACK_MAP: Array<{ primary: string; fallback: string; reason: string }>
   { primary: "ffuf", fallback: "curl", reason: "manual path probe when fuzzers absent" },
 ]
 
-function probeCapabilities(): CapabilityProbe {
+export function probeCapabilities(): CapabilityProbe {
   let rawSockets = true
   let capNetRaw = false
   let unprivilegedUser = process.getuid?.() !== 0

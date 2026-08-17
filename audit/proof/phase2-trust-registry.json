@@ -1,0 +1,1101 @@
+{
+  "generatedAt": "2026-08-17T10:45:15.407Z",
+  "policy": "Only scoped primitives with independent evidence are trusted; namespace-level status is never inferred.",
+  "sourcePhase1Counts": {
+    "UNPROVEN": 203
+  },
+  "trustedPrimitiveCount": 5,
+  "trustedPrimitives": [
+    {
+      "id": "agent-tools.nmap_scan.loopback-fallback",
+      "status": "TRUSTED_PRIMITIVE",
+      "evidence": [
+        "audit/proof/http-lab-proof.json"
+      ],
+      "claims": [
+        "live execution",
+        "curl fallback selected",
+        "HTTP headers captured",
+        "port 8080 ingested into graph"
+      ],
+      "namespace": "agent-tools",
+      "namespaceStatus": "PARTIALLY_PROVEN"
+    },
+    {
+      "id": "agent-tools.optional-scanner-unavailable",
+      "status": "TRUSTED_PRIMITIVE",
+      "evidence": [
+        "audit/proof/http-lab-proof.json"
+      ],
+      "claims": [
+        "gobuster absence is explicit failure",
+        "nuclei absence is explicit failure",
+        "no simulated success"
+      ],
+      "namespace": "agent-tools",
+      "namespaceStatus": "PARTIALLY_PROVEN"
+    },
+    {
+      "id": "validation-planner.safety-boundary",
+      "status": "TRUSTED_PRIMITIVE",
+      "evidence": [
+        "audit/proof/ninth-pass-regression.log",
+        "audit/proof/adversarial-lab-checks.log"
+      ],
+      "claims": [
+        "malformed targets rejected",
+        "out-of-scope hosts rejected",
+        "read-only HTTP plans include bounded commands"
+      ],
+      "namespace": "validation-planner",
+      "namespaceStatus": "PARTIALLY_PROVEN"
+    },
+    {
+      "id": "pivot-tunnel.loopback-lifecycle",
+      "status": "TRUSTED_PRIMITIVE",
+      "evidence": [
+        "audit/proof/adversarial-lab-checks.log"
+      ],
+      "claims": [
+        "live tunnel binds",
+        "lab state forwards",
+        "close disposer removes listener"
+      ],
+      "namespace": "pivot-tunnel",
+      "namespaceStatus": "PARTIALLY_PROVEN"
+    },
+    {
+      "id": "agent-dispatch.failure-contract",
+      "status": "TRUSTED_PRIMITIVE",
+      "evidence": [
+        "audit/proof/adversarial-lab-checks.log",
+        "audit/proof/focused-after-scanner-fix.log"
+      ],
+      "claims": [
+        "dry-run is not success",
+        "unknown tool is structured failure",
+        "live-gated exceptions are contained"
+      ],
+      "namespace": "agent-dispatch",
+      "namespaceStatus": "PARTIALLY_PROVEN"
+    }
+  ],
+  "uncertainNamespaceCount": 203,
+  "uncertainNamespaces": [
+    {
+      "capability": "ad_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ad_engine.ts"
+    },
+    {
+      "capability": "ad_exploit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ad_exploit.ts"
+    },
+    {
+      "capability": "adcs_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/adcs_audit.ts"
+    },
+    {
+      "capability": "agent_resilience",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/agent_resilience.ts"
+    },
+    {
+      "capability": "agent_tools",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/agent_tools.ts"
+    },
+    {
+      "capability": "ai_agent_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ai_agent_audit.ts"
+    },
+    {
+      "capability": "ai_manipulation",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ai_manipulation.ts"
+    },
+    {
+      "capability": "ai_recon",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ai_recon.ts"
+    },
+    {
+      "capability": "aitm_proxy",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/aitm_proxy.ts"
+    },
+    {
+      "capability": "anti_analysis",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/anti_analysis.ts"
+    },
+    {
+      "capability": "anti_forensics",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/anti_forensics.ts"
+    },
+    {
+      "capability": "app_security_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/app_security_engine.ts"
+    },
+    {
+      "capability": "apt_playbook",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/apt_playbook.ts"
+    },
+    {
+      "capability": "apt_tradecraft",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/apt_tradecraft.ts"
+    },
+    {
+      "capability": "ares/_base",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/_base.ts"
+    },
+    {
+      "capability": "ares/_chain",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/_chain.ts"
+    },
+    {
+      "capability": "ares/_integrations",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/_integrations.ts"
+    },
+    {
+      "capability": "ares/_operational",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/_operational.ts"
+    },
+    {
+      "capability": "ares/ai_ml_attacks",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/ai_ml_attacks.ts"
+    },
+    {
+      "capability": "ares/airgap_bridge",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/airgap_bridge.ts"
+    },
+    {
+      "capability": "ares/anti_forensics_advanced",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/anti_forensics_advanced.ts"
+    },
+    {
+      "capability": "ares/cloud_native",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/cloud_native.ts"
+    },
+    {
+      "capability": "ares/evasion_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/evasion_engine.ts"
+    },
+    {
+      "capability": "ares/fileless_implant",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/fileless_implant.ts"
+    },
+    {
+      "capability": "ares/firmware_implant",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/firmware_implant.ts"
+    },
+    {
+      "capability": "ares/hardware_implant",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/hardware_implant.ts"
+    },
+    {
+      "capability": "ares/hypervisor_rootkit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/hypervisor_rootkit.ts"
+    },
+    {
+      "capability": "ares/index",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/index.ts"
+    },
+    {
+      "capability": "ares/kerberos_advanced",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/kerberos_advanced.ts"
+    },
+    {
+      "capability": "ares/lateral_scale",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/lateral_scale.ts"
+    },
+    {
+      "capability": "ares/network_exploit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/network_exploit.ts"
+    },
+    {
+      "capability": "ares/orchestrator",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/orchestrator.ts"
+    },
+    {
+      "capability": "ares/persistence_advanced",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/persistence_advanced.ts"
+    },
+    {
+      "capability": "ares/phase_runner",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/phase_runner.ts"
+    },
+    {
+      "capability": "ares/rat_builder",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/rat_builder.ts"
+    },
+    {
+      "capability": "ares/satellite_c2",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/satellite_c2.ts"
+    },
+    {
+      "capability": "ares/ss7_exploit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/ss7_exploit.ts"
+    },
+    {
+      "capability": "ares/supply_chain_implant",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/supply_chain_implant.ts"
+    },
+    {
+      "capability": "ares/zero_day_fuzzer",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ares/zero_day_fuzzer.ts"
+    },
+    {
+      "capability": "atlas_arsenal",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/atlas_arsenal.ts"
+    },
+    {
+      "capability": "attack_navigator",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/attack_navigator.ts"
+    },
+    {
+      "capability": "attack_surface",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/attack_surface.ts"
+    },
+    {
+      "capability": "auth_primitives",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/auth_primitives.ts"
+    },
+    {
+      "capability": "auto_research",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/auto_research.ts"
+    },
+    {
+      "capability": "autonomous_pivot",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/autonomous_pivot.ts"
+    },
+    {
+      "capability": "bountyhunter",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/bountyhunter.ts"
+    },
+    {
+      "capability": "browser_ext",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/browser_ext.ts"
+    },
+    {
+      "capability": "c2",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2.ts"
+    },
+    {
+      "capability": "c2_autonomous",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_autonomous.ts"
+    },
+    {
+      "capability": "c2_channels",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_channels.ts"
+    },
+    {
+      "capability": "c2_dwell_ops",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_dwell_ops.ts"
+    },
+    {
+      "capability": "c2_dwell_scheduler",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_dwell_scheduler.ts"
+    },
+    {
+      "capability": "c2_infra",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_infra.ts"
+    },
+    {
+      "capability": "c2_ops",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_ops.ts"
+    },
+    {
+      "capability": "c2_platform",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_platform.ts"
+    },
+    {
+      "capability": "c2_rotation",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/c2_rotation.ts"
+    },
+    {
+      "capability": "caldera_ttp",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/caldera_ttp.ts"
+    },
+    {
+      "capability": "campaign",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/campaign.ts"
+    },
+    {
+      "capability": "campaign_loop",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/campaign_loop.ts"
+    },
+    {
+      "capability": "capability_policy",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/capability_policy.ts"
+    },
+    {
+      "capability": "carding",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/carding.ts"
+    },
+    {
+      "capability": "cdp_client",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cdp_client.ts"
+    },
+    {
+      "capability": "cicd_k8s_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cicd_k8s_audit.ts"
+    },
+    {
+      "capability": "cicd_supplychain",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cicd_supplychain.ts"
+    },
+    {
+      "capability": "cloud",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cloud.ts"
+    },
+    {
+      "capability": "cloud_token",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cloud_token.ts"
+    },
+    {
+      "capability": "collection_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/collection_engine.ts"
+    },
+    {
+      "capability": "container",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/container.ts"
+    },
+    {
+      "capability": "container_k8s",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/container_k8s.ts"
+    },
+    {
+      "capability": "context_guard",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/context_guard.ts"
+    },
+    {
+      "capability": "counter_intel",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/counter_intel.ts"
+    },
+    {
+      "capability": "covert_c2",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/covert_c2.ts"
+    },
+    {
+      "capability": "cred_access_auto",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cred_access_auto.ts"
+    },
+    {
+      "capability": "cred_dump",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cred_dump.ts"
+    },
+    {
+      "capability": "cred_parse",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/cred_parse.ts"
+    },
+    {
+      "capability": "credential_graph",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/credential_graph.ts"
+    },
+    {
+      "capability": "crypto_token",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/crypto_token.ts"
+    },
+    {
+      "capability": "deaddrop",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/deaddrop.ts"
+    },
+    {
+      "capability": "dev_target",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/dev_target.ts"
+    },
+    {
+      "capability": "dry_run_simulator",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/dry_run_simulator.ts"
+    },
+    {
+      "capability": "ebpf_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ebpf_audit.ts"
+    },
+    {
+      "capability": "edge_appliance_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/edge_appliance_audit.ts"
+    },
+    {
+      "capability": "edr_evasion",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/edr_evasion.ts"
+    },
+    {
+      "capability": "edr_feedback_loop",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/edr_feedback_loop.ts"
+    },
+    {
+      "capability": "engagement_memory",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/engagement_memory.ts"
+    },
+    {
+      "capability": "engagement_watch",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/engagement_watch.ts"
+    },
+    {
+      "capability": "esxi_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/esxi_audit.ts"
+    },
+    {
+      "capability": "evasion",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/evasion.ts"
+    },
+    {
+      "capability": "evilginx_lab",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/evilginx_lab.ts"
+    },
+    {
+      "capability": "exec_options",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/exec_options.ts"
+    },
+    {
+      "capability": "exfil",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/exfil.ts"
+    },
+    {
+      "capability": "exfil_channels",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/exfil_channels.ts"
+    },
+    {
+      "capability": "exploit_adapter",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/exploit_adapter.ts"
+    },
+    {
+      "capability": "exploit_synthesis",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/exploit_synthesis.ts"
+    },
+    {
+      "capability": "financial",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/financial.ts"
+    },
+    {
+      "capability": "financial_fraud",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/financial_fraud.ts"
+    },
+    {
+      "capability": "financial_ops",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/financial_ops.ts"
+    },
+    {
+      "capability": "finding_lifecycle",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/finding_lifecycle.ts"
+    },
+    {
+      "capability": "firmware",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/firmware.ts"
+    },
+    {
+      "capability": "http_state_fuzzer",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/http_state_fuzzer.ts"
+    },
+    {
+      "capability": "hybrid_ad_entra",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/hybrid_ad_entra.ts"
+    },
+    {
+      "capability": "identity",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/identity.ts"
+    },
+    {
+      "capability": "identity_chain",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/identity_chain.ts"
+    },
+    {
+      "capability": "identity_playbooks",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/identity_playbooks.ts"
+    },
+    {
+      "capability": "identity_prt",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/identity_prt.ts"
+    },
+    {
+      "capability": "identity_theft",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/identity_theft.ts"
+    },
+    {
+      "capability": "idp_oauth_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/idp_oauth_audit.ts"
+    },
+    {
+      "capability": "impact_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/impact_engine.ts"
+    },
+    {
+      "capability": "implant_gen",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/implant_gen.ts"
+    },
+    {
+      "capability": "index",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/index.ts"
+    },
+    {
+      "capability": "infra",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/infra.ts"
+    },
+    {
+      "capability": "insider",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/insider.ts"
+    },
+    {
+      "capability": "intel_feeds",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/intel_feeds.ts"
+    },
+    {
+      "capability": "iot_scada",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/iot_scada.ts"
+    },
+    {
+      "capability": "lab_http_harness",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/lab_http_harness.ts"
+    },
+    {
+      "capability": "lateral",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/lateral.ts"
+    },
+    {
+      "capability": "live_ad_attacks",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_ad_attacks.ts"
+    },
+    {
+      "capability": "live_cred_attacks",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_cred_attacks.ts"
+    },
+    {
+      "capability": "live_exec",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_exec.ts"
+    },
+    {
+      "capability": "live_executor",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_executor.ts"
+    },
+    {
+      "capability": "live_pivot",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_pivot.ts"
+    },
+    {
+      "capability": "live_postex",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_postex.ts"
+    },
+    {
+      "capability": "live_privesc",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_privesc.ts"
+    },
+    {
+      "capability": "live_recon",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_recon.ts"
+    },
+    {
+      "capability": "live_scanner",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_scanner.ts"
+    },
+    {
+      "capability": "live_web_exploit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/live_web_exploit.ts"
+    },
+    {
+      "capability": "llm_client",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/llm_client.ts"
+    },
+    {
+      "capability": "lolbins",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/lolbins.ts"
+    },
+    {
+      "capability": "lolbins_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/lolbins_audit.ts"
+    },
+    {
+      "capability": "malware_dev",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/malware_dev.ts"
+    },
+    {
+      "capability": "mcp_bridged_tools",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/mcp_bridged_tools.ts"
+    },
+    {
+      "capability": "mcp_dispatch",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/mcp_dispatch.ts"
+    },
+    {
+      "capability": "mcp_efficiency",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/mcp_efficiency.ts"
+    },
+    {
+      "capability": "mcp_server",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/mcp_server.ts"
+    },
+    {
+      "capability": "mcp_tool_search",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/mcp_tool_search.ts"
+    },
+    {
+      "capability": "mcp_tool_types",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/mcp_tool_types.ts"
+    },
+    {
+      "capability": "meterpreter",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/meterpreter.ts"
+    },
+    {
+      "capability": "mobile",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/mobile.ts"
+    },
+    {
+      "capability": "module_bridge",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/module_bridge.ts"
+    },
+    {
+      "capability": "module_helpers",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/module_helpers.ts"
+    },
+    {
+      "capability": "msf_client",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/msf_client.ts"
+    },
+    {
+      "capability": "multi_cloud_asm",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/multi_cloud_asm.ts"
+    },
+    {
+      "capability": "multi_lang",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/multi_lang.ts"
+    },
+    {
+      "capability": "net_device",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/net_device.ts"
+    },
+    {
+      "capability": "oauth_chain",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/oauth_chain.ts"
+    },
+    {
+      "capability": "opencode_bootstrap",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/opencode_bootstrap.ts"
+    },
+    {
+      "capability": "opencode_tool_policy",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/opencode_tool_policy.ts"
+    },
+    {
+      "capability": "operational_depth_score",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/operational_depth_score.ts"
+    },
+    {
+      "capability": "opsec",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/opsec.ts"
+    },
+    {
+      "capability": "opsec_gate",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/opsec_gate.ts"
+    },
+    {
+      "capability": "opsec_throttle",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/opsec_throttle.ts"
+    },
+    {
+      "capability": "parameter_analyzer",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/parameter_analyzer.ts"
+    },
+    {
+      "capability": "pdf_report",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/pdf_report.ts"
+    },
+    {
+      "capability": "pentagi_docker",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/pentagi_docker.ts"
+    },
+    {
+      "capability": "pentestgpt_agent",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/pentestgpt_agent.ts"
+    },
+    {
+      "capability": "pentestgpt_ptt",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/pentestgpt_ptt.ts"
+    },
+    {
+      "capability": "persistence",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/persistence.ts"
+    },
+    {
+      "capability": "physical",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/physical.ts"
+    },
+    {
+      "capability": "pivot_replay",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/pivot_replay.ts"
+    },
+    {
+      "capability": "pivot_tunnel",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/pivot_tunnel.ts"
+    },
+    {
+      "capability": "policy_daemon",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/policy_daemon.ts"
+    },
+    {
+      "capability": "polymorphic",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/polymorphic.ts"
+    },
+    {
+      "capability": "privesc",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/privesc.ts"
+    },
+    {
+      "capability": "privesc_chains",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/privesc_chains.ts"
+    },
+    {
+      "capability": "proof_pack",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/proof_pack.ts"
+    },
+    {
+      "capability": "proof_report",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/proof_report.ts"
+    },
+    {
+      "capability": "raas_advanced",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/raas_advanced.ts"
+    },
+    {
+      "capability": "raas_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/raas_engine.ts"
+    },
+    {
+      "capability": "raas_wallet",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/raas_wallet.ts"
+    },
+    {
+      "capability": "ransomware",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/ransomware.ts"
+    },
+    {
+      "capability": "repl",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/repl.ts"
+    },
+    {
+      "capability": "runtime_capability",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/runtime_capability.ts"
+    },
+    {
+      "capability": "runtime_exec",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/runtime_exec.ts"
+    },
+    {
+      "capability": "sandbox_runner",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/sandbox_runner.ts"
+    },
+    {
+      "capability": "scanner_parsers",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/scanner_parsers.ts"
+    },
+    {
+      "capability": "segment_tunnel_orchestrator",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/segment_tunnel_orchestrator.ts"
+    },
+    {
+      "capability": "skills",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/skills.ts"
+    },
+    {
+      "capability": "social_eng",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/social_eng.ts"
+    },
+    {
+      "capability": "social_eng_auto",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/social_eng_auto.ts"
+    },
+    {
+      "capability": "stego_c2",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/stego_c2.ts"
+    },
+    {
+      "capability": "stix_ingest",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/stix_ingest.ts"
+    },
+    {
+      "capability": "strix_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/strix_engine.ts"
+    },
+    {
+      "capability": "strix_session",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/strix_session.ts"
+    },
+    {
+      "capability": "supply_chain",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/supply_chain.ts"
+    },
+    {
+      "capability": "supply_chain_exec",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/supply_chain_exec.ts"
+    },
+    {
+      "capability": "telecom_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/telecom_audit.ts"
+    },
+    {
+      "capability": "tier1_config",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/tier1_config.ts"
+    },
+    {
+      "capability": "tier1_depth_metrics",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/tier1_depth_metrics.ts"
+    },
+    {
+      "capability": "tier1_orchestrator",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/tier1_orchestrator.ts"
+    },
+    {
+      "capability": "tier1_validation",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/tier1_validation.ts"
+    },
+    {
+      "capability": "tool_broker",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/tool_broker.ts"
+    },
+    {
+      "capability": "tool_detection",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/tool_detection.ts"
+    },
+    {
+      "capability": "toolkit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/toolkit.ts"
+    },
+    {
+      "capability": "top_cut_score",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/top_cut_score.ts"
+    },
+    {
+      "capability": "uefi_bootkit_audit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/uefi_bootkit_audit.ts"
+    },
+    {
+      "capability": "validation_engine",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/validation_engine.ts"
+    },
+    {
+      "capability": "validation_planner",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/validation_planner.ts"
+    },
+    {
+      "capability": "vuln_research",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/vuln_research.ts"
+    },
+    {
+      "capability": "web_exploit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/web_exploit.ts"
+    },
+    {
+      "capability": "webmail_exploit",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/webmail_exploit.ts"
+    },
+    {
+      "capability": "which",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/which.ts"
+    },
+    {
+      "capability": "yara",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/yara.ts"
+    },
+    {
+      "capability": "yara_rules",
+      "status": "UNCERTAIN",
+      "implementation": "packages/security/src/yara_rules.ts"
+    }
+  ]
+}

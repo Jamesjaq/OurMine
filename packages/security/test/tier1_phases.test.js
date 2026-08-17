@@ -25,15 +25,15 @@ import { executeSupplyChainChain } from "../src/supply_chain_exec.ts"
 import { EngagementMemory } from "../src/engagement_memory.ts"
 import { executeAgentTool } from "../src/agent_tools.ts"
 import { bridgedToolNames } from "../src/module_bridge.ts"
-import { startTier1LabServer } from "../src/lab_http_harness.ts"
+import { startTier1LabServer } from "./fixtures/lab_http_harness.ts"
 
-/** @type {import("../src/lab_http_harness.ts").LabHttpHarness} */
+/** @type {import("./fixtures/lab_http_harness.ts").LabHttpHarness} */
 let lab
 
 before(async () => {
   process.env.OURMINE_LIVE = "1"
   process.env.OURMINE_TIER1 = "1"
-  process.env.OURMINE_LAB_AUTONOMOUS = "1"
+  process.env.OURMINE_AUTONOMOUS = "1"
   lab = await startTier1LabServer(18100)
 })
 
@@ -89,7 +89,7 @@ describe("P0: HTTP state fuzzer + L3/L4 validation (live)", () => {
 })
 
 describe("P0: Autonomous pivot (live lab)", () => {
-  test("autonomous pivot enabled with OURMINE_LAB_AUTONOMOUS", async () => {
+  test("autonomous pivot enabled with OURMINE_AUTONOMOUS", async () => {
     assert.equal(isAutonomousPivotEnabled(), true)
     const graph = new AttackSurfaceGraph("127.0.0.1")
     const credGraph = new CredentialGraph()

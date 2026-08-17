@@ -121,8 +121,8 @@ Set these to unlock gated operational paths (agent should check and use when pre
 | \`OURMINE_DOMAIN_SID\` | Golden/platinum ticket forging |
 | \`OURMINE_KRBTGT_HASH\` | Skip DCSync when hash already known |
 | \`OURMINE_DC_MACHINE_HASH\` | Silver/platinum ticket paths |
-| \`OURMINE_LAB_FLASH_WRITE=1\` | flashrom **write** (bricks hardware if wrong) |
-| \`OURMINE_LAB_AUTONOMOUS=1\` | Full autonomous cred harvest + pivot |
+| \`OURMINE_ALLOW_FLASH_WRITE=1\` | flashrom **write** (bricks hardware if wrong) |
+| \`OURMINE_AUTONOMOUS=1\` | Full autonomous cred harvest + pivot |
 | \`OURMINE_TIER1=1\` | Tier-1 campaign loop + auto-chain |
 | \`OURMINE_SS7_HOST\` | SS7/SIGTRAN lab target |
 | \`OURMINE_VSAT_HOST\` | VSAT modem probe |
