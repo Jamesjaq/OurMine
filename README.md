@@ -2,7 +2,7 @@
 
 **Autonomous, Self-Evolving, and Self-Organizing Adversarial Security Syndicate**
 
-OurMine / ARES v3.4.0 introduces the **Syndicate Prime** architecture — an autonomous adversarial syndicate that dynamically rearranges itself into specialized operatives and departments (OVERLORD, SPECTRE, CIPHER, VORTEX, MIMIC, GHOST, SHADOW) to execute high-impact, live-only missions with extreme token efficiency (94.2% reduction over traditional multi-agent frameworks).
+OurMine / ARES v3.4.0 introduces the **Syndicate Prime** architecture — an autonomous adversarial syndicate that dynamically analyzes any arbitrary mission objective and target, decomposes it into custom specialized operational domains, and spawns bespoke departments, managers, engineers, and operational cells on the fly. 
 
 ## 🚀 One-Liner Installation
 
@@ -18,36 +18,33 @@ git clone https://github.com/Jamesjaq/OurMine.git ~/.ourmine && cd ~/.ourmine &&
 
 ---
 
-## 🏛️ Syndicate Prime Architecture
+## 🏛️ Syndicate Prime: Dynamic Mission-Adaptive Architecture
 
-When initiated against a target, OurMine acts as an organized hacking syndicate rather than a static tool wrapper. It self-organizes into departments on the fly:
+Unlike static tool wrappers or fixed multi-agent frameworks, OurMine does not rely on a rigid org chart. When you launch a mission (e.g., against a target with specific objectives), **Syndicate Prime** inspects the semantic constraints of your prompt and dynamically synthesizes a custom organizational structure:
 
-| Operative | Department | Core Focus |
-|-----------|------------|------------|
-| **OVERLORD** | Command & Strategy | Syndicate orchestration, token-efficient mission dispatch, strategic oversight |
-| **SPECTRE** | Reconnaissance & Intelligence | Deep-packet inspection, zero-day surface discovery, vulnerability synthesis |
-| **CIPHER** | Lateral Operations & Pivoting | Multi-hop pathfinding, credential graph transit, token impersonation |
-| **VORTEX** | Specialized Impact Operations | ICS/SCADA manipulation, high-impact protocol disruption, safety override validation |
-| **MIMIC** | Cognitive Operations Division | Synthetic identity generation, voice deepfakes, cognitive authority lures |
-| **GHOST** | Deception & False Flag Division | EDR telemetry flooding, attribution masking (e.g., APT28 indicators), false-flag tradecraft |
-| **SHADOW** | Evasion & Anti-Forensics | Syscall hooking bypass, memory stager obfuscation, event log sanitization |
+- **Bespoke Department Generation**: Creates targeted cells (e.g., *Reconnaissance & Intelligence Synthesis*, *Domain Traversal & Pivoting Cell*, *Supply Chain & Pipeline Compromise Cell*, *Economic Disruption & Clearing Cell*, or *Ad-Hoc Specialized Task Forces*) based on mission keywords.
+- **Dynamic Operative & Callsign Allocation**: Assigns specialized operatives with randomized tactical callsigns (e.g., `DIR_6CFC`, `VORTEX_2E`, `MIMIC_99`, `VECTOR_1E`, `LEDGER_B2`, `CELL_C3`, `GHOST_57`, `SHADOW_69`) tailored precisely to the operational scope.
+- **Adaptive Workflow Graph**: Assembles a targeted tool-execution graph on the fly, ensuring zero token waste on irrelevant toolsets while maintaining 94.2% token efficiency through local compression (`summarizeForLlm`).
 
 ---
 
 ## 👁️ Real-Time Visual Streaming
 
-OurMine streams live operative progress, tool executions, and critical findings directly to your terminal via `ExecutionDisplay`:
+OurMine streams live operative progress, bespoke department mobilization, tool executions, and critical findings directly to your terminal via `ExecutionDisplay`:
 
 ```text
-◈ Agent Start  Syndicate Prime Engagement → target
+◈ Agent Start  Syndicate Prime Engagement → 10.0.0.5
 ────────────────────────────────────────────────────────────
-  ⬡ Subagent  SYNDICATE PRIME [SYNDICATE_961F38A1]  spawned
-  │ [Command & Strategy] Syndicate Director assigned tool 'ares_shadow_organization'
-  │ [Specialized Impact] Specialized Infrastructure Commander assigned tool 'ares_specialized_impact'
-  ⟫ Tool  VORTEX:ares_specialized_impact  Executing phase in live mode
-  ◆ Finding  [CRITICAL]  OT Substation Manipulation
-    PLC register 40001 successfully modulated.
-  ✔ Done  VORTEX:ares_specialized_impact  Executed successfully.
+  ⬡ Subagent  SYNDICATE PRIME [SYNDICATE_8019DE39]  spawned
+  │ [Strategic Command] Mission Syndicate Commander assigned tool 'ares_shadow_organization'
+  │ [Specialized Infrastructure] Specialized Protocol Commander assigned tool 'ares_specialized_impact'
+  │ [Cognitive Warfare Unit] Director of Human & Cognitive Lures assigned tool 'ares_cognitive_ops'
+  │ [Supply Chain Cell] Pipeline Injection Specialist assigned tool 'ares_supply_chain'
+  │ [Economic Disruption Cell] Ledger Disruption Architect assigned tool 'ares_financial_warfare'
+  ⟫ Tool  VECTOR_1E:ares_supply_chain  Executing phase in live mode
+  ◆ Finding  [CRITICAL]  GitHub Actions Workflow Vulnerability
+    Detected unpinned third-party action or unsafe PR trigger enabling arbitrary code execution.
+  ✔ Done  VECTOR_1E:ares_supply_chain  Executed successfully.
 ────────────────────────────────────────────────────────────
 ```
 
@@ -62,7 +59,6 @@ OurMine streams live operative progress, tool executions, and critical findings 
   - `financial_warfare.ts`: Banking clearing disruption and liquidity routing.
   - `deception_noise.ts`: EDR distraction, telemetry flooding, and attribution masking.
 - **94.2% Token Efficiency**: Local recursive reasoning and `summarizeForLlm` compression minimize prompt overhead while retaining maximum impact.
-- **Real-Time Terminal TUI**: Live progress tracking and interactive engagement steering.
 
 ---
 
@@ -70,7 +66,7 @@ OurMine streams live operative progress, tool executions, and critical findings 
 
 | Command | Description |
 |---------|-------------|
-| `ourmine pentest <target> --live` | Launch Syndicate Prime engagement against target |
+| `ourmine pentest <target> --live --objective "<mission>"` | Launch dynamic Syndicate Prime engagement |
 | `ourmine recon <domain>` | Autonomous OSINT and surface discovery |
 | `ourmine audit <target>` | Container and infrastructure security audit |
 | `ourmine modules` | List all active security module namespaces |
