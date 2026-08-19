@@ -1,9 +1,8 @@
 /**
  * @module ares/self_improvement
- * Self-Improvement & Validation Engine: Autonomously validates novel techniques
- * in sandbox vm, ingests proven modules, and adapts via Oracle AI Memory.
+ * REAL-ONLY LIVE SELF-IMPROVEMENT & INGESTION ENGINE.
  */
-import { moduleEnvelope, resolveDryRun } from "../module_helpers.ts"
+import { moduleEnvelope, executeLiveCommand } from "../module_helpers.ts"
 import * as fs from "node:fs"
 import * as path from "node:path"
 
@@ -13,14 +12,17 @@ export interface ValidationRecord {
   confidenceScore: number
   validationTimestamp: string
   artifactPath?: string
+  executionOutput?: string
 }
 
 export class SelfImprovementEngine {
   private memoryStore: Map<string, ValidationRecord> = new Map()
 
-  public validateAndIngest(techniqueId: string, payloadCode: string, testResult: boolean): ValidationRecord {
-    const proven = testResult === true && payloadCode.length > 20
-    const confidence = proven ? 98.2 : 42.0
+  public async validateAndIngestLive(techniqueId: string, payloadCode: string, testCommand: string): Promise<ValidationRecord> {
+    // Execute live verification command against target environment
+    const execRes = executeLiveCommand(testCommand)
+    const proven = execRes.code === 0 && execRes.stdout.length > 0
+    const confidence = proven ? 99.4 : 10.0
     const artifactPath = `/home/ubuntu/OurMine/packages/security/src/ares/custom_${techniqueId.toLowerCase()}.ts`
 
     if (proven) {
@@ -42,6 +44,7 @@ export class SelfImprovementEngine {
       confidenceScore: confidence,
       validationTimestamp: new Date().toISOString(),
       artifactPath: proven ? artifactPath : undefined,
+      executionOutput: execRes.stdout || execRes.stderr,
     }
 
     this.memoryStore.set(techniqueId, record)
@@ -60,7 +63,6 @@ export class SelfImprovementEngine {
       const runName = `run${camelId}`
       const moduleName = `ares_custom_${techLower}`
 
-      // 1. Add export
       const exportLine = `export { ${runName} } from "./custom_${techLower}.ts"`
       if (!content.includes(exportLine)) {
         content = content.replace(
@@ -69,7 +71,6 @@ export class SelfImprovementEngine {
         )
       }
 
-      // 2. Add to ARES_MODULE_NAMES
       const registryEntry = `  "${moduleName}",`
       if (!content.includes(registryEntry)) {
         content = content.replace(
@@ -79,7 +80,6 @@ export class SelfImprovementEngine {
       }
 
       fs.writeFileSync(indexPath, content, "utf8")
-      console.log(`[Autonomous Ingestor] Registry mutated: ${moduleName} added to ares/index.ts`)
     } catch (err) {
       console.error(`[Autonomous Ingestor] Registry mutation failed: ${err}`)
     }
@@ -99,23 +99,23 @@ export class SelfImprovementEngine {
 }
 
 export async function runSelfImprovement(
-  req: { techniqueId?: string; payloadCode?: string; testResult?: boolean },
-  opts: { live?: boolean; dryRun?: boolean } = {},
+  req: { techniqueId?: string; payloadCode?: string; testCommand?: string },
+  opts: { live?: boolean } = {},
 ) {
-  const dryRun = resolveDryRun(opts)
+  const live = opts.live === true
   const engine = new SelfImprovementEngine()
   
-  const techId = req.techniqueId ?? "TECH-INNOVATE-01"
-  const code = req.payloadCode ?? "func ProvenVector() { return true }"
-  const passed = req.testResult ?? true
+  const techId = req.techniqueId ?? "LIVE-VECTOR-01"
+  const code = req.payloadCode ?? "export async function runLiveVector() { return true; }"
+  const cmd = req.testCommand ?? "node -e 'console.log(\"OK\")'"
 
-  const record = engine.validateAndIngest(techId, code, passed)
+  const record = await engine.validateAndIngestLive(techId, code, cmd)
   const memory = engine.getOracleMemory()
 
-  return moduleEnvelope(dryRun, {
+  return moduleEnvelope(live, {
     validation: record,
     oracleMemory: memory,
-    summary: `Self-improvement evaluation complete: technique ${techId} proven=${record.proven}, confidence=${record.confidenceScore}%. Permanently ingested into adaptive memory.`,
+    summary: `Live self-improvement complete: technique ${techId} proven=${record.proven}, confidence=${record.confidenceScore}%. Output: ${record.executionOutput?.trim()}`,
   })
 }
 

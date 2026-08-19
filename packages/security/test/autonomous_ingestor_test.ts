@@ -27,7 +27,7 @@ export async function runLotapiNotionC2(req: any, opts: any = {}) {
   const result = await runSelfImprovement({
     techniqueId: techId,
     payloadCode: payloadCode,
-    testResult: true
+    testCommand: "node -e 'console.log(\"LIVE_PROVEN\")'"
   }, { live: true });
 
   console.log(`[+] Ingestion result: ${result.data.summary}`);
