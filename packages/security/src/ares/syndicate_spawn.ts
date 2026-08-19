@@ -225,6 +225,21 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_anti_forensics")
 
+    // 13. Dynamic Tool Synthesis (Self-Coding Detection)
+    // If the objective explicitly mentions a non-standard ares_ tool, mobilize a dynamic synthesis cell.
+    const customTools = words.filter(w => w.startsWith("ares_") && !workflow.includes(w))
+    for (const tool of customTools) {
+      operatives.push({
+        department: "Autonomous Development & Synthesis Cell",
+        title: "Dynamic Tradecraft Engineer",
+        callsign: `SYNTH_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: `Synthesizing and integrating bespoke tactical module: ${tool}`,
+        assignedTool: tool,
+        autonomyLevel: "execution"
+      })
+      workflow.push(tool)
+    }
+
     const uniqueDepts = new Set(operatives.map(o => o.department))
 
     return {
