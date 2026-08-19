@@ -63,6 +63,19 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_innovation_engine")
 
+    // 0.1 Infinite Evolution & Meta-Synthesis Cell
+    if (has(["evolve", "future", "dormant", "years", "persist", "long", "infinite", "autonomous"])) {
+      operatives.push({
+        department: "Infinite Innovation & Temporal Evolution Division",
+        title: "Chief Evolutionary Architect",
+        callsign: `EVOLVE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Autonomous meta-tool synthesis, future defense mutation, and multi-year persistent dormancy",
+        assignedTool: "ares_infinite_innovation",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_infinite_innovation")
+    }
+
     // 1. Multi-Platform Adaptation Cell
     if (has(["macos", "mac", "apple", "mobile", "ios", "android", "atm", "xfs", "windows", "win", "linux"])) {
       operatives.push({

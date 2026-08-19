@@ -40,6 +40,7 @@ export { runDeceptionEngine as runDeceptionNoise } from "./deception_noise.ts"
 export { runC2Resilience } from "./c2_resilience.ts"
 export { runMultiPlatformArsenal } from "./multi_platform_arsenal.ts"
 export { runKaliBridge } from "./kali_bridge.ts"
+export { runInfiniteInnovation } from "./infinite_innovation.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -84,6 +85,7 @@ export const ARES_MODULE_NAMES = [
   "ares_c2_resilience",
   "ares_multi_platform_arsenal",
   "ares_kali_bridge",
+  "ares_infinite_innovation",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

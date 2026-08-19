@@ -35,7 +35,8 @@ import {
   runAirgapBridge,
   runC2Resilience,
   runMultiPlatformArsenal,
-  runKaliBridge
+  runKaliBridge,
+  runInfiniteInnovation
 } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 import { ExecutionDisplay } from "../runtime_exec.ts"
@@ -213,6 +214,10 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_kali_bridge":
           res = await runKaliBridge({ tool: "nmap", target, live: true })
+          res.success = true
+          break
+        case "ares_infinite_innovation":
+          res = await runInfiniteInnovation({ target, missionHorizon: "multi_year_dormant", live: true })
           res.success = true
           break
         default:
