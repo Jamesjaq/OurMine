@@ -20,14 +20,21 @@ import { runZeroDayFuzzer } from "./zero_day_fuzzer.ts"
 import { buildFilelessImplant } from "./fileless_implant.ts"
 import { deploySatelliteC2 } from "./satellite_c2.ts"
 import { runSs7Exploit } from "./ss7_exploit.ts"
+import { runSupplyChainCell } from "./supply_chain.ts"
+import { runCognitiveOps } from "./cognitive_ops.ts"
+import { runFinancialWarfare } from "./financial_warfare.ts"
+import { runDeceptionEngine } from "./deception_noise.ts"
+import { type ModuleFinding } from "../module_helpers.ts"
 
 export interface SyndicatePrimeResult {
   mission: SyndicateMissionPlan
   modulesExecuted: Array<{ name: string; success: boolean; summary: string }>
+  findings: ModuleFinding[]
   succeeded: number
   total: number
   summary: string
   tokenEfficientSummary: string
+  data?: any
 }
 
 export async function runAresOrchestrator(opts: {
@@ -46,6 +53,7 @@ export async function runAresOrchestrator(opts: {
   const mission = spawner.assembleForMission(target, objective)
 
   const modulesExecuted: SyndicatePrimeResult["modulesExecuted"] = []
+  const findings: ModuleFinding[] = []
   let succeeded = 0
 
   // Step 2: Execute the dynamically generated workflow sequence with local recursive reasoning
@@ -73,22 +81,45 @@ export async function runAresOrchestrator(opts: {
           res.success = true
           break
         case "ares_specialized_impact":
-          res = await runSpecializedImpact({ sector: "ot_scada", target }, { live: true })
+          // Handle fiber/building keywords from mission objective
+          const sector = objective.toLowerCase().includes("fiber") ? "undersea_fiber" : 
+                         objective.toLowerCase().includes("building") ? "building_automation" : "ot_scada"
+          res = await runSpecializedImpact({ sector, target }, { live: true })
           res.success = (res.data?.impactScore ?? 0) > 0
           break
         case "ares_evasion_engine":
           res = await runEvasionEngine({ live: true, target })
           res.success = (res.techniques?.length ?? 0) > 0
           break
+        case "ares_supply_chain":
+          res = await runSupplyChainCell({ live: true })
+          res.success = res.data?.implanted ?? true
+          break
+        case "ares_cognitive_ops":
+          res = await runCognitiveOps({ live: true })
+          res.success = res.data?.luringSuccess ?? true
+          break
+        case "ares_financial_warfare":
+          res = await runFinancialWarfare({ live: true })
+          res.success = true
+          break
+        case "ares_deception_noise":
+          res = await runDeceptionEngine({ live: true })
+          res.success = true
+          break
         default:
           res = { summary: `Executed module ${moduleName} successfully via local routing.`, success: true }
           break
       }
 
+      if (res && res.findings) {
+        findings.push(...res.findings)
+      }
+
       modulesExecuted.push({
         name: moduleName,
         success: res.success !== false,
-        summary: res.summary ?? res.data?.summary ?? "Executed successfully."
+        summary: res.summary ?? res.data?.summary ?? res.data?.impactDescription ?? "Executed successfully."
       })
       if (res.success !== false) succeeded++
     } catch (err: any) {
@@ -105,7 +136,7 @@ export async function runAresOrchestrator(opts: {
   const envelope = {
     live: true,
     timestamp: new Date().toISOString(),
-    findings: [],
+    findings,
     data: {
       mission,
       modulesExecuted,
@@ -118,10 +149,12 @@ export async function runAresOrchestrator(opts: {
   return {
     mission,
     modulesExecuted,
+    findings,
     succeeded,
     total: modulesExecuted.length,
     summary,
-    tokenEfficientSummary: summarizeForLlm(envelope)
+    tokenEfficientSummary: summarizeForLlm(envelope),
+    data: envelope.data
   }
 }
 

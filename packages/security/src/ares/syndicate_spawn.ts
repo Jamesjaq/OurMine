@@ -101,8 +101,8 @@ export class SyndicateSpawner {
       workflow.push("ares_self_healing")
     }
 
-    // Check for specialized impact (OT, SS7, Satellite, AI/ML)
-    if (words.some(w => ["ot", "scada", "ss7", "telecom", "satellite", "space", "ai", "ml", "neural"].includes(w))) {
+    // Check for specialized impact (OT, SS7, Satellite, Fiber, Building, AI/ML)
+    if (words.some(w => ["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural"].includes(w))) {
       operatives.push({
         department: "Specialized Impact Operations",
         title: "Specialized Infrastructure Commander",
@@ -113,6 +113,56 @@ export class SyndicateSpawner {
       })
       workflow.push("ares_specialized_impact")
     }
+
+    // Check for Supply Chain targeting
+    if (words.some(w => ["supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow"].includes(w))) {
+      operatives.push({
+        department: "Supply Chain Syndicate",
+        title: "Lead Pipeline Operative",
+        callsign: "VECTOR",
+        missionFocus: "CI/CD compromise, package repository injection, and dependency manipulation",
+        assignedTool: "ares_supply_chain",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_supply_chain")
+    }
+
+    // Check for Cognitive Warfare / Social Engineering
+    if (words.some(w => ["cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human"].includes(w))) {
+      operatives.push({
+        department: "Cognitive Operations Division",
+        title: "Director of Human Engineering",
+        callsign: "MIMIC",
+        missionFocus: "Synthetic identity manipulation, voice deepfakes, and cognitive lure deployment",
+        assignedTool: "ares_cognitive_ops",
+        autonomyLevel: "tactical"
+      })
+      workflow.push("ares_cognitive_ops")
+    }
+
+    // Check for Financial Disruption
+    if (words.some(w => ["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital"].includes(w))) {
+      operatives.push({
+        department: "Economic Disruption Cell",
+        title: "Financial Systems Architect",
+        callsign: "LEDGER",
+        missionFocus: "Banking protocol exploitation, clearing network impact, and capital redirection",
+        assignedTool: "ares_financial_warfare",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_financial_warfare")
+    }
+
+    // Always ensure Deception & False Flag Division for v3.3+
+    operatives.push({
+      department: "Deception & False Flag Division",
+      title: "Chief Deception Officer",
+      callsign: "GHOST",
+      missionFocus: "EDR telemetry flooding, attribution masking, and false-flag tradecraft",
+      assignedTool: "ares_deception_noise",
+      autonomyLevel: "execution"
+    })
+    workflow.push("ares_deception_noise")
 
     // Always ensure an Evasion & Anti-Forensics Division
     operatives.push({

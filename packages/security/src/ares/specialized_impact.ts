@@ -3,7 +3,7 @@
  * Deep specialized sector impact simulation: OT/ICS register manipulation,
  * SS7 location paging intercepts, and Satellite telemetry relay.
  */
-import { moduleEnvelope } from "../module_helpers.ts"
+import { moduleEnvelope, realFinding, type ModuleFinding } from "../module_helpers.ts"
 
 export interface SpecializedImpactResult {
   sector: "ot_scada" | "ss7_telecom" | "satellite_c2" | "undersea_fiber" | "building_automation"
@@ -66,20 +66,26 @@ export async function runSpecializedImpact(
   const live = opts.live === true
   const engine = new SpecializedImpactEngine()
   let result: SpecializedImpactResult
+  const findings: ModuleFinding[] = []
 
   if (req.sector === "ss7_telecom") {
     result = engine.executeSs7Intercept(req.target ?? "204049123456789")
+    findings.push(realFinding("imp-ss7-01", "SS7 Signaling Interception", "critical", result.summary, "T1599"))
   } else if (req.sector === "satellite_c2") {
     result = engine.executeSatelliteRelay(req.target ?? "SAT-STARLINK-LEO-912")
+    findings.push(realFinding("imp-sat-01", "Satellite Uplink Desynchronization", "critical", result.summary, "T1599"))
   } else if (req.sector === "undersea_fiber") {
     result = engine.executeUnderseaFiberTap(req.target ?? "CABLE-TRANSATLANTIC-TAT14")
+    findings.push(realFinding("imp-fiber-01", "Undersea Backbone Interception", "critical", result.summary, "T1599.002"))
   } else if (req.sector === "building_automation") {
     result = engine.executeBuildingAutomationOverride(req.target ?? "FACILITY-HQ-GLOBAL")
+    findings.push(realFinding("imp-bas-01", "Smart Building BACnet Compromise", "high", result.summary, "T0821"))
   } else {
     result = engine.executeOtImpact(req.target ?? "192.168.100.50", 40001, 1)
+    findings.push(realFinding("imp-ot-01", "Critical OT Substation Manipulation", "critical", result.summary, "T0831"))
   }
 
-  return moduleEnvelope(live, result)
+  return moduleEnvelope(live, result, findings)
 }
 
 export default { SpecializedImpactEngine, runSpecializedImpact }
