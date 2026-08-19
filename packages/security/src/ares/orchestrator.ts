@@ -125,11 +125,15 @@ export async function runAresOrchestrator(opts: {
           res.success = res.data?.luringSuccess ?? true
           break
         case "ares_financial_warfare":
-          res = await runFinancialWarfare({ live: true })
+          const finVector = objective.toLowerCase().includes("clearing") || objective.toLowerCase().includes("swift") ? "swift_gateway" : 
+                            objective.toLowerCase().includes("ledger") ? "ledger_manipulation" : "iso20022_injection"
+          res = await runFinancialWarfare({ vector: finVector, live: true })
           res.success = true
           break
         case "ares_deception_noise":
-          res = await runDeceptionEngine({ live: true })
+          const maskGroup = objective.toLowerCase().includes("lazarus") ? "Lazarus Group" : 
+                            objective.toLowerCase().includes("fancy") ? "APT28 (Fancy Bear)" : "Scattered Spider"
+          res = await runDeceptionEngine({ attributedGroup: maskGroup, live: true })
           res.success = true
           break
         default:
