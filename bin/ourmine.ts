@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * OurMine ⛏️ — OpenCode + ARES Security Platform
  *
@@ -42,7 +41,7 @@ const SECURITY_COMMANDS = new Set([
 
 function securityHelp() {
   console.log(`
-${C.bold}${C.orange}OurMine Syndicate Prime (v3.2.1):${C.reset}
+${C.bold}${C.orange}OurMine Syndicate Prime (v3.4.0):${C.reset}
   ourmine recon <target>       Syndicate-driven recon: Dynamic cell synthesis
   ourmine audit <target>       High-fidelity infrastructure & sector audit
   ourmine pentest <target>     Full autonomous Syndicate Prime engagement
@@ -62,7 +61,7 @@ ${C.bold}${C.orange}OurMine Syndicate Prime (v3.2.1):${C.reset}
 
 ${C.bold}Syndicate Directives:${C.reset}
   ${C.grey}--live${C.reset}                       Enable ABSOLUTE LIVE execution (no mocks)
-  ${C.grey}--dry-run${C.reset}                    Simulation is FORBIDDEN in v3.2.1 (throws error)
+  ${C.grey}--dry-run${C.reset}                    Simulation is FORBIDDEN in v3.4.0 (throws error)
   ${C.grey}--require-live${C.reset}               Strict dependency enforcement
 
 ${C.grey}All other commands are passed directly to the real OpenCode binary.${C.reset}
@@ -99,16 +98,21 @@ function delegateToOpenCode(args: string[]): void {
 // ─── Security command handlers ────────────────────────────────────────────────
 
 async function cmdRecon(target: string, display: ExecutionDisplay, isLive: boolean, objective?: string) {
-  display.emit({ type: "agent_start", label: `Syndicate Recon → ${target}` })
+  display.emit({ type: "agent_start", label: `Syndicate Reconnaissance → ${target}` })
+  const { runSyndicateSpawn } = await import("../packages/security/src/ares/syndicate_spawn.ts")
+
+  const spawnPlan = runSyndicateSpawn({ target, objective: objective ?? `Reconnaissance and surface profiling on ${target}` }, { live: isLive })
+  display.emit({ type: "tool_start", label: "Syndicate Assembler", detail: `${spawnPlan.structure.totalDepartments} departments, ${spawnPlan.structure.totalOperatives} operatives` })
+
   const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")
-  
   const res = await runAresOrchestrator({
     target,
-    objective: objective ?? "Full spectrum reconnaissance and attack surface mapping",
+    objective: objective ?? "Autonomous reconnaissance and asset profiling",
+    display,
   }, { live: isLive })
 
-  display.emit({ type: "finding", label: "Syndicate Findings", severity: "info", detail: res.summary })
-  display.emit({ type: "agent_done", label: `Syndicate Recon → ${target}` })
+  display.emit({ type: "finding", label: "Recon Summary", severity: "high", detail: res.summary })
+  display.emit({ type: "agent_done", label: `Syndicate Reconnaissance → ${target}` })
 }
 
 async function cmdAudit(target: string, display: ExecutionDisplay, isLive: boolean, objective?: string) {
@@ -117,7 +121,8 @@ async function cmdAudit(target: string, display: ExecutionDisplay, isLive: boole
 
   const res = await runAresOrchestrator({
     target,
-    objective: objective ?? "Deep infrastructure audit and vulnerability discovery",
+    objective: objective ?? "Comprehensive infrastructure security audit",
+    display,
   }, { live: isLive })
 
   display.emit({ type: "finding", label: "Syndicate Audit Results", severity: "high", detail: res.summary })
@@ -141,83 +146,31 @@ async function cmdPentest(target: string, display: ExecutionDisplay, isLive: boo
 async function cmdModules() {
   const { toolSummary, checkTools } = await import("../packages/security/src/tool_detection.ts")
   const mods = Object.keys(security).filter((k) => !k.startsWith("_")).sort()
-  console.log(`\n${C.bold}ARES Security Modules (${mods.length} namespaces):${C.reset}\n`)
-  mods.forEach((mod, i) => {
-    const num = String(i + 1).padStart(3, " ")
-    console.log(`  ${C.orange}${num}.${C.reset} ${C.cyan}${mod.padEnd(28)}${C.reset}`)
-  })
-  console.log(`\n${C.bold}Tool availability (sample):${C.reset}`)
-  const sample = checkTools("nmap", "gobuster", "curl", "nuclei", "kubectl")
-  for (const t of sample) {
-    const mark = t.available ? `${C.green}✓${C.reset}` : `${C.red}✗${C.reset}`
-    console.log(`  ${mark} ${t.name}${t.version ? ` v${t.version}` : ""}`)
+  console.log(`\n${C.bold}${C.orange}OurMine Security Modules (${mods.length} namespaces):${C.reset}\n`)
+  for (const m of mods) {
+    const val = (security as Record<string, any>)[m]
+    const fnCount = typeof val === "object" && val !== null ? Object.keys(val).length : 1
+    console.log(`  ${C.cyan}• ${m.padEnd(28)}${C.reset} ${C.grey}(${fnCount} exported symbols)${C.reset}`)
   }
-  console.log(`\n${C.grey}Run 'ourmine toolcheck' for full tool report.${C.reset}\n`)
+  const status = checkTools()
+  console.log(`\n${C.bold}Tool Availability:${C.reset} ${status.availableCount}/${status.totalCount} binaries found\n`)
 }
 
 async function cmdServe() {
-  console.log(`${C.bold}${C.orange}OurMine ARES MCP Server${C.reset}`)
-  console.log(`${C.grey}Starting MCP server on stdio...${C.reset}`)
-  console.log(`${C.grey}Connect an LLM agent to this process for tool access.${C.reset}\n`)
-
   const { startMcpServer } = await import("../packages/security/src/mcp_server.ts")
-  startMcpServer()
+  await startMcpServer()
 }
 
-async function cmdAgent(target: string, isLive: boolean, requireLive: boolean) {
-  console.log(`\n${C.bold}${C.orange}OurMine LLM-Driven Pentest Agent${C.reset}`)
-  console.log(`${C.grey}Target: ${target} | Mode: ${isLive ? "LIVE" : "DRY-RUN"}${requireLive ? " | REQUIRE-LIVE" : ""}${C.reset}\n`)
-
-  const { hasLLMKey, listProviders } = await import("../packages/security/src/llm_client.ts")
-  if (!hasLLMKey()) {
-    console.log(`${C.yellow}No LLM API key found. Running in deterministic mode.${C.reset}`)
-    console.log(`${C.grey}Set ANTHROPIC_API_KEY, OPENAI_API_KEY, or GOOGLE_API_KEY for AI-driven analysis.${C.reset}\n`)
-  } else {
-    const providers = listProviders()
-    console.log(`${C.green}LLM providers available: ${providers.join(", ")}${C.reset}\n`)
-  }
-
-  const { PentestAgent } = await import("../packages/security/src/pentestgpt_agent.ts")
-  const agent = new PentestAgent({
-    target,
-    scope: [target],
-    live: isLive,
-    requireLive,
-    maxSteps: 30,
-  })
-
-  console.log(`${C.cyan}Starting autonomous pentest...${C.reset}\n`)
-  const result = await agent.runAutonomous()
-
-  console.log(`\n${C.bold}${C.green}═══ PENTEST COMPLETE ═══${C.reset}\n`)
-  console.log(`${C.bold}Summary:${C.reset}`)
-  console.log(`  Target: ${result.summary["target"]}`)
-  console.log(`  Tasks completed: ${result.summary["completed"]}/${result.summary["totalTasks"]}`)
-
-  const findings = result.summary["findings"] as Record<string, number> | undefined
-  if (findings) {
-    console.log(`  Findings: ${findings["critical"] ?? 0} critical, ${findings["high"] ?? 0} high, ${findings["medium"] ?? 0} medium, ${findings["low"] ?? 0} low`)
-  }
-
-  if (result.findings.length > 0) {
-    console.log(`\n${C.bold}Findings:${C.reset}`)
-    for (const f of result.findings) {
-      const color = f.severity === "critical" ? C.red : f.severity === "high" ? C.orange : f.severity === "medium" ? C.yellow : C.grey
-      console.log(`  ${color}[${f.severity.toUpperCase()}]${C.reset} ${f.title}`)
-      console.log(`    ${C.grey}${f.recommendation}${C.reset}`)
-    }
-  }
-  console.log()
+async function cmdAgent(target: string, isLive: boolean) {
+  const display = new ExecutionDisplay()
+  display.emit({ type: "agent_start", label: `Pentest Agent → ${target}` })
+  const agent = new PentestAgent({ target, live: isLive })
+  const result = await agent.run()
+  display.emit({ type: "finding", label: "Agent Result", severity: "high", detail: result })
+  display.emit({ type: "agent_done", label: `Pentest Agent → ${target}` })
 }
 
-async function cmdToolCheck() {
-  const { toolSummary } = await import("../packages/security/src/tool_detection.ts")
-  console.log(`\n${C.bold}${C.orange}ARES Tool Detection${C.reset}\n`)
-  console.log(toolSummary())
-  console.log()
-}
-
-async function cmdWatch(target: string, intervalMinutes: number, isLive: boolean, daemon: boolean) {
+async function cmdWatch(target: string, intervalMinutes: number, daemon: boolean, isLive: boolean) {
   const { runWatchCycle, computeDelta, startWatch } = await import("../packages/security/src/engagement_watch.ts")
   console.log(`\n${C.bold}${C.orange}Engagement Watch${C.reset}`)
   console.log(`${C.grey}Target: ${target} | Interval: ${intervalMinutes}m | Mode: ${isLive ? "LIVE" : "DRY-RUN"}${daemon ? " | DAEMON" : ""}${C.reset}\n`)
@@ -330,49 +283,9 @@ async function main() {
   const { isKaliLinux } = await import("../packages/security/src/apt_tradecraft.ts")
   const isLive  = !dryRun && (args.includes("--live") || isKaliLinux())
 
-  // No args → Interactive Mission Control or OpenCode TUI
+  // No args → launch real opencode TUI (ARES auto-wired)
   if (args.length === 0) {
-    const readline = await import("node:readline")
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-    
-    console.log(`\n${C.bold}${C.orange}╔══════════════════════════════════════════════════════════════╗${C.reset}`)
-    console.log(`${C.bold}${C.orange}║${C.reset} ${C.bold}OurMine / ARES v3.4.0 — Syndicate Prime Mission Control${C.reset}       ${C.bold}${C.orange}║${C.reset}`)
-    console.log(`${C.bold}${C.orange}╚══════════════════════════════════════════════════════════════╝${C.reset}\n`)
-    console.log(`Select mode:`)
-    console.log(`  ${C.cyan}1${C.reset}) ${C.bold}Interactive Syndicate Mission${C.reset} (Autonomous live engagement & Spawner)`)
-    console.log(`  ${C.cyan}2${C.reset}) ${C.bold}Launch OpenCode TUI${C.reset} (AI chat workspace with ARES MCP wired)`)
-    console.log(`  ${C.cyan}3${C.reset}) ${C.bold}Exit${C.reset}\n`)
-
-    const question = (query: string): Promise<string> => new Promise((resolve) => rl.question(query, resolve))
-    const choice = (await question(`Select option [1-3]: `)).trim()
-
-    if (choice === "2") {
-      rl.close()
-      launchOpenCode([])
-      return
-    }
-    if (choice === "3" || choice.toLowerCase() === "q") {
-      rl.close()
-      process.exit(0)
-      return
-    }
-
-    // Default to interactive mission control
-    console.log(`\n${C.green}▶ Initializing Syndicate Prime Mission Control...${C.reset}\n`)
-    const targetInput = (await question(`Enter Target [default: 127.0.0.1]: `)).trim()
-    const target = targetInput || "127.0.0.1"
-
-    const objectiveInput = (await question(`Enter Mission Objective [default: Autonomous penetration, pivoting, and impact]: `)).trim()
-    const objective = objectiveInput || "Autonomous penetration, tactical pivoting, and covert impact"
-
-    const liveInput = (await question(`Execute in ABSOLUTE LIVE mode? [Y/n]: `)).trim()
-    const isLive = liveInput.toLowerCase() !== "n"
-
-    rl.close()
-
-    console.log(`\n${C.orange}⚡ Mobilizing Syndicate for target '${target}'...${C.reset}\n`)
-    const display = new ExecutionDisplay()
-    await cmdPentest(target, display, isLive, objective)
+    launchOpenCode([])
     return
   }
 
@@ -440,15 +353,20 @@ async function main() {
         await cmdServe()
         break
       case "agent":
-        await cmdAgent(target, isLive, requireLive)
-        break
-      case "toolcheck":
-        await cmdToolCheck()
+        await cmdAgent(target, isLive)
         break
       case "watch": {
-        const intervalArg = rest.find((a) => /^\d+$/.test(a))
-        const interval = parseInt(intervalArg ?? "60", 10) || 60
-        await cmdWatch(target, interval, isLive, daemon)
+        const interval = parseInt(rest[1] ?? "60", 10) || 60
+        await cmdWatch(target, interval, daemon, isLive)
+        break
+      }
+      case "retest": {
+        const findingId = rest[1]
+        if (!findingId) {
+          console.error(`${C.red}Error: missing finding ID for retest${C.reset}`)
+          process.exit(1)
+        }
+        await cmdRetest(target, findingId, isLive)
         break
       }
       case "topcut":
@@ -460,27 +378,20 @@ async function main() {
       case "tier1":
         await cmdTier1(target, isLive)
         break
-      case "tier1bench":
-        await import("../lab/tier1_benchmark.ts").then((m) => m.runTier1Benchmark())
-        break
-      case "retest": {
-        const findingId = rest[1]
-        if (!findingId) {
-          console.error(`${C.red}Usage: ourmine retest <target> <finding-id>${C.reset}`)
-          process.exit(1)
-        }
-        await cmdRetest(target, findingId, isLive)
+      case "tier1bench": {
+        const { runTier1LabBenchmark } = await import("../packages/security/src/tier1_orchestrator.ts")
+        await runTier1LabBenchmark()
         break
       }
     }
     return
   }
 
-  // ── Everything else → real opencode binary, full stdio passthrough ─────────
-  launchOpenCode(passArgs)
+  // Fallback: delegate everything else to opencode binary
+  delegateToOpenCode(args)
 }
 
-main().catch(e => {
-  console.error(`\x1b[31m[OurMine Error]\x1b[0m ${e?.message ?? e}`)
+main().catch((e) => {
+  console.error(e)
   process.exit(1)
 })

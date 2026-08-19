@@ -10,35 +10,16 @@ OurMine / ARES v3.4.0 introduces the **Syndicate Prime** architecture — an aut
 curl -fsSL https://raw.githubusercontent.com/Jamesjaq/OurMine/main/install.sh | bash && ourmine
 ```
 
-Just type `ourmine` in your terminal to open **Interactive Mission Control**!
+Just type `ourmine` in your terminal to launch the OpenCode TUI with ARES Syndicate Prime wired automatically!
 
 ---
 
-## 🎯 Interactive Mission Control
+## 🎯 How It Works
 
-When you simply type `ourmine` without arguments, the terminal opens an interactive mission wizard:
-
-```text
-╔══════════════════════════════════════════════════════════════╗
-║ OurMine / ARES v3.4.0 — Syndicate Prime Mission Control       ║
-╚══════════════════════════════════════════════════════════════╝
-
-Select mode:
-  1) Interactive Syndicate Mission (Autonomous live engagement & Spawner)
-  2) Launch OpenCode TUI (AI chat workspace with ARES MCP wired)
-  3) Exit
-
-Select option [1-3]: 1
-
-▶ Initializing Syndicate Prime Mission Control...
-Enter Target [default: 127.0.0.1]: 127.0.0.1
-Enter Mission Objective [default: Autonomous penetration, pivoting, and impact]: Infiltrate SCADA grid and deploy voice lures
-Execute in ABSOLUTE LIVE mode? [Y/n]: Y
-
-⚡ Mobilizing Syndicate for target '127.0.0.1'...
-```
-
-The syndicate instantly reorganizes itself, spawns tailored departments, streams execution via `ExecutionDisplay`, and delivers verified live findings!
+1. Type `ourmine` in your terminal.
+2. The **OpenCode TUI** opens instantly with ARES MCP and the pentest agent pre-configured.
+3. Select your model (e.g. `/model`) and simply **tell the AI your mission and target** (e.g., *"Target localhost, infiltrate energy grid, pivot to OT, deploy synthetic voice lure"*).
+4. The agent immediately mobilizes **Syndicate Prime**, dynamically assembling bespoke departments and operatives to execute the mission with extreme token efficiency (94.2% reduction) and real-time streaming.
 
 ---
 
@@ -54,7 +35,7 @@ The syndicate instantly reorganizes itself, spawns tailored departments, streams
 
 | Command | Description |
 |---------|-------------|
-| `ourmine` | Launch Interactive Syndicate Mission Control or OpenCode TUI |
+| `ourmine` | Launch OpenCode TUI with ARES Syndicate Prime wired |
 | `ourmine pentest <target> --live --objective "<mission>"` | Direct headless syndicate engagement |
 | `ourmine recon <domain>` | Autonomous OSINT and surface discovery |
 | `ourmine audit <target>` | Container and infrastructure security audit |
