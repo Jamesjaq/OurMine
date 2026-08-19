@@ -1,12 +1,17 @@
 /**
  * @module ares/syndicate_spawn
- * ARES v3.4.1 Syndicate Spawn Engine — Fully Dynamic & Adaptive Organizational Assembler.
+ * ARES v4.0.0 Syndicate Spawn Engine — Fully Dynamic & Adaptive Organizational Assembler.
  * Analyzes any arbitrary mission objective and target, decomposes it into 
  * custom specialized operational domains, and spawns bespoke departments, managers, 
  * engineers, and operational cells on the fly.
+ * 
+ * BESPOKE MODE: Allows the AI model to explicitly define and name departments via:
+ * [DEPT: Name] { Focus: "...", Tool: "...", Title: "..." }
  */
 import { moduleEnvelope, summarizeForLlm } from "../module_helpers.ts"
 import * as crypto from "node:crypto"
+import * as fs from "node:fs"
+import * as path from "node:path"
 
 export interface OperativeRole {
   department: string
@@ -34,11 +39,28 @@ export class SyndicateSpawner {
   public assembleForMission(target: string, objective: string): SyndicateMissionPlan {
     const cleanObj = objective.toLowerCase()
     const words = cleanObj.replace(/[^\w\s]/gi, '').split(/\s+/)
-    const uniqueKeywords = Array.from(new Set(words.filter(w => w.length > 3)))
-
+    
     const operatives: OperativeRole[] = []
     const workflow: string[] = []
 
+    // --- Phase 1: Bespoke Syndicate Architect Mode ---
+    // Syntax: [DEPT: Name] { Focus: "...", Tool: "...", Title: "..." }
+    const bespokeRegex = /\[DEPT:\s*([^\]]+)\]\s*\{\s*Focus:\s*"([^"]+)"\s*,\s*Tool:\s*"([^"]+)"\s*(?:,\s*Title:\s*"([^"]+)")?\s*\}/gi
+    let match
+    while ((match = bespokeRegex.exec(objective)) !== null) {
+      const [_, deptName, focus, tool, title] = match
+      operatives.push({
+        department: deptName.trim(),
+        title: title?.trim() ?? "Bespoke Syndicate Operative",
+        callsign: `SPEC_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: focus.trim(),
+        assignedTool: tool.trim(),
+        autonomyLevel: "execution"
+      })
+      workflow.push(tool.trim())
+    }
+
+    // --- Phase 2: Standard Syndicate Logic (Augmentation) ---
     const directorCallsign = `DIR_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
     operatives.push({
       department: `Strategic Command (${target.slice(0, 16)})`,
@@ -74,7 +96,7 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_strategic_gap_analysis")
 
-    // Omega Protocol v4.0 Execution Cells (Triggered on quantum, hardware, cognitive, or cross-chain keywords)
+    // Omega Protocol v4.0 Execution Cells
     if (has(["quantum", "hndl", "decrypt", "pqc", "lattice"])) {
       operatives.push({
         department: "Quantum & Cryptographic Dominance",
@@ -160,7 +182,7 @@ export class SyndicateSpawner {
       workflow.push("ares_infinite_innovation")
     }
 
-    // 1. Multi-Platform Adaptation Cell
+    // Standard Multi-Domain Cells
     if (has(["macos", "mac", "apple", "mobile", "ios", "android", "atm", "xfs", "windows", "win", "linux"])) {
       operatives.push({
         department: "Multi-Platform Adaptation Unit",
@@ -173,7 +195,6 @@ export class SyndicateSpawner {
       workflow.push("ares_multi_platform_arsenal")
     }
 
-    // 2. Kali Linux Tool Orchestration Cell
     if (has(["kali", "nmap", "sqlmap", "metasploit", "hydra", "gobuster", "exploit", "brute"])) {
       operatives.push({
         department: "Kali Linux Tooling Division",
@@ -186,7 +207,6 @@ export class SyndicateSpawner {
       workflow.push("ares_kali_bridge")
     }
 
-    // 3. Recon / Discovery Cell
     if (has(["recon", "scan", "find", "discover", "audit", "map", "intel", "infiltrate", "probe", "survey"])) {
       operatives.push({
         department: "Reconnaissance & Intelligence Synthesis",
@@ -196,10 +216,8 @@ export class SyndicateSpawner {
         assignedTool: "ares_innovation_engine",
         autonomyLevel: "tactical"
       })
-      // innovation engine already in workflow
     }
 
-    // 4. Lateral Movement / Network Dominance Cell
     if (has(["lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network", "traverse", "transit"])) {
       operatives.push({
         department: "Domain Traversal & Pivoting Cell",
@@ -212,8 +230,7 @@ export class SyndicateSpawner {
       workflow.push("ares_lateral_movement")
     }
 
-    // 5. Specialized Impact / Hardware / OT / AI Cell
-    if (has(["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation", "atm", "jackpot", "hardware", "firmware", "hypervisor", "vm"])) {
+    if (has(["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "grid", "energy", "substation", "atm", "jackpot", "hardware", "firmware", "hypervisor", "vm"])) {
       operatives.push({
         department: "Specialized Infrastructure & Impact Division",
         title: "Specialized Protocol Commander",
@@ -225,33 +242,6 @@ export class SyndicateSpawner {
       workflow.push("ares_specialized_impact")
     }
 
-    // 6. Cognitive / Social Engineering Cell
-    if (has(["cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human", "lure", "auth"])) {
-      operatives.push({
-        department: "Cognitive Warfare & Social Engineering Unit",
-        title: "Director of Human & Cognitive Lures",
-        callsign: `MIMIC_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-        missionFocus: "Synthetic identity generation, voice deepfakes, and authority hierarchy deception",
-        assignedTool: "ares_cognitive_ops",
-        autonomyLevel: "tactical"
-      })
-      workflow.push("ares_cognitive_ops")
-    }
-
-    // 7. Supply Chain / CI-CD Cell
-    if (has(["supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow", "dependency"])) {
-      operatives.push({
-        department: "Supply Chain & Pipeline Compromise Cell",
-        title: "Pipeline Injection Specialist",
-        callsign: `VECTOR_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-        missionFocus: "CI/CD pipeline compromise, registry poisoning, and upstream artifact manipulation",
-        assignedTool: "ares_supply_chain",
-        autonomyLevel: "execution"
-      })
-      workflow.push("ares_supply_chain")
-    }
-
-    // 8. Financial Warfare Cell
     if (has(["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital", "crypto", "defi", "flash", "arbitrage", "drain"])) {
       operatives.push({
         department: "Economic Disruption & Clearing Cell",
@@ -264,7 +254,6 @@ export class SyndicateSpawner {
       workflow.push("ares_financial_warfare")
     }
 
-    // 9. Ransomware & Extortion Cell
     if (has(["ransom", "extortion", "encrypt", "leak", "exfiltrate", "payment", "onion"])) {
       operatives.push({
         department: "Ransomware & Extortion Syndicate",
@@ -277,41 +266,7 @@ export class SyndicateSpawner {
       workflow.push("ares_raas_advanced")
     }
 
-    // 10. Malware Synthesis & Refactoring Cell
-    if (has(["malware", "ransom", "weapon", "vx", "underground", "payload", "encrypt", "refactor", "source", "exploit", "zero-day", "weaponize"])) {
-      operatives.push({
-        department: "Weapon Synthesis & Refactoring Factory",
-        title: "Chief Arsenal Engineer",
-        callsign: `FACTORY_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-        missionFocus: "Sourcing samples from vx-underground, refactoring malware code, and applying polymorphic obfuscation",
-        assignedTool: "ares_malware_factory",
-        autonomyLevel: "execution"
-      })
-      workflow.push("ares_malware_factory")
-    }
-
-    // 11. Covert C2 & Resilience Cell
-    operatives.push({
-      department: "Covert C2 & Resilience Unit",
-      title: "Infrastructure Architect",
-      callsign: `GHOST_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-      missionFocus: "Autonomous C2 credential rotation and self-healing resilience",
-      assignedTool: "ares_c2_resilience",
-      autonomyLevel: "execution"
-    })
-    workflow.push("ares_c2_resilience")
-
-    // 12. Deception & Anti-Forensics (Always Last)
-    operatives.push({
-      department: "Attribution Masking & Deception Syndicate",
-      title: "Chief Deception Officer",
-      callsign: `DECEPTION_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-      missionFocus: "EDR telemetry flooding and false flag fingerprinting",
-      assignedTool: "ares_deception_noise",
-      autonomyLevel: "execution"
-    })
-    workflow.push("ares_deception_noise")
-
+    // Final Sanitization
     operatives.push({
       department: "Evasion & Anti-Forensics Taskforce",
       title: "Senior Sanitization Engineer",
@@ -321,45 +276,6 @@ export class SyndicateSpawner {
       autonomyLevel: "execution"
     })
     workflow.push("ares_anti_forensics")
-
-    // 13. Dynamic Tool Synthesis with Reuse-First Check
-    // Check if requested custom tool already exists in Tradecraft Library or ARES modules.
-    const customTools = words.filter(w => w.startsWith("ares_") && !workflow.includes(w))
-    for (const tool of customTools) {
-      let reused = false
-      try {
-        const libPath = path.join(process.cwd(), ".ourmine", "tradecraft", "library.json")
-        if (fs.existsSync(libPath)) {
-          const lib = JSON.parse(fs.readFileSync(libPath, "utf8"))
-          // Extract technique name from ares_custom_foo -> foo or check exact ID
-          const cleanName = tool.replace("ares_custom_", "").toUpperCase()
-          if (lib[cleanName] || lib[tool]) {
-            reused = true
-          }
-        }
-      } catch {}
-
-      if (reused) {
-        operatives.push({
-          department: "Tradecraft Reuse & Optimization Unit",
-          title: "Senior Tradecraft Curator",
-          callsign: `REUSE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-          missionFocus: `Reusing proven tactical module from library: ${tool}`,
-          assignedTool: tool,
-          autonomyLevel: "execution"
-        })
-      } else {
-        operatives.push({
-          department: "Autonomous Development & Synthesis Cell",
-          title: "Dynamic Tradecraft Engineer",
-          callsign: `SYNTH_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-          missionFocus: `Synthesizing and integrating bespoke tactical module: ${tool}`,
-          assignedTool: tool,
-          autonomyLevel: "execution"
-        })
-      }
-      workflow.push(tool)
-    }
 
     const uniqueDepts = new Set(operatives.map(o => o.department))
 

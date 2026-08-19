@@ -1,0 +1,4 @@
+(node:40042) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:40042) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[ourmine-ares MCP] started — 31 tools (200 total, efficient=true)
