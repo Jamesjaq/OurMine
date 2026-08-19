@@ -122,7 +122,7 @@ export class SyndicateSpawner {
     }
 
     // 6. Financial Warfare Cell
-    if (has(["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital", "ransom"])) {
+    if (has(["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital"])) {
       operatives.push({
         department: "Economic Disruption & Clearing Cell",
         title: "Ledger Disruption Architect",
@@ -132,6 +132,19 @@ export class SyndicateSpawner {
         autonomyLevel: "execution"
       })
       workflow.push("ares_financial_warfare")
+    }
+
+    // 6b. Ransomware & Extortion Cell
+    if (has(["ransom", "extortion", "encrypt", "leak", "exfiltrate", "payment", "onion"])) {
+      operatives.push({
+        department: "Ransomware & Extortion Syndicate",
+        title: "Lead Extortion Operative",
+        callsign: `RAAS_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Double-extortion orchestration: data exfiltration, encryption, and recovery portal provisioning",
+        assignedTool: "ares_raas_advanced",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_raas_advanced")
     }
 
     // 7. Dynamic Adaptive Operatives based on remaining unique keywords

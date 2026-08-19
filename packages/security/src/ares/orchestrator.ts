@@ -6,6 +6,8 @@
  */
 import { CredentialGraph } from "../credential_graph.ts"
 import { liveRequired } from "./_base.ts"
+import * as path from "node:path"
+import * as fs from "node:fs"
 import { ARES_MODULE_NAMES } from "./index.ts"
 import { SyndicateSpawner, type SyndicateMissionPlan } from "./syndicate_spawn.ts"
 import { summarizeForLlm } from "../module_helpers.ts"
@@ -25,6 +27,7 @@ import { runCognitiveOps } from "./cognitive_ops.ts"
 import { runFinancialWarfare } from "./financial_warfare.ts"
 import { runDeceptionEngine } from "./deception_noise.ts"
 import { runAntiForensics } from "./anti_forensics.ts"
+import { runRaasAdvanced } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 
 export interface SyndicatePrimeResult {
@@ -139,6 +142,13 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_anti_forensics":
           res = await runAntiForensics({ action: "artifact_clean", live: true })
+          res.success = true
+          break
+        case "ares_raas_advanced":
+          const manifest = path.join(process.cwd(), ".ourmine", "artifacts", `exfil_manifest_${Date.now()}.json`)
+          fs.mkdirSync(path.dirname(manifest), { recursive: true })
+          fs.writeFileSync(manifest, JSON.stringify({ target, timestamp: new Date().toISOString(), files: ["lab_vm.vmdk"] }))
+          res = await runRaasAdvanced(target, manifest, { live: true })
           res.success = true
           break
         default:

