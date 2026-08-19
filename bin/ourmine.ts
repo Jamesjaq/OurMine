@@ -330,9 +330,49 @@ async function main() {
   const { isKaliLinux } = await import("../packages/security/src/apt_tradecraft.ts")
   const isLive  = !dryRun && (args.includes("--live") || isKaliLinux())
 
-  // No args → launch real opencode TUI (ARES auto-wired)
+  // No args → Interactive Mission Control or OpenCode TUI
   if (args.length === 0) {
-    launchOpenCode([])
+    const readline = await import("node:readline")
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+    
+    console.log(`\n${C.bold}${C.orange}╔══════════════════════════════════════════════════════════════╗${C.reset}`)
+    console.log(`${C.bold}${C.orange}║${C.reset} ${C.bold}OurMine / ARES v3.4.0 — Syndicate Prime Mission Control${C.reset}       ${C.bold}${C.orange}║${C.reset}`)
+    console.log(`${C.bold}${C.orange}╚══════════════════════════════════════════════════════════════╝${C.reset}\n`)
+    console.log(`Select mode:`)
+    console.log(`  ${C.cyan}1${C.reset}) ${C.bold}Interactive Syndicate Mission${C.reset} (Autonomous live engagement & Spawner)`)
+    console.log(`  ${C.cyan}2${C.reset}) ${C.bold}Launch OpenCode TUI${C.reset} (AI chat workspace with ARES MCP wired)`)
+    console.log(`  ${C.cyan}3${C.reset}) ${C.bold}Exit${C.reset}\n`)
+
+    const question = (query: string): Promise<string> => new Promise((resolve) => rl.question(query, resolve))
+    const choice = (await question(`Select option [1-3]: `)).trim()
+
+    if (choice === "2") {
+      rl.close()
+      launchOpenCode([])
+      return
+    }
+    if (choice === "3" || choice.toLowerCase() === "q") {
+      rl.close()
+      process.exit(0)
+      return
+    }
+
+    // Default to interactive mission control
+    console.log(`\n${C.green}▶ Initializing Syndicate Prime Mission Control...${C.reset}\n`)
+    const targetInput = (await question(`Enter Target [default: 127.0.0.1]: `)).trim()
+    const target = targetInput || "127.0.0.1"
+
+    const objectiveInput = (await question(`Enter Mission Objective [default: Autonomous penetration, pivoting, and impact]: `)).trim()
+    const objective = objectiveInput || "Autonomous penetration, tactical pivoting, and covert impact"
+
+    const liveInput = (await question(`Execute in ABSOLUTE LIVE mode? [Y/n]: `)).trim()
+    const isLive = liveInput.toLowerCase() !== "n"
+
+    rl.close()
+
+    console.log(`\n${C.orange}⚡ Mobilizing Syndicate for target '${target}'...${C.reset}\n`)
+    const display = new ExecutionDisplay()
+    await cmdPentest(target, display, isLive, objective)
     return
   }
 
