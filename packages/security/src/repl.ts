@@ -42,7 +42,7 @@ let   currentSession: Session | null = null
 
 function makeSession(name = "New Session"): Session {
   const id = "ses_" + Math.random().toString(36).slice(2, 9)
-  const s: Session = { id, name, model: "claude-sonnet-4-5", history: [], createdAt: new Date().toISOString() }
+  const s: Session = { id, name, model: "gpt-5-mini", history: [], createdAt: new Date().toISOString() }
   SESSIONS.set(id, s)
   return s
 }
@@ -50,15 +50,13 @@ function makeSession(name = "New Session"): Session {
 // ─── All available models (from OpenCode providers) ──────────────────────────
 
 const MODELS = [
-  { id: "claude-opus-4-5",           provider: "anthropic",  label: "Claude Opus 4.5" },
-  { id: "claude-sonnet-4-5",         provider: "anthropic",  label: "Claude Sonnet 4.5" },
-  { id: "claude-haiku-3-5",          provider: "anthropic",  label: "Claude Haiku 3.5" },
-  { id: "gemini-2.5-pro",            provider: "google",     label: "Gemini 2.5 Pro" },
-  { id: "gemini-2.5-flash",          provider: "google",     label: "Gemini 2.5 Flash" },
-  { id: "gpt-4o",                    provider: "openai",     label: "GPT-4o" },
-  { id: "gpt-4o-mini",               provider: "openai",     label: "GPT-4o Mini" },
-  { id: "o3",                        provider: "openai",     label: "o3" },
-  { id: "o4-mini",                   provider: "openai",     label: "o4-mini" },
+  { id: "gpt-5-nano",                provider: "openai",     label: "GPT-5 Nano" },
+  { id: "gpt-5-mini",                provider: "openai",     label: "GPT-5 Mini" },
+  { id: "gpt-5",                     provider: "openai",     label: "GPT-5" },
+  { id: "claude-haiku-4-5",          provider: "anthropic",  label: "Claude Haiku 4.5" },
+  { id: "claude-sonnet-4-6",         provider: "anthropic",  label: "Claude Sonnet 4.6" },
+  { id: "gemini-3-flash-preview",    provider: "google",     label: "Gemini 3 Flash" },
+  { id: "gemini-3.1-pro-preview",    provider: "google",     label: "Gemini 3.1 Pro" },
   { id: "deepseek-r2",               provider: "deepseek",   label: "DeepSeek R2" },
   { id: "grok-3",                    provider: "xai",        label: "Grok 3" },
   { id: "mistral-large-3",           provider: "mistral",    label: "Mistral Large 3" },

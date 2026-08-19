@@ -87,13 +87,13 @@ export class LateralMovementEngine {
 
 export default LateralMovementEngine
 
-import { moduleEnvelope, resolveDryRun } from "../module_helpers.ts"
+import { moduleEnvelope } from "../module_helpers.ts"
 
 export async function runLateralMovement(
   req: { source?: string; target?: string; highValueTargets?: string[] },
-  opts: { live?: boolean; dryRun?: boolean } = {},
+  opts: { live?: boolean } = {},
 ) {
-  const dryRun = resolveDryRun(opts)
+  const live = opts.live === true
   const cg = CredentialGraph.load()
   const engine = new LateralMovementEngine(cg)
   
@@ -107,7 +107,7 @@ export async function runLateralMovement(
     nextHop = engine.suggestNextHop(req.source, req.highValueTargets)
   }
   
-  return moduleEnvelope(dryRun, {
+  return moduleEnvelope(live, {
     path,
     nextHop,
     summary: path 

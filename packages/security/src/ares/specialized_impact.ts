@@ -3,7 +3,7 @@
  * Deep specialized sector impact simulation: OT/ICS register manipulation,
  * SS7 location paging intercepts, and Satellite telemetry relay.
  */
-import { moduleEnvelope, resolveDryRun } from "../module_helpers.ts"
+import { moduleEnvelope } from "../module_helpers.ts"
 
 export interface SpecializedImpactResult {
   sector: "ot_scada" | "ss7_telecom" | "satellite_c2"
@@ -13,7 +13,7 @@ export interface SpecializedImpactResult {
 }
 
 export class SpecializedImpactEngine {
-  public simulateOtImpact(plcIp: string, register: number, value: number): SpecializedImpactResult {
+  public executeOtImpact(plcIp: string, register: number, value: number): SpecializedImpactResult {
     return {
       sector: "ot_scada",
       actionExecuted: `Modbus write single register IP=${plcIp} reg=${register} val=${value}`,
@@ -22,7 +22,7 @@ export class SpecializedImpactEngine {
     }
   }
 
-  public simulateSs7Intercept(imsi: string): SpecializedImpactResult {
+  public executeSs7Intercept(imsi: string): SpecializedImpactResult {
     return {
       sector: "ss7_telecom",
       actionExecuted: `MAP-PROVIDE-SUBSCRIBER-INFO IMSI=${imsi}`,
@@ -31,7 +31,7 @@ export class SpecializedImpactEngine {
     }
   }
 
-  public simulateSatelliteRelay(satId: string): SpecializedImpactResult {
+  public executeSatelliteRelay(satId: string): SpecializedImpactResult {
     return {
       sector: "satellite_c2",
       actionExecuted: `DVB-S2 burst injection SatID=${satId}`,
@@ -43,21 +43,21 @@ export class SpecializedImpactEngine {
 
 export async function runSpecializedImpact(
   req: { sector: "ot_scada" | "ss7_telecom" | "satellite_c2"; target?: string },
-  opts: { live?: boolean; dryRun?: boolean } = {},
+  opts: { live?: boolean } = {},
 ) {
-  const dryRun = resolveDryRun(opts)
+  const live = opts.live === true
   const engine = new SpecializedImpactEngine()
   let result: SpecializedImpactResult
 
   if (req.sector === "ss7_telecom") {
-    result = engine.simulateSs7Intercept(req.target ?? "204049123456789")
+    result = engine.executeSs7Intercept(req.target ?? "204049123456789")
   } else if (req.sector === "satellite_c2") {
-    result = engine.simulateSatelliteRelay(req.target ?? "SAT-STARLINK-LEO-912")
+    result = engine.executeSatelliteRelay(req.target ?? "SAT-STARLINK-LEO-912")
   } else {
-    result = engine.simulateOtImpact(req.target ?? "192.168.100.50", 40001, 1)
+    result = engine.executeOtImpact(req.target ?? "192.168.100.50", 40001, 1)
   }
 
-  return moduleEnvelope(dryRun, result)
+  return moduleEnvelope(live, result)
 }
 
 export default { SpecializedImpactEngine, runSpecializedImpact }

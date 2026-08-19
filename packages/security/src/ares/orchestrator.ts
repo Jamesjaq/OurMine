@@ -75,12 +75,12 @@ export async function runAresOrchestrator(opts: {
     { name: "ares_ss7_exploit", run: async () => { const r = await runSs7Exploit({ live: true, host: process.env.OURMINE_SS7_HOST ?? target }); return { summary: r.summary, success: r.probed || r.operations.length > 0 } } },
     { name: "ares_ai_ml_attacks", run: async () => { const r = await runAiMlAttacks({ live: true, targetUrl: `http://${target}:8080` }); return { summary: r.summary, success: r.steps.some((s) => s.success) } } },
     { name: "ares_anti_forensics_advanced", run: async () => { const r = await runAntiForensicsAdvanced({ live: true }); return { summary: r.summary, success: r.executed || r.actions.length > 0 } } },
-    { name: "ares_innovation_engine", run: async () => { const r = await runInnovationEngine({}, { live: true }); return { summary: r.summary, success: r.hypothesesCount > 0 } } },
-    { name: "ares_self_healing", run: async () => { const r = await runSelfHealing({ agentIds: ["agent-01"] }, { live: true }); return { summary: r.summary, success: true } } },
-    { name: "ares_self_improvement", run: async () => { const r = await runSelfImprovement({}, { live: true }); return { summary: r.summary, success: r.validated } } },
-    { name: "ares_specialized_impact", run: async () => { const r = await runSpecializedImpact({ targetType: "scada" }, { live: true }); return { summary: r.summary, success: r.impactScore > 0 } } },
-    { name: "ares_ghost_autonomy", run: async () => { const r = await runGhostAutonomy({ mode: "stealth" }, { live: true }); return { summary: r.summary, success: r.active } } },
-    { name: "ares_lateral_movement", run: async () => { const r = await runLateralMovement({ target }, { live: true }); return { summary: r.summary, success: !!r.path || !!r.nextHop } } },
+    { name: "ares_innovation_engine", run: async () => { const r = await runInnovationEngine({}, { live: true }); return { summary: r.data.summary, success: r.data.hypothesesCount > 0 } } },
+    { name: "ares_self_healing", run: async () => { const r = await runSelfHealing({ agentIds: ["agent-01"] }, { live: true }); return { summary: r.data.summary, success: true } } },
+    { name: "ares_self_improvement", run: async () => { const r = await runSelfImprovement({}, { live: true }); return { summary: r.data.summary, success: r.data.validation.ok } } },
+    { name: "ares_specialized_impact", run: async () => { const r = await runSpecializedImpact({ targetType: "scada" }, { live: true }); return { summary: r.data.summary, success: r.data.impactScore > 0 } } },
+    { name: "ares_ghost_autonomy", run: async () => { const r = await runGhostAutonomy({ mode: "stealth" }, { live: true }); return { summary: r.data.summary, success: r.data.active } } },
+    { name: "ares_lateral_movement", run: async () => { const r = await runLateralMovement({ target }, { live: true }); return { summary: r.data.summary, success: !!r.data.path || !!r.data.nextHop } } },
   ]
 
   for (const { name, run } of runners) {

@@ -81,12 +81,15 @@ export async function runInnovationEngine(
   const engine = new InnovationEngine()
   const hypotheses = await engine.probeAndSynthesize(target)
 
-  return moduleEnvelope(live, {
+  const envelope = moduleEnvelope(live, {
     target,
     hypothesesCount: hypotheses.length,
-    hypotheses,
+    hypotheses: hypotheses.map(h => ({ id: h.id, title: h.title, novelty: h.noveltyScore })),
     summary: `Live Innovation Engine successfully probed ${target} and synthesized ${hypotheses.length} zero-day vectors based on live I/O.`,
   })
+
+  // Return full envelope for internal use, but it will be compacted by the bridge
+  return envelope
 }
 
 export default { InnovationEngine, runInnovationEngine }

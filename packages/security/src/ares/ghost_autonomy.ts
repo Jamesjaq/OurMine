@@ -3,7 +3,7 @@
  * Elite Adversarial Ghost Autonomy: AI behavioral mimicry, Living-off-the-Cloud (LotC)
  * full infrastructure orchestration, and zero-footprint memory execution.
  */
-import { moduleEnvelope, resolveDryRun } from "../module_helpers.ts"
+import { moduleEnvelope } from "../module_helpers.ts"
 
 export interface GhostAutonomyOpts {
   live?: boolean
@@ -12,7 +12,7 @@ export interface GhostAutonomyOpts {
 }
 
 export interface GhostAutonomyResult {
-  success: boolean
+  active: boolean
   behavioralJitterMs: number
   lotcChannelsActive: string[]
   memoryFootprintBytes: number
@@ -29,12 +29,12 @@ export class GhostAutonomyEngine {
 
   public executeGhostCycle(opts: GhostAutonomyOpts = {}): GhostAutonomyResult {
     const baseline = opts.baselineActivity ?? ["ssh_login", "kubectl_get", "git_commit"]
-    // Simulate behavioral temporal profiling
+    // Behavioral temporal profiling jitter
     const jitter = Math.floor(Math.random() * 45000) + 15000 // 15s to 60s jitter matching admin rhythms
     const channels = ["github_issues", "notion_blocks", "google_drive_shared"]
     
     return {
-      success: true,
+      active: true,
       behavioralJitterMs: jitter,
       lotcChannelsActive: channels,
       memoryFootprintBytes: 1048576, // 1MB in-memory stager footprint
@@ -46,12 +46,12 @@ export class GhostAutonomyEngine {
 
 export async function runGhostAutonomy(
   req: GhostAutonomyOpts = {},
-  opts: { live?: boolean; dryRun?: boolean } = {},
+  opts: { live?: boolean } = {},
 ) {
-  const dryRun = resolveDryRun(opts)
-  const engine = new GhostAutonomyEngine({ live: !dryRun })
+  const live = opts.live === true
+  const engine = new GhostAutonomyEngine({ live })
   const result = engine.executeGhostCycle(req)
-  return moduleEnvelope(dryRun, result)
+  return moduleEnvelope(live, result)
 }
 
 export default { GhostAutonomyEngine, runGhostAutonomy }

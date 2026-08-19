@@ -61,4 +61,14 @@ export function executeLiveCommand(cmd: string): { stdout: string; stderr: strin
   }
 }
 
-export default { moduleEnvelope, realFinding, executeLiveCommand }
+/**
+ * Super token-efficient summary for LLM context.
+ * Shrinks findings and data to absolute essentials.
+ */
+export function summarizeForLlm(envelope: ModuleEnvelope<any>): string {
+  const findings = envelope.findings.map(f => `[${f.severity.toUpperCase()}] ${f.id}: ${f.title}`).join("; ")
+  const dataSummary = JSON.stringify(envelope.data).slice(0, 250)
+  return `ARES_LIVE_RESULT: ${envelope.live ? "LIVE" : "DRY"}; Findings: ${findings || "None"}; Data: ${dataSummary}...`
+}
+
+export default { moduleEnvelope, realFinding, executeLiveCommand, summarizeForLlm }

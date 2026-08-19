@@ -34,6 +34,12 @@ export const EFFICIENT_TOOL_ALLOWLIST = new Set([
   "ares_evasion_engine",
   "ares_opsec_throttle",
   "ares_iot_scada",
+  "ares_innovation_engine",
+  "ares_self_healing",
+  "ares_self_improvement",
+  "ares_specialized_impact",
+  "ares_ghost_autonomy",
+  "ares_lateral_movement",
 ])
 
 /** Verbose standalone audits excluded from default efficient surface — use ares_dispatch / ares_tool_search. */

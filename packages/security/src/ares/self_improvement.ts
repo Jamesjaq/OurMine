@@ -106,15 +106,23 @@ export async function runSelfImprovement(
   const engine = new SelfImprovementEngine()
   
   const techId = req.techniqueId ?? "LIVE-VECTOR-01"
-  const code = req.payloadCode ?? "export async function runLiveVector() { return true; }"
+    const code = req.payloadCode ?? "import { moduleEnvelope } from \"../module_helpers.ts\";\nexport async function runLiveVector(req: any, opts: any = {}) { return moduleEnvelope(opts.live !== false, { ok: true }); }"
   const cmd = req.testCommand ?? "node -e 'console.log(\"OK\")'"
 
   const record = await engine.validateAndIngestLive(techId, code, cmd)
   const memory = engine.getOracleMemory()
 
   return moduleEnvelope(live, {
-    validation: record,
-    oracleMemory: memory,
+    validation: {
+      id: record.techniqueId,
+      ok: record.proven,
+      conf: record.confidenceScore,
+      path: record.artifactPath
+    },
+    oracle: {
+      total: memory.totalValidatedTechniques,
+      proven: memory.provenCount
+    },
     summary: `Live self-improvement complete: technique ${techId} proven=${record.proven}, confidence=${record.confidenceScore}%. Output: ${record.executionOutput?.trim()}`,
   })
 }
