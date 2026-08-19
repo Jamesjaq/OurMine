@@ -74,6 +74,55 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_strategic_gap_analysis")
 
+    // Omega Protocol v4.0 Execution Cells (Triggered on quantum, hardware, cognitive, or cross-chain keywords)
+    if (has(["quantum", "hndl", "decrypt", "pqc", "lattice"])) {
+      operatives.push({
+        department: "Quantum & Cryptographic Dominance",
+        title: "Quantum Cipher Specialist",
+        callsign: `QUANTUM_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Harvest Now Decrypt Later traffic interception and PQC lattice C2 deployment",
+        assignedTool: "ares_quantum_dominance",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_quantum_dominance")
+    }
+
+    if (has(["ring", "hardware", "firmware", "me", "psp", "satellite", "6g", "slicing"])) {
+      operatives.push({
+        department: "Sub-Hardware & Infrastructure Persistence",
+        title: "Sub-Hardware Ghost Operative",
+        callsign: `GHOSTHW_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Ring -2 Management Engine persistence and orbital satellite mesh interception",
+        assignedTool: "ares_sub_hardware_persistence",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_sub_hardware_persistence")
+    }
+
+    if (has(["cognitive", "deepfake", "persona", "psychological", "influence", "humint"])) {
+      operatives.push({
+        department: "Cognitive Warfare & HUMINT-AI Division",
+        title: "Deepfake Persona Architect",
+        callsign: `COGNITIVE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Automated deepfake persona generation and corporate channel infiltration",
+        assignedTool: "ares_cognitive_warfare_advanced",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_cognitive_warfare_advanced")
+    }
+
+    if (has(["cross-chain", "bridge", "mev", "arbitrage", "defi", "predator"])) {
+      operatives.push({
+        department: "Economic & DeFi Dominance Cell",
+        title: "Cross-Chain Predator",
+        callsign: `PREDATOR_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Cross-chain bridge liquidity extraction and MEV arbitrage weaponization",
+        assignedTool: "ares_defi_predator",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_defi_predator")
+    }
+
     // 0.1 Infinite Evolution & Meta-Synthesis Cell
     if (has(["evolve", "future", "dormant", "years", "persist", "long", "infinite", "autonomous"])) {
       operatives.push({

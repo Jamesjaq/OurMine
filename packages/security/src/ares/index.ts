@@ -42,6 +42,10 @@ export { runMultiPlatformArsenal } from "./multi_platform_arsenal.ts"
 export { runKaliBridge } from "./kali_bridge.ts"
 export { runInfiniteInnovation } from "./infinite_innovation.ts"
 export { runStrategicGapAnalysis } from "./strategic_gap_analysis.ts"
+export { runQuantumDominance } from "./quantum_dominance.ts"
+export { runSubHardwarePersistence } from "./sub_hardware_persistence.ts"
+export { runCognitiveWarfareAdvanced } from "./cognitive_warfare_advanced.ts"
+export { runDeFiPredator } from "./defi_predator.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -88,6 +92,10 @@ export const ARES_MODULE_NAMES = [
   "ares_kali_bridge",
   "ares_infinite_innovation",
   "ares_strategic_gap_analysis",
+  "ares_quantum_dominance",
+  "ares_sub_hardware_persistence",
+  "ares_cognitive_warfare_advanced",
+  "ares_defi_predator",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

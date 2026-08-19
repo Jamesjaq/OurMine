@@ -37,7 +37,11 @@ import {
   runMultiPlatformArsenal,
   runKaliBridge,
   runInfiniteInnovation,
-  runStrategicGapAnalysis
+  runStrategicGapAnalysis,
+  runQuantumDominance,
+  runSubHardwarePersistence,
+  runCognitiveWarfareAdvanced,
+  runDeFiPredator
 } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 import { ExecutionDisplay } from "../runtime_exec.ts"
@@ -223,6 +227,22 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_strategic_gap_analysis":
           res = await runStrategicGapAnalysis({ live: true })
+          res.success = true
+          break
+        case "ares_quantum_dominance":
+          res = await runQuantumDominance({ target, live: true })
+          res.success = true
+          break
+        case "ares_sub_hardware_persistence":
+          res = await runSubHardwarePersistence({ target, vector: "ring_minus_two", live: true })
+          res.success = true
+          break
+        case "ares_cognitive_warfare_advanced":
+          res = await runCognitiveWarfareAdvanced({ targetExecutive: "Chief Executive Officer", live: true })
+          res.success = true
+          break
+        case "ares_defi_predator":
+          res = await runDeFiPredator({ targetBridge: "Wormhole-Bridge", live: true })
           res.success = true
           break
         default:
