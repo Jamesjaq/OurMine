@@ -42,7 +42,8 @@ import {
   runSubHardwarePersistence,
   runCognitiveWarfareAdvanced,
   runDeFiPredator,
-  runAdversarialAIEvasion
+  runAdversarialAIEvasion,
+  runBioDigitalInterdiction
 } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 import { ExecutionDisplay } from "../runtime_exec.ts"
@@ -248,6 +249,10 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_adversarial_ai_evasion":
           res = await runAdversarialAIEvasion({ targetModel: "CrowdStrike-XDR", live: true })
+          res.success = true
+          break
+        case "ares_bio_digital_interdiction":
+          res = await runBioDigitalInterdiction({ targetNode: "Neural-Node-Alpha", live: true })
           res.success = true
           break
         default:

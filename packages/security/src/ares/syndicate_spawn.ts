@@ -135,6 +135,18 @@ export class SyndicateSpawner {
       workflow.push("ares_adversarial_ai_evasion")
     }
 
+    if (has(["bio", "neural", "medical", "brain", "bci", "implant", "telemetry"])) {
+      operatives.push({
+        department: "Bio-Digital & Neural Interdiction Division",
+        title: "Bio-Digital Cyber-Physical Operative",
+        callsign: `BIO_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Connected neural interface telemetry interception and cyber-physical waveform injection",
+        assignedTool: "ares_bio_digital_interdiction",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_bio_digital_interdiction")
+    }
+
     // 0.1 Infinite Evolution & Meta-Synthesis Cell
     if (has(["evolve", "future", "dormant", "years", "persist", "long", "infinite", "autonomous"])) {
       operatives.push({
