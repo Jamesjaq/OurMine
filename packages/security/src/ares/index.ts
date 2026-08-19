@@ -38,6 +38,8 @@ export { runCognitiveOps } from "./cognitive_ops.ts"
 export { runSupplyChainCell as runSupplyChain } from "./supply_chain.ts"
 export { runDeceptionEngine as runDeceptionNoise } from "./deception_noise.ts"
 export { runC2Resilience } from "./c2_resilience.ts"
+export { runMultiPlatformArsenal } from "./multi_platform_arsenal.ts"
+export { runKaliBridge } from "./kali_bridge.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 

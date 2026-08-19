@@ -1,6 +1,6 @@
 /**
  * @module ares/syndicate_spawn
- * ARES v3.4 Syndicate Spawn Engine — Fully Dynamic & Adaptive Organizational Assembler.
+ * ARES v3.4.1 Syndicate Spawn Engine — Fully Dynamic & Adaptive Organizational Assembler.
  * Analyzes any arbitrary mission objective and target, decomposes it into 
  * custom specialized operational domains, and spawns bespoke departments, managers, 
  * engineers, and operational cells on the fly.
@@ -33,15 +33,12 @@ export interface SyndicateMissionPlan {
 export class SyndicateSpawner {
   public assembleForMission(target: string, objective: string): SyndicateMissionPlan {
     const cleanObj = objective.toLowerCase()
-    
-    // Extract key action verbs and technical nouns to dynamically generate bespoke operatives
     const words = cleanObj.replace(/[^\w\s]/gi, '').split(/\s+/)
     const uniqueKeywords = Array.from(new Set(words.filter(w => w.length > 3)))
 
     const operatives: OperativeRole[] = []
     const workflow: string[] = []
 
-    // Always synthesize a bespoke Command & Strategy cell tailored to the exact target and objective
     const directorCallsign = `DIR_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
     operatives.push({
       department: `Strategic Command (${target.slice(0, 16)})`,
@@ -53,10 +50,46 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_shadow_organization")
 
-    // Dynamic heuristic mapping from objective keywords to custom operational cells
     const has = (terms: string[]) => terms.some(t => cleanObj.includes(t))
 
-    // 1. Recon / Discovery Cell
+    // 0. Proactive Research & Innovation (Always First)
+    operatives.push({
+      department: "Innovation & Zero-Day Research Cell",
+      title: "Lead Intelligence Ingestor",
+      callsign: `APEX_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+      missionFocus: `Proactive research into latest vulnerabilities and exploit synthesis specific to ${target}`,
+      assignedTool: "ares_innovation_engine",
+      autonomyLevel: "strategic"
+    })
+    workflow.push("ares_innovation_engine")
+
+    // 1. Multi-Platform Adaptation Cell
+    if (has(["macos", "mac", "apple", "mobile", "ios", "android", "atm", "xfs", "windows", "win", "linux"])) {
+      operatives.push({
+        department: "Multi-Platform Adaptation Unit",
+        title: "Cross-Platform Payload Specialist",
+        callsign: `VECTOR_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: `Tailoring exploits and payloads for target platform: ${objective}`,
+        assignedTool: "ares_multi_platform_arsenal",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_multi_platform_arsenal")
+    }
+
+    // 2. Kali Linux Tool Orchestration Cell
+    if (has(["kali", "nmap", "sqlmap", "metasploit", "hydra", "gobuster", "exploit", "brute"])) {
+      operatives.push({
+        department: "Kali Linux Tooling Division",
+        title: "Offensive Tool Orchestrator",
+        callsign: `KALI_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: `Orchestrating native Kali Linux tools (Nmap, Metasploit, etc.) for target exploitation`,
+        assignedTool: "ares_kali_bridge",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_kali_bridge")
+    }
+
+    // 3. Recon / Discovery Cell
     if (has(["recon", "scan", "find", "discover", "audit", "map", "intel", "infiltrate", "probe", "survey"])) {
       operatives.push({
         department: "Reconnaissance & Intelligence Synthesis",
@@ -66,10 +99,10 @@ export class SyndicateSpawner {
         assignedTool: "ares_innovation_engine",
         autonomyLevel: "tactical"
       })
-      workflow.push("ares_innovation_engine")
+      // innovation engine already in workflow
     }
 
-    // 2. Lateral Movement / Network Dominance Cell
+    // 4. Lateral Movement / Network Dominance Cell
     if (has(["lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network", "traverse", "transit"])) {
       operatives.push({
         department: "Domain Traversal & Pivoting Cell",
@@ -82,7 +115,7 @@ export class SyndicateSpawner {
       workflow.push("ares_lateral_movement")
     }
 
-    // 3. Specialized Impact / Hardware / OT / AI Cell
+    // 5. Specialized Impact / Hardware / OT / AI Cell
     if (has(["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation"])) {
       operatives.push({
         department: "Specialized Infrastructure & Impact Division",
@@ -95,7 +128,7 @@ export class SyndicateSpawner {
       workflow.push("ares_specialized_impact")
     }
 
-    // 4. Cognitive / Social Engineering Cell
+    // 6. Cognitive / Social Engineering Cell
     if (has(["cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human", "lure", "auth"])) {
       operatives.push({
         department: "Cognitive Warfare & Social Engineering Unit",
@@ -108,7 +141,7 @@ export class SyndicateSpawner {
       workflow.push("ares_cognitive_ops")
     }
 
-    // 5. Supply Chain / CI-CD Cell
+    // 7. Supply Chain / CI-CD Cell
     if (has(["supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow", "dependency"])) {
       operatives.push({
         department: "Supply Chain & Pipeline Compromise Cell",
@@ -121,7 +154,7 @@ export class SyndicateSpawner {
       workflow.push("ares_supply_chain")
     }
 
-    // 6. Financial Warfare Cell
+    // 8. Financial Warfare Cell
     if (has(["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital"])) {
       operatives.push({
         department: "Economic Disruption & Clearing Cell",
@@ -134,7 +167,7 @@ export class SyndicateSpawner {
       workflow.push("ares_financial_warfare")
     }
 
-    // 6b. Ransomware & Extortion Cell
+    // 9. Ransomware & Extortion Cell
     if (has(["ransom", "extortion", "encrypt", "leak", "exfiltrate", "payment", "onion"])) {
       operatives.push({
         department: "Ransomware & Extortion Syndicate",
@@ -147,7 +180,7 @@ export class SyndicateSpawner {
       workflow.push("ares_raas_advanced")
     }
 
-    // 6c. Malware Synthesis & Refactoring Cell (vx-underground sourcing & weapon forging)
+    // 10. Malware Synthesis & Refactoring Cell
     if (has(["malware", "ransom", "weapon", "vx", "underground", "payload", "encrypt", "refactor", "source"])) {
       operatives.push({
         department: "Weapon Synthesis & Refactoring Factory",
@@ -160,87 +193,36 @@ export class SyndicateSpawner {
       workflow.push("ares_malware_factory")
     }
 
-    // 6d. Covert C2 & Satellite Communication Cell
-    if (has(["c2", "satellite", "vsat", "iridium", "covert", "doh", "dns", "stego", "beacon"])) {
-      operatives.push({
-        department: "Covert Communications & Satellite Division",
-        title: "C2 Infrastructure Architect",
-        callsign: `COMMS_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-        missionFocus: "Establishing covert satellite channels, domain fronting, and steganographic beaconing",
-        assignedTool: "ares_satellite_c2",
-        autonomyLevel: "execution"
-      })
-      workflow.push("ares_satellite_c2")
-    }
+    // 11. Covert C2 & Resilience Cell
+    operatives.push({
+      department: "Covert C2 & Resilience Unit",
+      title: "Infrastructure Architect",
+      callsign: `GHOST_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+      missionFocus: "Autonomous C2 credential rotation and self-healing resilience",
+      assignedTool: "ares_c2_resilience",
+      autonomyLevel: "execution"
+    })
+    workflow.push("ares_c2_resilience")
 
-    // 6e. Zero-Day & Fileless Weaponry Cell
-    if (has(["zero-day", "fuzz", "fileless", "memory", "implant", "rootkit", "firmware", "uefi", "hypervisor", "airgap"])) {
-      operatives.push({
-        department: "Advanced Weaponry & Zero-Day Research Cell",
-        title: "Senior Weaponry Researcher",
-        callsign: `APEX_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-        missionFocus: "Zero-day vulnerability discovery, fileless memory implants, and low-level rootkit deployment",
-        assignedTool: has(["zero-day", "fuzz"]) ? "ares_zero_day_fuzzer" : 
-                      has(["fileless", "memory"]) ? "ares_fileless_implant" :
-                      has(["firmware", "uefi"]) ? "ares_firmware_implant" : "ares_hypervisor_rootkit",
-        autonomyLevel: "execution"
-      })
-      workflow.push(has(["zero-day", "fuzz"]) ? "ares_zero_day_fuzzer" : 
-                    has(["fileless", "memory"]) ? "ares_fileless_implant" :
-                    has(["firmware", "uefi"]) ? "ares_firmware_implant" : "ares_hypervisor_rootkit")
-      
-      if (has(["airgap"])) {
-        operatives.push({
-          department: "Airgap Bridging Unit",
-          title: "Acoustic & Electromagnetic Specialist",
-          callsign: `BRIDGE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-          missionFocus: "Bridging airgapped environments via side-channel exfiltration and acoustic lures",
-          assignedTool: "ares_airgap_bridge",
-          autonomyLevel: "execution"
-        })
-        workflow.push("ares_airgap_bridge")
-      }
-    }
-
-    // 7. Dynamic Adaptive Operatives based on remaining unique keywords
-    // If the objective contains bespoke words not covered above, synthesize custom task forces
-    const coveredTerms = ["recon", "scan", "find", "discover", "audit", "map", "intel", "infiltrate", "probe", "survey", "lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network", "traverse", "transit", "ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation", "cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human", "lure", "auth", "supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow", "dependency", "financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital", "ransom", "c2", "satellite", "vsat", "iridium", "covert", "doh", "dns", "stego", "beacon", "zero-day", "fuzz", "fileless", "memory", "implant", "rootkit", "firmware", "uefi", "hypervisor", "airgap"]
-    
-    const unhandledKeywords = uniqueKeywords.filter(k => !coveredTerms.includes(k) && k.length > 4)
-    if (unhandledKeywords.length > 0) {
-      const customCellName = unhandledKeywords[0].toUpperCase()
-      operatives.push({
-        department: `Ad-Hoc Specialized Task Force (${customCellName})`,
-        title: `Specialized ${customCellName} Operative`,
-        callsign: `CELL_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-        missionFocus: `Targeted adaptation and tool synthesis addressing mission constraint: ${unhandledKeywords.join(', ')}`,
-        assignedTool: "ares_self_improvement",
-        autonomyLevel: "tactical"
-      })
-      workflow.push("ares_self_improvement")
-    }
-
-    // Always include a Deception & Attribution Masking Cell
+    // 12. Deception & Anti-Forensics (Always Last)
     operatives.push({
       department: "Attribution Masking & Deception Syndicate",
-      title: "Chief Deception & False Flag Officer",
-      callsign: `GHOST_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-      missionFocus: "EDR telemetry flooding, false flag fingerprinting, and proxy routing",
+      title: "Chief Deception Officer",
+      callsign: `DECEPTION_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+      missionFocus: "EDR telemetry flooding and false flag fingerprinting",
       assignedTool: "ares_deception_noise",
       autonomyLevel: "execution"
     })
     workflow.push("ares_deception_noise")
 
-    // Always include Evasion & Anti-Forensics Division
     operatives.push({
       department: "Evasion & Anti-Forensics Taskforce",
-      title: "Senior Evasion & Sanitization Engineer",
+      title: "Senior Sanitization Engineer",
       callsign: `SHADOW_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-      missionFocus: "Syscall hooking bypass, memory stager obfuscation, and forensic artifact removal",
-      assignedTool: "ares_evasion_engine",
+      missionFocus: "Final trace sanitization and forensic artifact removal",
+      assignedTool: "ares_anti_forensics",
       autonomyLevel: "execution"
     })
-    workflow.push("ares_evasion_engine")
     workflow.push("ares_anti_forensics")
 
     const uniqueDepts = new Set(operatives.map(o => o.department))
@@ -254,7 +236,7 @@ export class SyndicateSpawner {
         totalOperatives: operatives.length
       },
       operatives,
-      executionGraph: workflow,
+      executionGraph: Array.from(new Set(workflow)),
       efficiencyGain: "94.2% token reduction via dynamic mission-adaptive department synthesis"
     }
   }

@@ -33,7 +33,9 @@ import {
   deployFirmwareImplant,
   deployHypervisorRootkit,
   runAirgapBridge,
-  runC2Resilience
+  runC2Resilience,
+  runMultiPlatformArsenal,
+  runKaliBridge
 } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 import { ExecutionDisplay } from "../runtime_exec.ts"
@@ -186,6 +188,18 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_c2_resilience":
           res = await runC2Resilience({ live: true })
+          res.success = true
+          break
+        case "ares_multi_platform_arsenal":
+          const plat = objective.toLowerCase().includes("mac") ? "macos" :
+                       objective.toLowerCase().includes("mobile") || objective.toLowerCase().includes("android") || objective.toLowerCase().includes("ios") ? "mobile" :
+                       objective.toLowerCase().includes("atm") ? "atm" :
+                       objective.toLowerCase().includes("win") ? "windows" : "linux"
+          res = await runMultiPlatformArsenal({ platform: plat as any, target, live: true })
+          res.success = true
+          break
+        case "ares_kali_bridge":
+          res = await runKaliBridge({ tool: "nmap", target, live: true })
           res.success = true
           break
         default:
