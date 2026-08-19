@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+/**
+ * @module bin/opencode-syndicate
+ * Terminal CLI entry point: opencode(OurMine) target <host> objective <mission>
+ */
+import { runSyndicateSpawn } from "../packages/security/src/ares/syndicate_spawn.ts"
+
+async function main() {
+  const args = process.argv.slice(2)
+  let target = "127.0.0.1"
+  let objective = "Perform autonomous penetration, tactical pivoting, and covert persistence"
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === "target" && args[i + 1]) {
+      target = args[i + 1]
+      i++
+    } else if (args[i] === "objective" && args[i + 1]) {
+      objective = args[i + 1]
+      i++
+    }
+  }
+
+  console.log(`[+] Initializing OurMine Syndicate for target: ${target}`);
+  console.log(`[+] Mission Objective: "${objective}"`);
+  console.log(`[+] Decomposing mission and spawning dynamic departments...\n`);
+
+  try {
+    const result = await runSyndicateSpawn({ target, objective }, { live: true })
+    console.log(JSON.stringify(result, null, 2))
+    console.log(`\n[SUCCESS] Syndicate fully mobilized. ${result.tokenEfficientSummary}`)
+  } catch (err) {
+    console.error("[FAILURE] Syndicate mobilization failed:", err)
+    process.exit(1)
+  }
+}
+
+main()
