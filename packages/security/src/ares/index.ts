@@ -26,6 +26,7 @@ export { runSelfImprovement } from "./self_improvement.ts"
 export { runSpecializedImpact } from "./specialized_impact.ts"
 export { runGhostAutonomy } from "./ghost_autonomy.ts"
 export { runLateralMovement } from "./lateral_movement.ts"
+export { runLotapiNotionC2 } from "./custom_lotapi_notion_c2.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -54,6 +55,7 @@ export const ARES_MODULE_NAMES = [
   "ares_specialized_impact",
   "ares_ghost_autonomy",
   "ares_lateral_movement",
+  "ares_custom_lotapi_notion_c2",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]
