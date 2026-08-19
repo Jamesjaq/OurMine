@@ -79,13 +79,9 @@ export const ARES_MODULE_NAMES = [
   "ares_cognitive_ops",
   "ares_supply_chain",
   "ares_deception_noise",
-  "ares_satellite_c2",
-  "ares_zero_day_fuzzer",
-  "ares_fileless_implant",
-  "ares_firmware_implant",
-  "ares_hypervisor_rootkit",
-  "ares_airgap_bridge",
   "ares_c2_resilience",
+  "ares_multi_platform_arsenal",
+  "ares_kali_bridge",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

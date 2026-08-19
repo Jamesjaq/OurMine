@@ -320,6 +320,56 @@ export function buildOffensiveTools(): McpTool[] {
       },
 
     {
+        name: "ares_multi_platform_arsenal",
+        description: "Multi-Platform Exploitation: Tailor exploits and payloads for macOS (TCC/EndpointSecurity), Mobile (SS7/Android), and ATM (XFS) hardware.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            platform: { type: "string", description: "Target platform", enum: ["macos","mobile_ios","mobile_android","atm_xfs","linux_kernel","windows_kernel"] },
+            action:   { type: "string", description: "Exploitation action" },
+          },
+          required: ["platform", "action"],
+        },
+        async handler({ platform, action }) {
+          const live = mcpLive()
+          return security.ares.runMultiPlatformArsenal({ platform: String(platform), action: String(action) }, { live })
+        },
+      },
+
+    {
+        name: "ares_kali_bridge",
+        description: "Kali Linux Tool Orchestration: Execute native Kali Linux tools (Nmap, Metasploit, Sqlmap, Hydra) for automated exploitation.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            tool:    { type: "string", description: "Kali tool to run", enum: ["nmap","metasploit","sqlmap","hydra","gobuster"] },
+            command: { type: "string", description: "Full command arguments" },
+          },
+          required: ["tool", "command"],
+        },
+        async handler({ tool, command }) {
+          const live = mcpLive()
+          return security.ares.runKaliBridge({ tool: String(tool), command: String(command) }, { live })
+        },
+      },
+
+    {
+        name: "ares_c2_resilience",
+        description: "C2 Resilience & Credential Rotation: Autonomous failover and credential rotation across multiple cloud channels (Slack, Notion, GitHub).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            action: { type: "string", description: "Resilience action", enum: ["rotate_credentials","failover_check","self_heal"] },
+          },
+          required: ["action"],
+        },
+        async handler({ action }) {
+          const live = mcpLive()
+          return security.ares.runC2Resilience({ action: String(action) }, { live })
+        },
+      },
+
+    {
         name: "ares_financial_warfare",
         description: "Financial Warfare: Infiltrate SWIFT gateways, manipulate ISO 20022 messages, and disrupt clearing networks.",
         inputSchema: {
