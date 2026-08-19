@@ -27,7 +27,7 @@ import { runCognitiveOps } from "./cognitive_ops.ts"
 import { runFinancialWarfare } from "./financial_warfare.ts"
 import { runDeceptionEngine } from "./deception_noise.ts"
 import { runAntiForensics } from "./anti_forensics.ts"
-import { runRaasAdvanced } from "./index.ts"
+import { runRaasAdvanced, runMalwareFactory } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 
 export interface SyndicatePrimeResult {
@@ -150,6 +150,10 @@ export async function runAresOrchestrator(opts: {
           fs.writeFileSync(manifest, JSON.stringify({ target, timestamp: new Date().toISOString(), files: ["lab_vm.vmdk"] }))
           res = await runRaasAdvanced(target, manifest, { live: true })
           res.success = true
+          break
+        case "ares_malware_factory":
+          res = await runMalwareFactory({ target, objective }, { live: true })
+          res.success = res.ok
           break
         default:
           res = { summary: `Executed module ${moduleName} successfully via local routing.`, success: true }

@@ -147,6 +147,19 @@ export class SyndicateSpawner {
       workflow.push("ares_raas_advanced")
     }
 
+    // 6c. Malware Synthesis & Refactoring Cell (vx-underground sourcing & weapon forging)
+    if (has(["malware", "ransom", "weapon", "vx", "underground", "payload", "encrypt", "refactor", "source"])) {
+      operatives.push({
+        department: "Weapon Synthesis & Refactoring Factory",
+        title: "Chief Arsenal Engineer",
+        callsign: `FACTORY_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Sourcing samples from vx-underground, refactoring malware code, and applying polymorphic obfuscation",
+        assignedTool: "ares_malware_factory",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_malware_factory")
+    }
+
     // 7. Dynamic Adaptive Operatives based on remaining unique keywords
     // If the objective contains bespoke words not covered above, synthesize custom task forces
     const coveredTerms = ["recon", "scan", "find", "discover", "audit", "map", "intel", "infiltrate", "probe", "survey", "lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network", "traverse", "transit", "ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation", "cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human", "lure", "auth", "supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow", "dependency", "financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital", "ransom"]

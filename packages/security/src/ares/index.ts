@@ -32,6 +32,7 @@ export { runShadowOrganization } from "./shadow_org.ts"
 export { runSyndicateSpawn } from "./syndicate_spawn.ts"
 export { runAntiForensics } from "./anti_forensics.ts"
 export { runRansomwareEngagement as runRaasAdvanced } from "../raas_advanced.ts"
+export { runMalwareFactory } from "./malware_factory.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -66,6 +67,7 @@ export const ARES_MODULE_NAMES = [
   "ares_syndicate_spawn",
   "ares_anti_forensics",
   "ares_raas_advanced",
+  "ares_malware_factory",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]
