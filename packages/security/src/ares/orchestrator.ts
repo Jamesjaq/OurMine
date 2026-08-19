@@ -36,7 +36,8 @@ import {
   runC2Resilience,
   runMultiPlatformArsenal,
   runKaliBridge,
-  runInfiniteInnovation
+  runInfiniteInnovation,
+  runStrategicGapAnalysis
 } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 import { ExecutionDisplay } from "../runtime_exec.ts"
@@ -218,6 +219,10 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_infinite_innovation":
           res = await runInfiniteInnovation({ target, missionHorizon: "multi_year_dormant", live: true })
+          res.success = true
+          break
+        case "ares_strategic_gap_analysis":
+          res = await runStrategicGapAnalysis({ live: true })
           res.success = true
           break
         default:

@@ -41,6 +41,7 @@ export { runC2Resilience } from "./c2_resilience.ts"
 export { runMultiPlatformArsenal } from "./multi_platform_arsenal.ts"
 export { runKaliBridge } from "./kali_bridge.ts"
 export { runInfiniteInnovation } from "./infinite_innovation.ts"
+export { runStrategicGapAnalysis } from "./strategic_gap_analysis.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -86,6 +87,7 @@ export const ARES_MODULE_NAMES = [
   "ares_multi_platform_arsenal",
   "ares_kali_bridge",
   "ares_infinite_innovation",
+  "ares_strategic_gap_analysis",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

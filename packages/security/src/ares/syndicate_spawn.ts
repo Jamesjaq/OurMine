@@ -63,6 +63,17 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_innovation_engine")
 
+    // 0.0 Strategic Gap & Future Readiness Analysis
+    operatives.push({
+      department: "Strategic Command & Future Readiness",
+      title: "Omega Protocol Architect",
+      callsign: `OMEGA_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+      missionFocus: "Analyzing system gaps for 2027-2030 horizon (Quantum, Ring -2, Cognitive Warfare)",
+      assignedTool: "ares_strategic_gap_analysis",
+      autonomyLevel: "strategic"
+    })
+    workflow.push("ares_strategic_gap_analysis")
+
     // 0.1 Infinite Evolution & Meta-Synthesis Cell
     if (has(["evolve", "future", "dormant", "years", "persist", "long", "infinite", "autonomous"])) {
       operatives.push({
