@@ -30,6 +30,7 @@ export { runLiveVector01 } from "./custom_live-vector-01.ts"
 export { runLotapiNotionC2 } from "./custom_lotapi_notion_c2.ts"
 export { runShadowOrganization } from "./shadow_org.ts"
 export { runSyndicateSpawn } from "./syndicate_spawn.ts"
+export { runAntiForensics } from "./anti_forensics.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -62,6 +63,7 @@ export const ARES_MODULE_NAMES = [
   "ares_custom_lotapi_notion_c2",
   "ares_shadow_organization",
   "ares_syndicate_spawn",
+  "ares_anti_forensics",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

@@ -24,6 +24,7 @@ import { runSupplyChainCell } from "./supply_chain.ts"
 import { runCognitiveOps } from "./cognitive_ops.ts"
 import { runFinancialWarfare } from "./financial_warfare.ts"
 import { runDeceptionEngine } from "./deception_noise.ts"
+import { runAntiForensics } from "./anti_forensics.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 
 export interface SyndicatePrimeResult {
@@ -134,6 +135,10 @@ export async function runAresOrchestrator(opts: {
           const maskGroup = objective.toLowerCase().includes("lazarus") ? "Lazarus Group" : 
                             objective.toLowerCase().includes("fancy") ? "APT28 (Fancy Bear)" : "Scattered Spider"
           res = await runDeceptionEngine({ attributedGroup: maskGroup, live: true })
+          res.success = true
+          break
+        case "ares_anti_forensics":
+          res = await runAntiForensics({ action: "artifact_clean", live: true })
           res.success = true
           break
         default:

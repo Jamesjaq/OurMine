@@ -173,6 +173,7 @@ export class SyndicateSpawner {
       autonomyLevel: "execution"
     })
     workflow.push("ares_evasion_engine")
+    workflow.push("ares_anti_forensics")
 
     const uniqueDepts = new Set(operatives.map(o => o.department))
 
