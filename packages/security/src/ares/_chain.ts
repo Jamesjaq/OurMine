@@ -73,7 +73,7 @@ export function resolveAdChainContext(cg: CredentialGraph, opts: { domain?: stri
 }
 
 export function planOrchestratorModules(ctx: AdChainContext, target: string): OrchestratorModulePlan[] {
-  const labFlash = process.env.OURMINE_LAB_FLASH_WRITE === "1"
+  const labFlash = process.env.OURMINE_ALLOW_FLASH_WRITE === "1"
   const esxiLikely = target !== "127.0.0.1" && target !== "localhost"
   return [
     { name: "ares_evasion_engine", run: true, reason: "always — establish bypass baseline" },

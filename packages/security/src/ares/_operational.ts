@@ -143,7 +143,7 @@ export async function flashFirmwareBackup(backupPath: string, writeBack = false)
   const steps: ExecStep[] = []
   if (!isToolAvailable("flashrom")) return [step("flashrom", false, "flashrom not on PATH")]
   steps.push(await runCmd("flashrom_read", `flashrom -r ${backupPath} 2>&1`))
-  if (writeBack && fs.existsSync(backupPath) && process.env.OURMINE_LAB_FLASH_WRITE === "1") {
+  if (writeBack && fs.existsSync(backupPath) && process.env.OURMINE_ALLOW_FLASH_WRITE === "1") {
     steps.push(await runCmd("flashrom_write", `flashrom -w ${backupPath} 2>&1`))
   }
   return steps

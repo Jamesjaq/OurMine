@@ -4,6 +4,7 @@ import { ot_bridge } from "./ot_bridge.ts"
 import { raas_bridge } from "./raas_bridge.ts"
 import { c2_bridge } from "./c2_bridge.ts"
 import { audit_bridge } from "./audit_bridge.ts"
+import { ares_bridge } from "./ares_bridge.ts"
 import type { AgentToolContext, ToolRunResult } from "../agent_tools.ts"
 
 export const MODULE_BRIDGE: Record<
@@ -16,6 +17,7 @@ export const MODULE_BRIDGE: Record<
   ...raas_bridge,
   ...c2_bridge,
   ...audit_bridge,
+  ...ares_bridge,
 }
 
 export function bridgedToolNames(): string[] {

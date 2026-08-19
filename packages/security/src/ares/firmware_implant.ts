@@ -59,7 +59,7 @@ export async function deployFirmwareImplant(opts: {
 
   if (isToolAvailable("flashrom")) {
     flashCommand = `flashrom -r ${backupPath}`
-    const flashSteps = await flashFirmwareBackup(backupPath, opts.flashWrite ?? process.env.OURMINE_LAB_FLASH_WRITE === "1")
+    const flashSteps = await flashFirmwareBackup(backupPath, opts.flashWrite ?? process.env.OURMINE_ALLOW_FLASH_WRITE === "1")
     steps.push(...flashSteps)
     deployed = flashSteps.some((s) => s.success)
   }

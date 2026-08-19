@@ -2,7 +2,8 @@
  * @module lateral_movement
  * Autonomous Lateral Movement Engine — finds multi-hop paths using the CredentialGraph.
  */
-import { CredentialGraph, CredentialNode } from "../credential_graph.ts"
+import { CredentialGraph } from "../credential_graph.ts"
+import type { CredentialNode } from "../credential_graph.ts"
 
 export interface MovementPath {
   hops: Array<{
@@ -15,7 +16,10 @@ export interface MovementPath {
 }
 
 export class LateralMovementEngine {
-  constructor(private credGraph: CredentialGraph) {}
+  private credGraph: CredentialGraph
+  constructor(credGraph: CredentialGraph) {
+    this.credGraph = credGraph
+  }
 
   /**
    * Find a multi-hop path from a source host to a target host using available credentials.
@@ -82,3 +86,34 @@ export class LateralMovementEngine {
 }
 
 export default LateralMovementEngine
+
+import { moduleEnvelope, resolveDryRun } from "../module_helpers.ts"
+
+export async function runLateralMovement(
+  req: { source?: string; target?: string; highValueTargets?: string[] },
+  opts: { live?: boolean; dryRun?: boolean } = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  const cg = CredentialGraph.load()
+  const engine = new LateralMovementEngine(cg)
+  
+  let path = null
+  if (req.source && req.target) {
+    path = engine.findPath(req.source, req.target)
+  }
+  
+  let nextHop = null
+  if (req.source && req.highValueTargets) {
+    nextHop = engine.suggestNextHop(req.source, req.highValueTargets)
+  }
+  
+  return moduleEnvelope(dryRun, {
+    path,
+    nextHop,
+    summary: path 
+      ? `Found ${path.hops.length}-hop path to ${req.target}.` 
+      : nextHop 
+        ? `Suggested next hop towards high-value target.` 
+        : "No movement path discovered with current credentials.",
+  })
+}

@@ -72,6 +72,12 @@ const ARES_MODULES = [
   "network_exploit.ts",
   "cloud_native.ts",
   "ai_ml_attacks.ts",
+  "innovation_engine.ts",
+  "self_healing.ts",
+  "self_improvement.ts",
+  "specialized_impact.ts",
+  "ghost_autonomy.ts",
+  "lateral_movement.ts",
 ]
 
 export async function assessOperationalDepth(): Promise<OperationalDepthReport> {

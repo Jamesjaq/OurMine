@@ -20,6 +20,12 @@ export { runAntiForensicsAdvanced } from "./anti_forensics_advanced.ts"
 export { runNetworkExploit } from "./network_exploit.ts"
 export { runCloudNativeAttack } from "./cloud_native.ts"
 export { runAiMlAttacks } from "./ai_ml_attacks.ts"
+export { runInnovationEngine } from "./innovation_engine.ts"
+export { runSelfHealing } from "./self_healing.ts"
+export { runSelfImprovement } from "./self_improvement.ts"
+export { runSpecializedImpact } from "./specialized_impact.ts"
+export { runGhostAutonomy } from "./ghost_autonomy.ts"
+export { runLateralMovement } from "./lateral_movement.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -42,9 +48,12 @@ export const ARES_MODULE_NAMES = [
   "ares_network_exploit",
   "ares_cloud_native",
   "ares_ai_ml_attacks",
-  "ares_lateral_pathfinding",
-  "ares_self_healing_check",
-  "ares_technique_discovery",
+  "ares_innovation_engine",
+  "ares_self_healing",
+  "ares_self_improvement",
+  "ares_specialized_impact",
+  "ares_ghost_autonomy",
+  "ares_lateral_movement",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

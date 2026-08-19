@@ -4,7 +4,7 @@
  */
 import { compileDuckyScript, generateHIDReportDescriptor, cloneRFIDCard } from "../physical.ts"
 import { generateC2Image } from "../stego_c2.ts"
-import { brokerExec, ensureAresDir, isToolAvailable, writeArtifact, resolveLiveMode } from "./_base.ts"
+import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
 import { runCmd, step, type ExecStep } from "./_integrations.ts"
 import { enableUsbGadget, sdrTransmitProbe } from "./_operational.ts"
 
@@ -21,7 +21,7 @@ export async function deployHardwareImplant(opts: {
   live?: boolean
   type?: "usb" | "rf" | "sdr" | "all"
 }): Promise<HardwareImplantResult> {
-  const dryRun = !resolveLiveMode(opts)
+  liveRequired("ares_hardware_implant", opts)
   const implantId = `hw_${Date.now()}`
   const type = opts.type ?? "all"
   const types: string[] = []
@@ -30,22 +30,8 @@ export async function deployHardwareImplant(opts: {
   let probed = false
 
   if (type === "usb" || type === "all") {
-    const ducky = compileDuckyScript("DELAY 1000\nSTRING OURMINE_HW_IMPLANT\nENTER\n", dryRun)
-    if (dryRun) {
-      const { usbTemplatePaths } = await import("../usb_audit.ts")
-      artifacts.push(...usbTemplatePaths())
-      types.push("badusb", "usb_hid_implant")
-      steps.push(step("usb_templates", true, "dry-run template paths only"))
-      return {
-        implantId,
-        types,
-        artifacts,
-        steps,
-        probed: false,
-        summary: `Hardware implant dry-run: ${artifacts.length} USB template path(s)`,
-      }
-    }
-    artifacts.push(writeArtifact("usb", `${implantId}.hex`, ducky.compiledPayloadHex))
+    const ducky = compileDuckyScript("DELAY 1000\nSTRING OURMINE_HW_IMPLANT\nENTER\n", false)
+    artifacts.push(writeArtifact("hardware", `${implantId}.hex`, ducky.compiledPayloadHex))
     const hid = generateHIDReportDescriptor()
     writeArtifact("hardware", `${implantId}_hid.json`, JSON.stringify(hid, null, 2))
     types.push("usb_hid_implant", "badusb")

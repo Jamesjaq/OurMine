@@ -14,8 +14,11 @@ export interface AgentHealth {
 export class SelfHealingEngine {
   private agents = new Map<string, AgentHealth>()
   private channelHistory = new Map<string, string[]>() // agentId -> channel names
+  private c2Engine: CovertC2Engine
 
-  constructor(private c2Engine: CovertC2Engine) {}
+  constructor(c2Engine: CovertC2Engine) {
+    this.c2Engine = c2Engine
+  }
 
   /** Record a check-in and update agent health status. */
   registerCheckin(agentId: string, channelName: string): void {
@@ -77,3 +80,27 @@ export class SelfHealingEngine {
 }
 
 export default SelfHealingEngine
+
+import { moduleEnvelope, resolveDryRun } from "../module_helpers.ts"
+
+export async function runSelfHealing(
+  req: { agentIds?: string[]; checkin?: { agentId: string; channel: string } },
+  opts: { live?: boolean; dryRun?: boolean } = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  const c2 = new CovertC2Engine()
+  const engine = new SelfHealingEngine(c2)
+  
+  if (req.checkin) {
+    engine.registerCheckin(req.checkin.agentId, req.checkin.channel)
+  }
+  
+  const lost = engine.findLostAgents()
+  const plan = engine.generateResiliencePlan(req.agentIds ?? [])
+  
+  return moduleEnvelope(dryRun, {
+    lostAgents: lost,
+    resiliencePlan: plan,
+    summary: `Self-healing engine monitored ${req.agentIds?.length ?? 0} agents, found ${lost.length} lost, generated recovery plan.`,
+  })
+}
