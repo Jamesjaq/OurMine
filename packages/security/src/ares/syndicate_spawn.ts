@@ -160,9 +160,51 @@ export class SyndicateSpawner {
       workflow.push("ares_malware_factory")
     }
 
+    // 6d. Covert C2 & Satellite Communication Cell
+    if (has(["c2", "satellite", "vsat", "iridium", "covert", "doh", "dns", "stego", "beacon"])) {
+      operatives.push({
+        department: "Covert Communications & Satellite Division",
+        title: "C2 Infrastructure Architect",
+        callsign: `COMMS_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Establishing covert satellite channels, domain fronting, and steganographic beaconing",
+        assignedTool: "ares_satellite_c2",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_satellite_c2")
+    }
+
+    // 6e. Zero-Day & Fileless Weaponry Cell
+    if (has(["zero-day", "fuzz", "fileless", "memory", "implant", "rootkit", "firmware", "uefi", "hypervisor", "airgap"])) {
+      operatives.push({
+        department: "Advanced Weaponry & Zero-Day Research Cell",
+        title: "Senior Weaponry Researcher",
+        callsign: `APEX_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Zero-day vulnerability discovery, fileless memory implants, and low-level rootkit deployment",
+        assignedTool: has(["zero-day", "fuzz"]) ? "ares_zero_day_fuzzer" : 
+                      has(["fileless", "memory"]) ? "ares_fileless_implant" :
+                      has(["firmware", "uefi"]) ? "ares_firmware_implant" : "ares_hypervisor_rootkit",
+        autonomyLevel: "execution"
+      })
+      workflow.push(has(["zero-day", "fuzz"]) ? "ares_zero_day_fuzzer" : 
+                    has(["fileless", "memory"]) ? "ares_fileless_implant" :
+                    has(["firmware", "uefi"]) ? "ares_firmware_implant" : "ares_hypervisor_rootkit")
+      
+      if (has(["airgap"])) {
+        operatives.push({
+          department: "Airgap Bridging Unit",
+          title: "Acoustic & Electromagnetic Specialist",
+          callsign: `BRIDGE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+          missionFocus: "Bridging airgapped environments via side-channel exfiltration and acoustic lures",
+          assignedTool: "ares_airgap_bridge",
+          autonomyLevel: "execution"
+        })
+        workflow.push("ares_airgap_bridge")
+      }
+    }
+
     // 7. Dynamic Adaptive Operatives based on remaining unique keywords
     // If the objective contains bespoke words not covered above, synthesize custom task forces
-    const coveredTerms = ["recon", "scan", "find", "discover", "audit", "map", "intel", "infiltrate", "probe", "survey", "lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network", "traverse", "transit", "ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation", "cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human", "lure", "auth", "supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow", "dependency", "financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital", "ransom"]
+    const coveredTerms = ["recon", "scan", "find", "discover", "audit", "map", "intel", "infiltrate", "probe", "survey", "lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network", "traverse", "transit", "ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation", "cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human", "lure", "auth", "supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow", "dependency", "financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital", "ransom", "c2", "satellite", "vsat", "iridium", "covert", "doh", "dns", "stego", "beacon", "zero-day", "fuzz", "fileless", "memory", "implant", "rootkit", "firmware", "uefi", "hypervisor", "airgap"]
     
     const unhandledKeywords = uniqueKeywords.filter(k => !coveredTerms.includes(k) && k.length > 4)
     if (unhandledKeywords.length > 0) {

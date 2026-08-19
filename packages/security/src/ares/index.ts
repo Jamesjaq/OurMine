@@ -33,6 +33,11 @@ export { runSyndicateSpawn } from "./syndicate_spawn.ts"
 export { runAntiForensics } from "./anti_forensics.ts"
 export { runRansomwareEngagement as runRaasAdvanced } from "../raas_advanced.ts"
 export { runMalwareFactory } from "./malware_factory.ts"
+export { runFinancialWarfare } from "./financial_warfare.ts"
+export { runCognitiveOps } from "./cognitive_ops.ts"
+export { runSupplyChainCell as runSupplyChain } from "./supply_chain.ts"
+export { runDeceptionEngine as runDeceptionNoise } from "./deception_noise.ts"
+export { runC2Resilience } from "./c2_resilience.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -68,6 +73,17 @@ export const ARES_MODULE_NAMES = [
   "ares_anti_forensics",
   "ares_raas_advanced",
   "ares_malware_factory",
+  "ares_financial_warfare",
+  "ares_cognitive_ops",
+  "ares_supply_chain",
+  "ares_deception_noise",
+  "ares_satellite_c2",
+  "ares_zero_day_fuzzer",
+  "ares_fileless_implant",
+  "ares_firmware_implant",
+  "ares_hypervisor_rootkit",
+  "ares_airgap_bridge",
+  "ares_c2_resilience",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

@@ -27,8 +27,16 @@ import { runCognitiveOps } from "./cognitive_ops.ts"
 import { runFinancialWarfare } from "./financial_warfare.ts"
 import { runDeceptionEngine } from "./deception_noise.ts"
 import { runAntiForensics } from "./anti_forensics.ts"
-import { runRaasAdvanced, runMalwareFactory } from "./index.ts"
+import { 
+  runRaasAdvanced, 
+  runMalwareFactory,
+  deployFirmwareImplant,
+  deployHypervisorRootkit,
+  runAirgapBridge,
+  runC2Resilience
+} from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
+import { ExecutionDisplay } from "../runtime_exec.ts"
 
 export interface SyndicatePrimeResult {
   mission: SyndicateMissionPlan
@@ -40,8 +48,6 @@ export interface SyndicatePrimeResult {
   tokenEfficientSummary: string
   data?: any
 }
-
-import { ExecutionDisplay } from "../runtime_exec.ts"
 
 export async function runAresOrchestrator(opts: {
   live?: boolean
@@ -94,7 +100,7 @@ export async function runAresOrchestrator(opts: {
           res = { summary: `Syndicate Prime active: ${mission.operatives.length} operatives mobilized across ${mission.syndicateStructure.totalDepartments} departments.`, success: true }
           break
         case "ares_innovation_engine":
-          res = await runInnovationEngine({}, { live: true })
+          res = await runInnovationEngine({ focus: objective }, { live: true })
           res.success = (res.data?.hypothesesCount ?? 0) > 0
           break
         case "ares_self_healing":
@@ -110,7 +116,6 @@ export async function runAresOrchestrator(opts: {
           res.success = true
           break
         case "ares_specialized_impact":
-          // Handle fiber/building keywords from mission objective
           const sector = objective.toLowerCase().includes("fiber") ? "undersea_fiber" : 
                          objective.toLowerCase().includes("building") ? "building_automation" : "ot_scada"
           res = await runSpecializedImpact({ sector, target }, { live: true })
@@ -125,7 +130,7 @@ export async function runAresOrchestrator(opts: {
           res.success = res.data?.implanted ?? true
           break
         case "ares_cognitive_ops":
-          res = await runCognitiveOps({ live: true })
+          res = await runCognitiveOps({ live: true, targetExecutive: "Chief Financial Officer" })
           res.success = res.data?.luringSuccess ?? true
           break
         case "ares_financial_warfare":
@@ -152,8 +157,36 @@ export async function runAresOrchestrator(opts: {
           res.success = true
           break
         case "ares_malware_factory":
-          res = await runMalwareFactory({ target, objective }, { live: true })
+          res = await runMalwareFactory({ family: "LockBit", objective }, { live: true })
           res.success = res.ok
+          break
+        case "ares_satellite_c2":
+          res = await deploySatelliteC2({ live: true, vsatHost: target })
+          res.success = res.probed
+          break
+        case "ares_zero_day_fuzzer":
+          res = await runZeroDayFuzzer({ target }, { live: true })
+          res.success = true
+          break
+        case "ares_fileless_implant":
+          res = await buildFilelessImplant({ target }, { live: true })
+          res.success = true
+          break
+        case "ares_firmware_implant":
+          res = await deployFirmwareImplant({ target }, { live: true })
+          res.success = true
+          break
+        case "ares_hypervisor_rootkit":
+          res = await deployHypervisorRootkit({ target }, { live: true })
+          res.success = true
+          break
+        case "ares_airgap_bridge":
+          res = await runAirgapBridge({ target }, { live: true })
+          res.success = true
+          break
+        case "ares_c2_resilience":
+          res = await runC2Resilience({ live: true })
+          res.success = true
           break
         default:
           res = { summary: `Executed module ${moduleName} successfully via local routing.`, success: true }
@@ -217,14 +250,12 @@ export async function runAresOrchestrator(opts: {
 
   // Save to local artifact for long-term persistence and detailed inspection
   try {
-    const fs = await import("node:fs")
-    const path = await import("node:path")
     const artifactDir = path.join(process.cwd(), ".ourmine", "artifacts")
     fs.mkdirSync(artifactDir, { recursive: true })
     const artifactPath = path.join(artifactDir, `syndicate_${mission.missionId}.json`)
     fs.writeFileSync(artifactPath, JSON.stringify(envelope, null, 2), "utf8")
   } catch {
-    // Silent fail for artifact save
+    // Silent fail
   }
 
   return {

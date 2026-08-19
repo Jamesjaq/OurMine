@@ -286,6 +286,152 @@ export function buildOffensiveTools(): McpTool[] {
       },
 
     {
+        name: "ares_syndicate_mission",
+        description: "Syndicate Prime Mission Control: Execute a fully autonomous, self-organizing adversarial engagement. Synthesizes bespoke departments and operatives based on your mission objective.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            target:    { type: "string", description: "Target IP, domain, or range" },
+            objective: { type: "string", description: "Detailed mission objective (e.g. 'Infiltrate energy grid and deploy voice lures')" },
+          },
+          required: ["target", "objective"],
+        },
+        async handler({ target, objective }) {
+          const live = mcpLive()
+          return security.ares.runAresOrchestrator({ target: String(target), objective: String(objective), live })
+        },
+      },
+
+    {
+        name: "ares_malware_factory",
+        description: "Weapon Synthesis & Refactoring: Raid vx-underground for samples, refactor code for mission demands, apply polymorphic obfuscation, and stage payloads.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            family:    { type: "string", description: "Malware family to source (e.g. LockBit)" },
+            objective: { type: "string", description: "Mission-specific refactoring objective" },
+          },
+          required: ["objective"],
+        },
+        async handler({ family, objective }) {
+          const live = mcpLive()
+          return security.ares.runMalwareFactory({ family: String(family ?? ""), objective: String(objective) }, { live })
+        },
+      },
+
+    {
+        name: "ares_financial_warfare",
+        description: "Financial Warfare: Infiltrate SWIFT gateways, manipulate ISO 20022 messages, and disrupt clearing networks.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            vector: { type: "string", description: "Financial attack vector", enum: ["swift_gateway","ledger_manipulation","iso20022_injection"] },
+          },
+          required: ["vector"],
+        },
+        async handler({ vector }) {
+          const live = mcpLive()
+          return security.ares.runFinancialWarfare({ vector: String(vector), live })
+        },
+      },
+
+    {
+        name: "ares_cognitive_ops",
+        description: "Cognitive Warfare: Generate AI-personalized vishing scripts, deepfake voice clones, and authority lures for MFA bypass.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            executive: { type: "string", description: "Target executive role/name" },
+            channel:   { type: "string", description: "Manipulation channel", enum: ["voice_vishing","video_deepfake","synthetic_persona","mfa_bypass"] },
+          },
+          required: ["executive"],
+        },
+        async handler({ executive, channel }) {
+          const live = mcpLive()
+          return security.ares.runCognitiveOps({ targetExecutive: String(executive), channel: String(channel ?? "voice_vishing"), live })
+        },
+      },
+
+    {
+        name: "ares_anti_forensics",
+        description: "Anti-Forensics & Sanitization: Clean operational traces, timestomp files, and neutralize forensic artifacts after an engagement.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            action: { type: "string", description: "Cleanup action", enum: ["artifact_clean","log_sanitize","timestomp"] },
+          },
+          required: ["action"],
+        },
+        async handler({ action }) {
+          const live = mcpLive()
+          return security.ares.runAntiForensics({ action: String(action), live })
+        },
+      },
+
+    {
+        name: "ares_deception_noise",
+        description: "Deception & Attribution Masking: Inject false-flag indicators of compromise, flood SOC telemetry, and mask operational attribution.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            group: { type: "string", description: "APT group to mimic", enum: ["Lazarus Group","APT28 (Fancy Bear)","Scattered Spider"] },
+          },
+          required: ["group"],
+        },
+        async handler({ group }) {
+          const live = mcpLive()
+          return security.ares.runDeceptionNoise({ attributedGroup: String(group), live })
+        },
+      },
+
+    {
+        name: "ares_raas_advanced",
+        description: "Double-Extortion Ransomware: Exfiltrate sensitive data, encrypt local targets, and provision Tor-based recovery portals.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            target:   { type: "string", description: "Target host to encrypt" },
+            manifest: { type: "string", description: "JSON exfiltration manifest path" },
+          },
+          required: ["target", "manifest"],
+        },
+        async handler({ target, manifest }) {
+          const live = mcpLive()
+          return security.ares.runRaasAdvanced(String(target), String(manifest), { live })
+        },
+      },
+
+    {
+        name: "ares_satellite_c2",
+        description: "Satellite Covert C2: Establish covert satellite channels (VSAT/Iridium) and steganographic beaconing.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            vsat_host: { type: "string", description: "VSAT modem host/gateway" },
+          },
+        },
+        async handler({ vsat_host }) {
+          const live = mcpLive()
+          return security.ares.deploySatelliteC2({ vsatHost: String(vsat_host ?? ""), live })
+        },
+      },
+
+    {
+        name: "ares_innovation_engine",
+        description: "Proactive Research & Zero-Day Synthesis: Hunt for latest exploits, analyze NVD/CISA feeds, and synthesize mission-specific tradecraft.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            focus: { type: "string", description: "Research focus (e.g. 'cPanel zero-day')" },
+          },
+        },
+        async handler({ focus }) {
+          const live = mcpLive()
+          return security.ares.runInnovationEngine({ focus: String(focus ?? "") }, { live })
+        },
+      },
+
+    {
         name: "ares_supply_chain",
         description: "Supply chain attack detection and simulation: package typosquatting, dependency confusion, malicious package injection, GitHub Actions poisoning.",
         inputSchema: {
