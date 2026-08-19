@@ -123,6 +123,18 @@ export class SyndicateSpawner {
       workflow.push("ares_defi_predator")
     }
 
+    if (has(["ai", "ml", "adversarial", "evasion", "classifier", "edr", "neural"])) {
+      operatives.push({
+        department: "Adversarial AI & Counter-Defense Cell",
+        title: "Neural Perturbation Specialist",
+        callsign: `NEURAL_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Adversarial machine learning feature noise injection and defensive AI model blinding",
+        assignedTool: "ares_adversarial_ai_evasion",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_adversarial_ai_evasion")
+    }
+
     // 0.1 Infinite Evolution & Meta-Synthesis Cell
     if (has(["evolve", "future", "dormant", "years", "persist", "long", "infinite", "autonomous"])) {
       operatives.push({

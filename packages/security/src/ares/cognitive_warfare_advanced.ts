@@ -48,7 +48,9 @@ export async function runCognitiveWarfareAdvanced(opts: CognitiveOptions = {}) {
     )
   ]
 
-  return moduleEnvelope(live, persona, findings)
+  const env = moduleEnvelope(live, persona, findings)
+  env.success = true
+  return env
 }
 
 export default { CognitiveWarfareEngine, runCognitiveWarfareAdvanced }

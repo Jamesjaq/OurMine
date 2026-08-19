@@ -46,6 +46,7 @@ export { runQuantumDominance } from "./quantum_dominance.ts"
 export { runSubHardwarePersistence } from "./sub_hardware_persistence.ts"
 export { runCognitiveWarfareAdvanced } from "./cognitive_warfare_advanced.ts"
 export { runDeFiPredator } from "./defi_predator.ts"
+export { runAdversarialAIEvasion } from "./adversarial_ai_evasion.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -96,6 +97,7 @@ export const ARES_MODULE_NAMES = [
   "ares_sub_hardware_persistence",
   "ares_cognitive_warfare_advanced",
   "ares_defi_predator",
+  "ares_adversarial_ai_evasion",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

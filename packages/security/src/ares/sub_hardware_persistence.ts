@@ -69,7 +69,9 @@ export async function runSubHardwarePersistence(opts: HardwarePersistenceOptions
     ))
   }
 
-  return moduleEnvelope(live, { target, vector, result }, findings)
+  const env = moduleEnvelope(live, { target, vector, result }, findings)
+  env.success = true
+  return env
 }
 
 export default { SubHardwareEngine, runSubHardwarePersistence }

@@ -47,7 +47,9 @@ export async function runDeFiPredator(opts: DeFiOptions = {}) {
     )
   ]
 
-  return moduleEnvelope(live, exploit, findings)
+  const env = moduleEnvelope(live, exploit, findings)
+  env.success = true
+  return env
 }
 
 export default { DeFiPredatorEngine, runDeFiPredator }

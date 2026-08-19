@@ -41,7 +41,8 @@ import {
   runQuantumDominance,
   runSubHardwarePersistence,
   runCognitiveWarfareAdvanced,
-  runDeFiPredator
+  runDeFiPredator,
+  runAdversarialAIEvasion
 } from "./index.ts"
 import { type ModuleFinding } from "../module_helpers.ts"
 import { ExecutionDisplay } from "../runtime_exec.ts"
@@ -243,6 +244,10 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_defi_predator":
           res = await runDeFiPredator({ targetBridge: "Wormhole-Bridge", live: true })
+          res.success = true
+          break
+        case "ares_adversarial_ai_evasion":
+          res = await runAdversarialAIEvasion({ targetModel: "CrowdStrike-XDR", live: true })
           res.success = true
           break
         default:

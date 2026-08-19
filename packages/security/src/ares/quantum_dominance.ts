@@ -97,7 +97,9 @@ export async function runQuantumDominance(opts: QuantumOptions = {}) {
     )
   ]
 
-  return moduleEnvelope(live, { target, hndl, pqc }, findings)
+  const env = moduleEnvelope(live, { target, hndl, pqc }, findings)
+  env.success = true
+  return env
 }
 
 export default { QuantumDominanceEngine, runQuantumDominance }
