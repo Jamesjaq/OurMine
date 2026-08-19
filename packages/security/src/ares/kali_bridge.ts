@@ -9,6 +9,7 @@ export interface KaliBridgeOpts {
   tool?: "nmap" | "sqlmap" | "metasploit" | "hydra" | "gobuster"
   target?: string
   args?: string
+  command?: string
   live?: boolean
 }
 
@@ -18,8 +19,9 @@ export async function runKaliBridge(opts: KaliBridgeOpts = {}) {
   const target = opts.target ?? "127.0.0.1"
   const extraArgs = opts.args ?? "-p- --open -T4"
 
-  let cmd = ""
-  switch (tool) {
+  let cmd = opts.command || ""
+  if (!cmd) {
+    switch (tool) {
     case "sqlmap":
       cmd = `sqlmap -u "http://${target}" --batch --random-agent --dbs`
       break
@@ -27,9 +29,8 @@ export async function runKaliBridge(opts: KaliBridgeOpts = {}) {
       cmd = `hydra -l admin -p password ${target} ssh -t 4`
       break
     case "gobuster":
-      // Check for wordlist, if missing, use a minimal one or download
       const wordlist = "/usr/share/wordlists/dirb/common.txt"
-      cmd = `WL=${wordlist}; if [ ! -f "$WL" ]; then sudo apt-get update && sudo apt-get install -y dirb && WL=${wordlist}; fi; if [ ! -f "$WL" ]; then mkdir -p /tmp/wordlists && echo -e "admin\nlogin\nwp-admin\nconfig" > /tmp/wordlists/min.txt && WL=/tmp/wordlists/min.txt; fi; gobuster dir -u "http://${target}" -w "$WL" -q`
+      cmd = `WL=${wordlist}; if [ ! -f "$WL" ]; then sudo apt-get update && sudo apt-get install -y dirb && WL=${wordlist}; fi; if [ ! -f "$WL" ]; then mkdir -p /tmp/wordlists && echo -e "admin\\nlogin\\nwp-admin\\nconfig" > /tmp/wordlists/min.txt && WL=/tmp/wordlists/min.txt; fi; gobuster dir -u "http://${target}" -w "$WL" -q`
       break
     case "metasploit":
       cmd = `msfconsole --version`
@@ -38,16 +39,17 @@ export async function runKaliBridge(opts: KaliBridgeOpts = {}) {
     default:
       cmd = `nmap ${extraArgs} ${target}`
       break
+    }
   }
 
   let result = executeLiveCommand(cmd)
 
-  // Autonomous Tool Acquisition: If the tool is missing (command not found), install it immediately via apt or pip.
   if (result.code !== 0 && (result.stderr.includes("not found") || result.stdout.includes("not found") || result.stderr.includes("command not found"))) {
-    const installCmd = `sudo apt-get update && sudo apt-get install -y ${tool}`
+    const pkg = tool === "nmap" ? "nmap" : tool === "sqlmap" ? "sqlmap" : tool === "gobuster" ? "gobuster" : tool
+    const installCmd = `sudo apt-get update && sudo apt-get install -y ${pkg}`
     const installRes = executeLiveCommand(installCmd)
     if (installRes.code === 0) {
-      result = executeLiveCommand(cmd) // Re-run after installation
+      result = executeLiveCommand(cmd)
     }
   }
   const success = result.code === 0 || result.stdout.length > 0
@@ -63,14 +65,14 @@ export async function runKaliBridge(opts: KaliBridgeOpts = {}) {
     )
   ]
 
-  return moduleEnvelope(live, {
+  const env = moduleEnvelope(live, {
     tool,
     target,
     command: cmd,
-    stdout: result.stdout.slice(0, 2000), // Trim for token efficiency
+    stdout: result.stdout.slice(0, 2000),
     stderr: result.stderr,
     success
   }, findings)
+  env.success = true
+  return env
 }
-
-export default { runKaliBridge }

@@ -1,0 +1,78 @@
+(node:31294) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31294) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+[1m[38;5;208m◈ Agent Start[0m  Syndicate Prime Engagement → 127.0.0.1
+[90m────────────────────────────────────────────────────────────[0m
+
+  [35m⬡ Subagent[0m  [1mSYNDICATE PRIME [SYNDICATE_D736693C][0m  [90mspawned[0m
+  [35m│[0m [Strategic Command (127.0.0.1)] Mission Syndicate Commander assigned tool 'ares_shadow_organization' -> Focus: Orchestrating bespoke syndicate response for objective: "Bank Heist: Infiltrate core financial network, manipulate SWIFT/ISO20022 clearing gateways, execute ATM XFS jackpotting, and drain capital reserves with absolute stealth." against target 127.0.0.1
+  [35m│[0m [Innovation & Zero-Day Research Cell] Lead Intelligence Ingestor assigned tool 'ares_innovation_engine' -> Focus: Proactive research into latest vulnerabilities and exploit synthesis specific to 127.0.0.1
+  [35m│[0m [Strategic Command & Future Readiness] Omega Protocol Architect assigned tool 'ares_strategic_gap_analysis' -> Focus: Analyzing system gaps for 2027-2030 horizon (Quantum, Ring -2, Cognitive Warfare)
+  [35m│[0m [Sub-Hardware & Infrastructure Persistence] Sub-Hardware Ghost Operative assigned tool 'ares_sub_hardware_persistence' -> Focus: Ring -2 Management Engine persistence and orbital satellite mesh interception
+  [35m│[0m [Adversarial AI & Counter-Defense Cell] Neural Perturbation Specialist assigned tool 'ares_adversarial_ai_evasion' -> Focus: Adversarial machine learning feature noise injection and defensive AI model blinding
+  [35m│[0m [Multi-Platform Adaptation Unit] Cross-Platform Payload Specialist assigned tool 'ares_multi_platform_arsenal' -> Focus: Tailoring exploits and payloads for target platform: Bank Heist: Infiltrate core financial network, manipulate SWIFT/ISO20022 clearing gateways, execute ATM XFS jackpotting, and drain capital reserves with absolute stealth.
+  [35m│[0m [Reconnaissance & Intelligence Synthesis] Chief Target Profiler assigned tool 'ares_innovation_engine' -> Focus: Deep structural mapping, surface telemetry, and asset profiling on 127.0.0.1
+  [35m│[0m [Domain Traversal & Pivoting Cell] Lead Network Dominance Operative assigned tool 'ares_lateral_movement' -> Focus: Multi-hop pathfinding, credential graph transit, and trust boundary traversal across 127.0.0.1
+  [35m│[0m [Specialized Infrastructure & Impact Division] Specialized Protocol Commander assigned tool 'ares_specialized_impact' -> Focus: Specialized protocol injection, hardware/SCADA override, and system-level impact for: Bank Heist: Infiltrate core financial network, manipulate SWIFT/ISO20022 clearing gateways, execute ATM XFS jackpotting, and drain capital reserves with absolute stealth.
+  [35m│[0m [Cognitive Warfare & Social Engineering Unit] Director of Human & Cognitive Lures assigned tool 'ares_cognitive_ops' -> Focus: Synthetic identity generation, voice deepfakes, and authority hierarchy deception
+  [35m│[0m [Economic Disruption & Clearing Cell] Ledger Disruption Architect assigned tool 'ares_financial_warfare' -> Focus: Financial settlement interruption, clearing network manipulation, and capital routing
+  [35m│[0m [Covert C2 & Resilience Unit] Infrastructure Architect assigned tool 'ares_c2_resilience' -> Focus: Autonomous C2 credential rotation and self-healing resilience
+  [35m│[0m [Attribution Masking & Deception Syndicate] Chief Deception Officer assigned tool 'ares_deception_noise' -> Focus: EDR telemetry flooding and false flag fingerprinting
+  [35m│[0m [Evasion & Anti-Forensics Taskforce] Senior Sanitization Engineer assigned tool 'ares_anti_forensics' -> Focus: Final trace sanitization and forensic artifact removal
+  [36m⟫ Tool[0m  [1mDIR_FBEB:ares_shadow_organization[0m  [90mExecuting phase in live mode[0m
+  [32m✔ Done[0m  [1mDIR_FBEB:ares_shadow_organization[0m  [90mSyndicate Prime active: 14 operatives mobilized across 14 departments.[0m
+  [36m⟫ Tool[0m  [1mAPEX_F5:ares_innovation_engine[0m  [90mExecuting phase in live mode[0m
+  [32m✔ Done[0m  [1mAPEX_F5:ares_innovation_engine[0m  [90mLive Innovation Engine successfully researched 127.0.0.1, ingested latest intelligence, and synthesized 6 zero-day vectors.[0m
+  [36m⟫ Tool[0m  [1mOMEGA_97:ares_strategic_gap_analysis[0m  [90mExecuting phase in live mode[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mStrategic Gap: Quantum & Cryptographic[0m
+    [90mSystem readiness for Quantum & Cryptographic is at 15%. Key gap: No HNDL (Harvest Now Decrypt Later) pipeline[0m
+  [38;5;208m◆ Finding[0m  [HIGH]  [1mStrategic Gap: Sub-Hardware (Ring -2/-3)[0m
+    [90mSystem readiness for Sub-Hardware (Ring -2/-3) is at 40%. Key gap: Firmware implants limited to Ring -1 (Hypervisor)[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mStrategic Gap: Cognitive & HUMINT-AI[0m
+    [90mSystem readiness for Cognitive & HUMINT-AI is at 10%. Key gap: Social engineering limited to template-based phishing[0m
+  [38;5;208m◆ Finding[0m  [HIGH]  [1mStrategic Gap: Economic & DeFi Dominance[0m
+    [90mSystem readiness for Economic & DeFi Dominance is at 65%. Key gap: Single-chain focus (Ethereum/L2)[0m
+  [32m✔ Done[0m  [1mOMEGA_97:ares_strategic_gap_analysis[0m  [90mExecuted successfully.[0m
+  [36m⟫ Tool[0m  [1mGHOSTHW_02:ares_sub_hardware_persistence[0m  [90mExecuting phase in live mode[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mRing -2 Intel Management Engine Persistence[0m
+    [90mSub-hardware persistence established on 127.0.0.1: Injected stealth payload into Intel ME region, surviving OS re-installation and physical disk wipes.[0m
+  [32m✔ Done[0m  [1mGHOSTHW_02:ares_sub_hardware_persistence[0m  [90mExecuted successfully.[0m
+  [36m⟫ Tool[0m  [1mNEURAL_04:ares_adversarial_ai_evasion[0m  [90mExecuting phase in live mode[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mAdversarial Machine Learning EDR Blindspot[0m
+    [90mAdversarial AI Evasion executed against CrowdStrike-XDR: Injected imperceptible feature noise into payload AST, successfully blinding the ML-based EDR classifier with 99.1% evasion probability.[0m
+  [32m✔ Done[0m  [1mNEURAL_04:ares_adversarial_ai_evasion[0m  [90mAdversarial AI Evasion executed against CrowdStrike-XDR: Injected imperceptible feature noise into payload AST, successfully blinding the ML-based EDR classifier with 99.1% evasion probability.[0m
+  [36m⟫ Tool[0m  [1mVECTOR_B8:ares_multi_platform_arsenal[0m  [90mExecuting phase in live mode[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mATM CEN-XFS Dispenser Jackpots via Middleware Injection[0m
+    [90mSuccessfully communicated with WFS_SERVICE_CLASS_CDM (Cash Dispenser Module) to execute unauthorized dispense cycles.[0m
+  [32m✔ Done[0m  [1mVECTOR_B8:ares_multi_platform_arsenal[0m  [90mExecuted successfully.[0m
+  [36m⟫ Tool[0m  [1mCIPHER_95:ares_lateral_movement[0m  [90mExecuting phase in live mode[0m
+  [32m✔ Done[0m  [1mCIPHER_95:ares_lateral_movement[0m  [90mNo movement path discovered with current credentials.[0m
+  [36m⟫ Tool[0m  [1mVORTEX_A1:ares_specialized_impact[0m  [90mExecuting phase in live mode[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mATM XFS Jackpotting[0m
+    [90mATM XFS jackpotting successful: Ploutus-style command injection bypassed hardware-rooted trust to dispense cash.[0m
+  [32m✔ Done[0m  [1mVORTEX_A1:ares_specialized_impact[0m  [90mATM XFS jackpotting successful: Ploutus-style command injection bypassed hardware-rooted trust to dispense cash.[0m
+  [36m⟫ Tool[0m  [1mMIMIC_23:ares_cognitive_ops[0m  [90mExecuting phase in live mode[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mSynthetic Identity & Voice Lure Deployed[0m
+    [90mSuccessfully generated audio-synthesized authority vector targeting financial authorization hierarchy mimicking Chief Financial Officer.[0m
+  [32m✔ Done[0m  [1mMIMIC_23:ares_cognitive_ops[0m  [90mExecuted successfully.[0m
+  [36m⟫ Tool[0m  [1mLEDGER_8A:ares_financial_warfare[0m  [90mExecuting phase in live mode[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mFinancial Clearing Gateway Vulnerability[0m
+    [90mIdentified misconfigured message signing in Core Financial Gateway permitting fraudulent ISO 20022 transaction injection.[0m
+  [32m✔ Done[0m  [1mLEDGER_8A:ares_financial_warfare[0m  [90mExecuted successfully.[0m
+  [36m⟫ Tool[0m  [1mGHOST_59:ares_c2_resilience[0m  [90mExecuting phase in live mode[0m
+  [32m✔ Done[0m  [1mGHOST_59:ares_c2_resilience[0m  [90mExecuted successfully.[0m
+  [36m⟫ Tool[0m  [1mDECEPTION_C9:ares_deception_noise[0m  [90mExecuting phase in live mode[0m
+  [33m◆ Finding[0m  [MEDIUM]  [1mAttribution Masking & Telemetry Flooding[0m
+    [90mInjected decoy indicators of compromise matching Scattered Spider while routing real operations through residential proxy tunnels.[0m
+  [32m✔ Done[0m  [1mDECEPTION_C9:ares_deception_noise[0m  [90mExecuted successfully.[0m
+  [36m⟫ Tool[0m  [1mSHADOW_AA:ares_anti_forensics[0m  [90mExecuting phase in live mode[0m
+  [33m◆ Finding[0m  [MEDIUM]  [1mAnti-Forensic Trace Sanitization[0m
+    [90mExecuted artifact_clean to hinder forensic reconstruction of operative activity.[0m
+  [32m✔ Done[0m  [1mSHADOW_AA:ares_anti_forensics[0m  [90mExecuted successfully.[0m
+  [32m⬡ Subagent[0m  [1mSYNDICATE PRIME [SYNDICATE_D736693C][0m  [90mdone[0m
+  [31m◆ Finding[0m  [CRITICAL]  [1mEngagement Summary[0m
+    [90mSyndicate Prime Command Center: Mobilized 14 operatives across 14 departments. Executed 13/13 dynamic workflow steps with 94.2% token conservation.[0m
+[90m────────────────────────────────────────────────────────────[0m
+[32m◉ Agent Complete[0m  Syndicate Prime Engagement → 127.0.0.1
+

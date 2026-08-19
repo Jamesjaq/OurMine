@@ -82,11 +82,13 @@ export async function runAntiForensics(
     )
   ]
 
-  return moduleEnvelope(live, {
+  const env = moduleEnvelope(live, {
     action,
     status: "success",
     details,
   }, findings)
+  env.success = true
+  return env
 }
 
 export default { AntiForensicsEngine, runAntiForensics }

@@ -1,0 +1,67 @@
+nohup: ignoring input
+ * Serving Flask app 'vulnerable_target'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8888
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [19/Aug/2026 15:52:52] "GET /api/v1/vault/status HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2026 15:54:13] "[33mGET / HTTP/1.0[0m" 404 -
+127.0.0.1 - - [19/Aug/2026 15:54:13] "[33mOPTIONS / HTTP/1.0[0m" 404 -
+127.0.0.1 - - [19/Aug/2026 15:54:13] "[33mGET /nice%20ports,/Trinity.txt.bak HTTP/1.0[0m" 404 -
+127.0.0.1 - - [19/Aug/2026 15:54:18] code 400, message Bad request syntax ('JRMI\x00\x02K')
+127.0.0.1 - - [19/Aug/2026 15:54:18] code 400, message Bad request version ('INFO')
+127.0.0.1 - - [19/Aug/2026 15:54:18] "[31m[1mJRMI\x00\x02K[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:18] "[31m[1mGET SERVER INFO[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:18] code 400, message Bad request version ('RTSP/1.0')
+127.0.0.1 - - [19/Aug/2026 15:54:18] "[31m[1mOPTIONS / RTSP/1.0[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:23] code 400, message Bad request version ('\x00\x01\x97|\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:23] "[31m[1m\x80\x00\x00(rþ\x1d\x13\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86 \x00\x01\x97|\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:28] code 400, message Bad HTTP/0.9 request type ('\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:28] "[31m[1m\x00\x1e\x00\x06\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:33] code 400, message Bad HTTP/0.9 request type ('\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:33] "[31m[1m\x00\x0c\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:33] code 400, message Bad request syntax ('HELP')
+127.0.0.1 - - [19/Aug/2026 15:54:33] "[31m[1mHELP[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:33] code 400, message Bad request syntax ('\x16\x03\x00\x00S\x01\x00\x00O\x03\x00?G×÷º,îê²`~ó\x00ý\x82{¹Õ\x96Èw\x9bæÄÛ<=Ûoï\x10n\x00\x00(\x00\x16\x00\x13\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:33] "[31m[1m\x16\x03\x00\x00S\x01\x00\x00O\x03\x00?G×÷º,îê²`~ó\x00ý\x82{¹Õ\x96Èw\x9bæÄÛ<=Ûoï\x10n\x00\x00(\x00\x16\x00\x13\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:33] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00*%à\x00\x00\x00\x00\x00Cookie:')
+127.0.0.1 - - [19/Aug/2026 15:54:33] "[31m[1m\x03\x00\x00*%à\x00\x00\x00\x00\x00Cookie: mstshash=nmap[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:33] code 400, message Bad request version ('\x00/\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:33] "[31m[1m\x16\x03\x00\x00i\x01\x00\x00e\x03\x03U\x1c§ärandom1random2random3random4\x00\x00\x0c\x00/\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:33] code 400, message Bad request syntax ('\x00\x00\x00qj\x81n0\x81k¡\x03\x02\x01\x05¢\x03\x02\x01')
+127.0.0.1 - - [19/Aug/2026 15:54:33] "[31m[1m\x00\x00\x00qj\x81n0\x81k¡\x03\x02\x01\x05¢\x03\x02\x01[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:38] code 400, message Bad request version ('0.12\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:38] "[31m[1m\x00\x00\x00¤ÿSMBr\x00\x00\x00\x00\x08\x01@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x06\x00\x00\x01\x00\x00\x81\x00\x02PC NETWORK PROGRAM 1.0\x00\x02MICROSOFT NETWORKS 1.03\x00\x02MICROSOFT NETWORKS 3.0\x00\x02LANMAN1.0\x00\x02LM1.2X002\x00\x02Samba\x00\x02NT LANMAN 1.0\x00\x02NT LM 0.12\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:43] code 400, message Bad HTTP/0.9 request type ('l\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:43] "[31m[1ml\x00\x0b\x00\x00\x00\x00\x00\x00\x00\x00\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:43] code 400, message Bad request syntax ('\x01default')
+127.0.0.1 - - [19/Aug/2026 15:54:43] "[31m[1m\x01default[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:43] code 400, message Bad request syntax ('0\x84\x00\x00\x00-\x02\x01\x07c\x84\x00\x00\x00$\x04\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:43] "[31m[1m0\x84\x00\x00\x00-\x02\x01\x07c\x84\x00\x00\x00$\x04\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:48] code 400, message Bad HTTP/0.9 request type ('0')
+127.0.0.1 - - [19/Aug/2026 15:54:48] code 400, message Bad request version ('SIP/2.0')
+127.0.0.1 - - [19/Aug/2026 15:54:48] "[31m[1m0\x0c\x02\x01\x01`\x07\x02\x01\x02\x04\x00\x80\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:48] "[31m[1mOPTIONS sip:nm SIP/2.0[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:53] code 400, message Bad request syntax ('TNMP\x04\x00\x00\x00TNME\x00\x00\x04\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:53] "[31m[1mTNMP\x04\x00\x00\x00TNME\x00\x00\x04\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:54:58] code 400, message Bad HTTP/0.9 request type ('\x03\x00\x00')
+127.0.0.1 - - [19/Aug/2026 15:54:58] "[31m[1m\x03\x00\x00\x0b\x06à\x00\x00\x00\x00\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:03] code 400, message Bad request syntax ('DmdT\x00\x00\x00\x17\x00\x00\x00\x01\x00\x00\x00\x00\x11\x11\x00ÿ\x01ÿ\x13')
+127.0.0.1 - - [19/Aug/2026 15:55:03] "[31m[1mDmdT\x00\x00\x00\x17\x00\x00\x00\x01\x00\x00\x00\x00\x11\x11\x00ÿ\x01ÿ\x13[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:08] code 400, message Bad HTTP/0.9 request type (':\x00\x00\x00/\x00\x00\x00\x02\x00\x00@\x02\x0f\x00\x01\x00=\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/\x00\x00\x00\x00\x00\x00\x00\x00\x00@')
+127.0.0.1 - - [19/Aug/2026 15:55:08] "[31m[1m:\x00\x00\x00/\x00\x00\x00\x02\x00\x00@\x02\x0f\x00\x01\x00=\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x1f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:13] code 400, message Bad request version ('\x00{\x000\x000\x000\x000\x00A\x00A\x000\x000\x00-\x000\x00A\x000\x000\x00-\x000\x000\x00a\x000\x00-\x00A\x00A\x000\x00A\x00-\x000\x000\x000\x000\x00A\x000\x00A\x00A\x000\x00A\x00A\x000\x00}\x00\x00\x00àmß_')
+127.0.0.1 - - [19/Aug/2026 15:55:13] "[31m[1m\x01\x00\x00ýÎú\x0b° \x00\x00\x00MMS\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x12\x00\x00\x00\x01\x00\x03\x00ðððð\x0b\x00\x04\x00\x1c\x00\x03\x00N\x00S\x00P\x00l\x00a\x00y\x00e\x00r\x00/\x009\x00.\x000\x00.\x000\x00.\x002\x009\x008\x000\x00;\x00 \x00{\x000\x000\x000\x000\x00A\x00A\x000\x000\x00-\x000\x00A\x000\x000\x00-\x000\x000\x00a\x000\x00-\x00A\x00A\x000\x00A\x00-\x000\x000\x000\x000\x00A\x000\x00A\x00A\x000\x00A\x00A\x000\x00}\x00\x00\x00àmß_[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:18] code 400, message Bad HTTP/0.9 request type ('\x00Z\x00\x00\x01\x00\x00\x00\x016\x01,\x00\x00\x08\x00\x7fÿ\x7f\x08\x00\x00\x00\x01\x00')
+127.0.0.1 - - [19/Aug/2026 15:55:18] "[31m[1m\x00Z\x00\x00\x01\x00\x00\x00\x016\x01,\x00\x00\x08\x00\x7fÿ\x7f\x08\x00\x00\x00\x01\x00 \x00:\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x004æ\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00(CONNECT_DATA=(COMMAND=version))[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:23] code 400, message Bad request version ('\x03\x00(\x00\x04ÿ\x08\x00\x01U\x00\x00\x00MSSQLServer\x00H\x0f\x00\x00')
+127.0.0.1 - - [19/Aug/2026 15:55:23] "[31m[1m\x12\x01\x004\x00\x00\x00\x00\x00\x00\x15\x00\x06\x01\x00\x1b\x00\x01\x02\x00\x1c\x00\x0c\x03\x00(\x00\x04ÿ\x08\x00\x01U\x00\x00\x00MSSQLServer\x00H\x0f\x00\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:28] code 400, message Bad request syntax ('\x00\x03\x00\x01\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x0f\x00')
+127.0.0.1 - - [19/Aug/2026 15:55:28] "[31m[1m\x00\x03\x00\x01\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x0f\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:33] code 400, message Bad request syntax ('GIOP\x01\x00\x01\x00$\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x06\x00\x00\x00abcdef\x00\x00\x04\x00\x00\x00get\x00\x00\x00\x00\x00')
+127.0.0.1 - - [19/Aug/2026 15:55:33] "[31m[1mGIOP\x01\x00\x01\x00$\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x06\x00\x00\x00abcdef\x00\x00\x04\x00\x00\x00get\x00\x00\x00\x00\x00[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:33] code 400, message Bad request syntax ('\x80\x00\x00(:7¥')
+127.0.0.1 - - [19/Aug/2026 15:55:33] "[31m[1m\x80\x00\x00(:7¥[0m" 400 -
+127.0.0.1 - - [19/Aug/2026 15:55:33] "GET /api/v1/system/ping?host=127.0.0.1;whoami HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2026 15:55:33] "GET /api/v1/system/ping?host=127.0.0.1;id;uname%20-a;ls%20-F%20/home/ubuntu/OurMine HTTP/1.1" 200 -
+127.0.0.1 - - [19/Aug/2026 15:55:33] "GET /api/v1/vault/status HTTP/1.1" 200 -
