@@ -225,18 +225,42 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_anti_forensics")
 
-    // 13. Dynamic Tool Synthesis (Self-Coding Detection)
-    // If the objective explicitly mentions a non-standard ares_ tool, mobilize a dynamic synthesis cell.
+    // 13. Dynamic Tool Synthesis with Reuse-First Check
+    // Check if requested custom tool already exists in Tradecraft Library or ARES modules.
     const customTools = words.filter(w => w.startsWith("ares_") && !workflow.includes(w))
     for (const tool of customTools) {
-      operatives.push({
-        department: "Autonomous Development & Synthesis Cell",
-        title: "Dynamic Tradecraft Engineer",
-        callsign: `SYNTH_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
-        missionFocus: `Synthesizing and integrating bespoke tactical module: ${tool}`,
-        assignedTool: tool,
-        autonomyLevel: "execution"
-      })
+      let reused = false
+      try {
+        const libPath = path.join(process.cwd(), ".ourmine", "tradecraft", "library.json")
+        if (fs.existsSync(libPath)) {
+          const lib = JSON.parse(fs.readFileSync(libPath, "utf8"))
+          // Extract technique name from ares_custom_foo -> foo or check exact ID
+          const cleanName = tool.replace("ares_custom_", "").toUpperCase()
+          if (lib[cleanName] || lib[tool]) {
+            reused = true
+          }
+        }
+      } catch {}
+
+      if (reused) {
+        operatives.push({
+          department: "Tradecraft Reuse & Optimization Unit",
+          title: "Senior Tradecraft Curator",
+          callsign: `REUSE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+          missionFocus: `Reusing proven tactical module from library: ${tool}`,
+          assignedTool: tool,
+          autonomyLevel: "execution"
+        })
+      } else {
+        operatives.push({
+          department: "Autonomous Development & Synthesis Cell",
+          title: "Dynamic Tradecraft Engineer",
+          callsign: `SYNTH_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+          missionFocus: `Synthesizing and integrating bespoke tactical module: ${tool}`,
+          assignedTool: tool,
+          autonomyLevel: "execution"
+        })
+      }
       workflow.push(tool)
     }
 

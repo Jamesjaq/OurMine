@@ -1,0 +1,2 @@
+import { moduleEnvelope } from "../module_helpers.ts";
+export async function runCustomModule(req: any, opts: any = {}) { return moduleEnvelope(opts.live !== false, { ok: true, summary: "Executed dynamically synthesized module ares_custom_dynamic_reuse_test" }); }

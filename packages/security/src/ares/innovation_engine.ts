@@ -27,6 +27,26 @@ export class InnovationEngine {
   public async probeAndSynthesize(target: string): Promise<InnovationHypothesis[]> {
     const hypotheses: InnovationHypothesis[] = []
     
+    // Pragmatic Efficiency Check: Inspect existing ARES modules and Tradecraft Library before synthesizing new code.
+    try {
+      const libPath = path.join(process.cwd(), ".ourmine", "tradecraft", "library.json")
+      if (fs.existsSync(libPath)) {
+        const lib = JSON.parse(fs.readFileSync(libPath, "utf8"))
+        const provenCount = Object.values(lib).filter((r: any) => r.proven).length
+        if (provenCount > 0) {
+          hypotheses.push({
+            id: "HYPO-REUSE-PRAGMATIC",
+            title: "Pragmatic Tool Reuse: Leveraging Proven Tradecraft Library",
+            domainSource: "Tradecraft Library Cache",
+            domainTarget: target,
+            noveltyScore: 7.0,
+            feasibilityScore: 9.9,
+            generatedTechnique: `Reusing ${provenCount} proven techniques from local Tradecraft Library to avoid redundant synthesis.`
+          })
+        }
+      }
+    } catch {}
+    
     // 1. Proactive External Research Ingestion
     const latestIntel = await this.ingestor.fetchLatestIntelligence()
     const relevantIntel = await this.ingestor.mapIntelToTarget(target, latestIntel)

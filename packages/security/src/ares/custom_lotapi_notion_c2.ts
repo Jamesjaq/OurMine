@@ -5,7 +5,7 @@
  */
 import { moduleEnvelope } from "../module_helpers.ts";
 
-export async function runLotapiNotionC2(req: any, opts: any = {}) {
+export async function runCustomModule(req: any, opts: any = {}) {
   return moduleEnvelope(opts.dryRun !== false, {
     status: "active",
     channel: "notion_api",
