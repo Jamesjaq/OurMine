@@ -37,20 +37,40 @@ export interface SyndicatePrimeResult {
   data?: any
 }
 
+import { ExecutionDisplay } from "../runtime_exec.ts"
+
 export async function runAresOrchestrator(opts: {
   live?: boolean
   target?: string
   objective?: string
   domain?: string
   projectDir?: string
+  display?: ExecutionDisplay
 }): Promise<SyndicatePrimeResult> {
   liveRequired("ares_orchestrator", opts)
   const target = opts.target ?? "127.0.0.1"
   const objective = opts.objective ?? "Autonomous penetration, tactical pivoting, covert persistence, and zero-day synthesis"
+  const display = opts.display
 
   // Step 1: Self-organize into specialized syndicate cells based on objective
   const spawner = new SyndicateSpawner()
   const mission = spawner.assembleForMission(target, objective)
+
+  if (display) {
+    display.emit({ 
+      type: "subagent_spawn", 
+      label: `SYNDICATE PRIME [${mission.missionId}]`, 
+      detail: `Mobilized ${mission.operatives.length} operatives across ${mission.syndicateStructure.totalDepartments} departments.` 
+    })
+    
+    for (const op of mission.operatives) {
+      display.emit({ 
+        type: "subagent_msg", 
+        label: op.callsign, 
+        detail: `[${op.department}] ${op.title} assigned tool '${op.assignedTool}' -> Focus: ${op.missionFocus}` 
+      })
+    }
+  }
 
   const modulesExecuted: SyndicatePrimeResult["modulesExecuted"] = []
   const findings: ModuleFinding[] = []
@@ -58,6 +78,11 @@ export async function runAresOrchestrator(opts: {
 
   // Step 2: Execute the dynamically generated workflow sequence with local recursive reasoning
   for (const moduleName of mission.executionGraph) {
+    const operative = mission.operatives.find(o => o.assignedTool === moduleName) ?? { callsign: "OPERATIVE", department: "Execution" }
+    
+    if (display) {
+      display.emit({ type: "tool_start", label: `${operative.callsign}:${moduleName}`, detail: `Executing phase in live mode` })
+    }
     try {
       let res: any = null
       switch (moduleName) {
@@ -114,21 +139,42 @@ export async function runAresOrchestrator(opts: {
 
       if (res && res.findings) {
         findings.push(...res.findings)
+        if (display) {
+          for (const f of res.findings) {
+            display.emit({ type: "finding", label: f.title, severity: f.severity, detail: f.description })
+          }
+        }
+      }
+
+      const summaryText = res.summary ?? res.data?.summary ?? res.data?.impactDescription ?? "Executed successfully."
+      if (display) {
+        display.emit({ type: "tool_done", label: `${operative.callsign}:${moduleName}`, detail: summaryText })
       }
 
       modulesExecuted.push({
         name: moduleName,
         success: res.success !== false,
-        summary: res.summary ?? res.data?.summary ?? res.data?.impactDescription ?? "Executed successfully."
+        summary: summaryText
       })
       if (res.success !== false) succeeded++
     } catch (err: any) {
+      if (display) {
+        display.emit({ type: "error", label: `${operative.callsign}:${moduleName}`, detail: err.message })
+      }
       modulesExecuted.push({
         name: moduleName,
         success: false,
         summary: err.message ?? "Execution error"
       })
     }
+  }
+
+  if (display) {
+    display.emit({ 
+      type: "subagent_done", 
+      label: `SYNDICATE PRIME [${mission.missionId}]`, 
+      detail: `Completed ${succeeded}/${modulesExecuted.length} operations successfully.` 
+    })
   }
 
   const summary = `Syndicate Prime Command Center: Mobilized ${mission.operatives.length} operatives across ${mission.syndicateStructure.totalDepartments} departments. Executed ${succeeded}/${modulesExecuted.length} dynamic workflow steps with 94.2% token conservation.`

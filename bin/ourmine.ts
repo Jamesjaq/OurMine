@@ -98,41 +98,40 @@ function delegateToOpenCode(args: string[]): void {
 
 // ─── Security command handlers ────────────────────────────────────────────────
 
-async function cmdRecon(target: string, display: ExecutionDisplay, isLive: boolean) {
+async function cmdRecon(target: string, display: ExecutionDisplay, isLive: boolean, objective?: string) {
   display.emit({ type: "agent_start", label: `Syndicate Recon → ${target}` })
   const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")
   
   const res = await runAresOrchestrator({
     target,
-    objective: "Full spectrum reconnaissance and attack surface mapping",
-    forceModule: "ares_innovation_engine"
+    objective: objective ?? "Full spectrum reconnaissance and attack surface mapping",
   }, { live: isLive })
 
   display.emit({ type: "finding", label: "Syndicate Findings", severity: "info", detail: res.summary })
   display.emit({ type: "agent_done", label: `Syndicate Recon → ${target}` })
 }
 
-async function cmdAudit(target: string, display: ExecutionDisplay, isLive: boolean) {
+async function cmdAudit(target: string, display: ExecutionDisplay, isLive: boolean, objective?: string) {
   display.emit({ type: "agent_start", label: `Syndicate Audit → ${target}` })
   const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")
 
   const res = await runAresOrchestrator({
     target,
-    objective: "Deep infrastructure audit and vulnerability discovery",
-    forceModule: "ares_specialized_impact"
+    objective: objective ?? "Deep infrastructure audit and vulnerability discovery",
   }, { live: isLive })
 
   display.emit({ type: "finding", label: "Syndicate Audit Results", severity: "high", detail: res.summary })
   display.emit({ type: "agent_done", label: `Syndicate Audit → ${target}` })
 }
 
-async function cmdPentest(target: string, display: ExecutionDisplay, isLive: boolean) {
+async function cmdPentest(target: string, display: ExecutionDisplay, isLive: boolean, objective?: string) {
   display.emit({ type: "agent_start", label: `Syndicate Prime Engagement → ${target}` })
   const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")
 
   const res = await runAresOrchestrator({
     target,
-    objective: "Full-scale autonomous adversarial operation",
+    objective: objective ?? "Full-scale autonomous adversarial operation",
+    display,
   }, { live: isLive })
 
   display.emit({ type: "finding", label: "Engagement Summary", severity: "critical", detail: res.summary })
@@ -314,7 +313,19 @@ async function main() {
   const dryRun  = args.includes("--dry-run")
   const requireLive = args.includes("--require-live")
   const daemon = args.includes("--daemon")
-  const passArgs = args.filter(a => !["--live", "--dry-run", "--require-live", "--daemon"].includes(a))
+  
+  let objective: string | undefined
+  const objIdx = args.indexOf("--objective")
+  if (objIdx !== -1 && args[objIdx + 1]) {
+    objective = args[objIdx + 1]
+  }
+
+  const passArgs = args.filter((a, i) => {
+    if (["--live", "--dry-run", "--require-live", "--daemon"].includes(a)) return false
+    if (a === "--objective") return false
+    if (i > 0 && args[i - 1] === "--objective") return false
+    return true
+  })
 
   const { isKaliLinux } = await import("../packages/security/src/apt_tradecraft.ts")
   const isLive  = !dryRun && (args.includes("--live") || isKaliLinux())
@@ -352,13 +363,13 @@ async function main() {
 
     switch (sub) {
       case "recon":
-        await cmdRecon(target, display, isLive)
+        await cmdRecon(target, display, isLive, objective)
         break
       case "audit":
-        await cmdAudit(target, display, isLive)
+        await cmdAudit(target, display, isLive, objective)
         break
       case "pentest":
-        await cmdPentest(target, display, isLive)
+        await cmdPentest(target, display, isLive, objective)
         break
       case "yara": {
         display.emit({ type: "tool_start", label: "yara.scan", detail: target })

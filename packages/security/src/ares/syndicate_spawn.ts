@@ -49,8 +49,10 @@ export class SyndicateSpawner {
 
     const workflow: string[] = ["ares_shadow_organization"]
 
+    const has = (keys: string[]) => keys.some(k => cleanObj.includes(k))
+
     // Check for reconnaissance / intelligence needs
-    if (words.some(w => ["recon", "scan", "find", "discover", "audit", "map", "intel"].includes(w)) || words.length > 0) {
+    if (has(["recon", "scan", "find", "discover", "audit", "map", "intel", "infiltrate"])) {
       operatives.push({
         department: "Reconnaissance & Intelligence",
         title: "Chief Recon Officer",
@@ -63,7 +65,7 @@ export class SyndicateSpawner {
     }
 
     // Check for weaponization / custom tool needs
-    if (words.some(w => ["weapon", "tool", "exploit", "payload", "implant", "custom", "synthesize"].includes(w))) {
+    if (has(["weapon", "tool", "exploit", "payload", "implant", "custom", "synthesize"])) {
       operatives.push({
         department: "Weaponization & R&D",
         title: "Lead Arsenal Engineer",
@@ -76,7 +78,7 @@ export class SyndicateSpawner {
     }
 
     // Check for lateral movement / pivoting / domain dominance
-    if (words.some(w => ["lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network"].includes(w))) {
+    if (has(["lateral", "pivot", "domain", "movement", "kerberos", "escalate", "hop", "network"])) {
       operatives.push({
         department: "Lateral Operations & Pivoting",
         title: "Director of Network Dominance",
@@ -89,7 +91,7 @@ export class SyndicateSpawner {
     }
 
     // Check for persistence / survival / C2
-    if (words.some(w => ["persist", "survive", "c2", "beacon", "heal", "stealth", "covert", "hide", "backdoor"].includes(w))) {
+    if (has(["persist", "survive", "c2", "beacon", "heal", "stealth", "covert", "hide", "backdoor"])) {
       operatives.push({
         department: "Persistence & Resilience",
         title: "Head of Covert Infrastructure",
@@ -102,7 +104,7 @@ export class SyndicateSpawner {
     }
 
     // Check for specialized impact (OT, SS7, Satellite, Fiber, Building, AI/ML)
-    if (words.some(w => ["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural"].includes(w))) {
+    if (has(["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural"])) {
       operatives.push({
         department: "Specialized Impact Operations",
         title: "Specialized Infrastructure Commander",
@@ -115,7 +117,7 @@ export class SyndicateSpawner {
     }
 
     // Check for Supply Chain targeting
-    if (words.some(w => ["supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow"].includes(w))) {
+    if (has(["supply", "chain", "cicd", "github", "npm", "pypi", "registry", "pipeline", "workflow"])) {
       operatives.push({
         department: "Supply Chain Syndicate",
         title: "Lead Pipeline Operative",
@@ -128,7 +130,7 @@ export class SyndicateSpawner {
     }
 
     // Check for Cognitive Warfare / Social Engineering
-    if (words.some(w => ["cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human"].includes(w))) {
+    if (has(["cognitive", "social", "phish", "vishing", "deepfake", "voice", "persona", "manipulate", "human"])) {
       operatives.push({
         department: "Cognitive Operations Division",
         title: "Director of Human Engineering",
@@ -141,7 +143,7 @@ export class SyndicateSpawner {
     }
 
     // Check for Financial Disruption
-    if (words.some(w => ["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital"].includes(w))) {
+    if (has(["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital"])) {
       operatives.push({
         department: "Economic Disruption Cell",
         title: "Financial Systems Architect",
