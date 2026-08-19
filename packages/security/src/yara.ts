@@ -138,6 +138,23 @@ export class YaraEngine {
     }
     return matches;
   }
+
+  /** Generate a new YARA rule for a specific technique or pattern. */
+  static generateRule(name: string, description: string, attackId: string, patterns: string[]): string {
+    const strings = patterns.map((p, i) => `    $s${i} = "${p}"`).join("\n");
+    const condition = patterns.map((_, i) => `$s${i}`).join(" or ");
+    
+    return `rule ${name.replace(/[^a-zA-Z0-9_]/g, "_")} {
+  meta:
+    description = "${description.replace(/"/g, '\\"')}"
+    attack_id = "${attackId}"
+    author = "OurMine ARES Autonomous Generator"
+  strings:
+${strings}
+  condition:
+    ${condition}
+}`;
+  }
 }
 
 // ------------------------------------------------------------------------- //

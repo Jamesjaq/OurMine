@@ -255,4 +255,20 @@ export function generateVishingBundle(target: string, scenarioId?: string): {
   }
 }
 
-export default { auditHelpdeskSocial, generateVishingBundle, ACTOR_SCENARIOS }
+/** Synthesize vishing audio artifact metadata / TTS prompt for the vishing scenario script. */
+export function synthesizeVishingAudio(scenario: HelpdeskScenario, voiceProfile = "en-US-Neural2-F"): {
+  audioArtifactId: string
+  voice: string
+  fullScript: string
+  speechPrompt: string
+} {
+  const fullScript = `[Opener]\n${scenario.opener}\n\n[Steps]\n${scenario.script}\n\n[Verification Bypass]\n${scenario.verificationBypass.join(". ")}`
+  return {
+    audioArtifactId: `audio_${crypto.randomBytes(6).toString("hex")}`,
+    voice: voiceProfile,
+    fullScript,
+    speechPrompt: `Speak in a calm, professional, authoritative tone suitable for a corporate IT helpdesk or security officer. Ensure pauses at punctuation marks.`
+  }
+}
+
+export default { auditHelpdeskSocial, generateVishingBundle, synthesizeVishingAudio, ACTOR_SCENARIOS }

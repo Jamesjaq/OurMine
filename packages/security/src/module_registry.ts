@@ -94,6 +94,10 @@ export const MCP_NATIVE_TOOLS = new Set([
   "ares_vx_lookup",
   "ares_ai_surface",
   "ares_stix_ingest",
+  "ares_device_code_audit",
+  "ares_lateral_pathfinding",
+  "ares_self_healing_check",
+  "ares_technique_discovery",
 ])
 
 export type ModuleResolutionKind = "bridge" | "agent" | "mcp" | "external" | "unresolved"

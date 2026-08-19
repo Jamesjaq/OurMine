@@ -42,6 +42,9 @@ export const ARES_MODULE_NAMES = [
   "ares_network_exploit",
   "ares_cloud_native",
   "ares_ai_ml_attacks",
+  "ares_lateral_pathfinding",
+  "ares_self_healing_check",
+  "ares_technique_discovery",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

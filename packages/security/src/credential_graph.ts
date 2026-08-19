@@ -369,6 +369,42 @@ export class CredentialGraph {
       return new CredentialGraph()
     }
   }
+
+  async syncToSwarm(peerUrl: string, bearerToken?: string, live = false): Promise<{ synced: boolean; count: number; error?: string }> {
+    const payload = JSON.stringify(this.toJSON());
+    if (!live) {
+      return { synced: false, count: this.creds.size, error: "live=true required for peer swarm sync" };
+    }
+    try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (bearerToken) headers["Authorization"] = `Bearer ${bearerToken}`;
+      const res = await fetch(peerUrl, { method: "POST", headers, body: payload });
+      return { synced: res.ok, count: this.creds.size, error: res.ok ? undefined : `HTTP ${res.status}` };
+    } catch (e) {
+      return { synced: false, count: this.creds.size, error: String(e) };
+    }
+  }
+
+  ingestSwarmBlob(blobJson: string): number {
+    let added = 0;
+    try {
+      const data = JSON.parse(blobJson) as { credentials?: CredentialNode[]; pivots?: PivotEdge[] };
+      for (const c of data.credentials ?? []) {
+        if (!this.creds.has(c.id)) {
+          this.creds.set(c.id, c);
+          added++;
+        }
+      }
+      for (const p of data.pivots ?? []) {
+        if (!this.pivots.some((existing) => existing.from === p.from && existing.to === p.to && existing.method === p.method)) {
+          this.pivots.push(p);
+        }
+      }
+    } catch {
+      // malformed blob
+    }
+    return added;
+  }
 }
 
 export default { CredentialGraph }

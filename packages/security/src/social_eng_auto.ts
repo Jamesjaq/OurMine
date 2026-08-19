@@ -349,4 +349,53 @@ export async function runAutomatedCampaign(options: AutomatedCampaignOptions): P
   }
 }
 
+export async function generateLlmPersonalizedLure(
+  target: { name: string; email: string; role?: string; company?: string },
+  contextPrompt: string,
+  live = false,
+): Promise<{ subject: string; bodyHtml: string }> {
+  if (!live) {
+    return {
+      subject: `[DRY-RUN] Personalized Security Brief for ${target.name}`,
+      bodyHtml: `<p>Dear ${target.name},</p><p>[DRY-RUN LLM Lure based on: "${contextPrompt}"]</p><p>Please review immediately.</p>`
+    }
+  }
+
+  try {
+    // Invoke OpenCode built-in LLM proxy if available
+    const apiKey = process.env.OPENAI_API_KEY
+    const apiBase = process.env.OPENAI_API_BASE ?? "https://api.openai.com/v1"
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY not configured")
+    }
+    const res = await fetch(`${apiBase}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are an expert social engineering penetration tester writing realistic, highly professional phishing lures for authorised security awareness training." },
+          { role: "user", content: `Write a phishing lure subject and HTML body for target name: ${target.name}, role: ${target.role ?? "employee"}, company: ${target.company ?? "Target Corp"}. Context: ${contextPrompt}. Return JSON with keys 'subject' and 'bodyHtml'.` }
+        ],
+        response_format: { type: "json_object" }
+      })
+    })
+    const data = await res.json() as { choices?: Array<{ message?: { content?: string } }> }
+    const content = data.choices?.[0]?.message?.content
+    if (content) {
+      const parsed = JSON.parse(content) as { subject: string; bodyHtml: string }
+      return parsed
+    }
+  } catch {
+    // fallback
+  }
+  return {
+    subject: `Urgent Security Notice for ${target.name}`,
+    bodyHtml: `<p>Dear ${target.name}, please review your security posture.</p>`
+  }
+}
+
 export { LURE_TEMPLATES, generateEmailTemplate, generateLandingPage, generateTrackingPixel }

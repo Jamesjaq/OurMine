@@ -113,4 +113,85 @@ export async function auditDeviceCodeFlowAsync(
   return base
 }
 
-export default { auditDeviceCodeFlow, auditDeviceCodeFlowAsync }
+export async function initiateDeviceCodeFlow(
+  provider: "entra" | "okta" | "google",
+  clientId = "00000003-0000-0ff1-ce00-000000000000", // Default Microsoft Graph client ID
+  scope = "User.Read",
+  live = false,
+): Promise<{ success: boolean; verificationUri?: string; userCode?: string; deviceCode?: string; error?: string }> {
+  const endpoints = PROVIDER_ENDPOINTS[provider]
+  if (!endpoints) return { success: false, error: "Unknown provider" }
+  
+  if (!live) {
+    return {
+      success: true,
+      verificationUri: endpoints.verify,
+      userCode: "DRY-CODE-1234",
+      deviceCode: "dry-run-device-code-token"
+    }
+  }
+
+  try {
+    const body = new URLSearchParams({
+      client_id: clientId,
+      scope: scope
+    })
+    const res = await fetch(endpoints.device, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    })
+    if (!res.ok) return { success: false, error: `HTTP ${res.status}: ${await res.text()}` }
+    const data = await res.json() as { verification_uri?: string; user_code?: string; device_code?: string }
+    return {
+      success: true,
+      verificationUri: data.verification_uri ?? endpoints.verify,
+      userCode: data.user_code,
+      deviceCode: data.device_code
+    }
+  } catch (e) {
+    return { success: false, error: String(e) }
+  }
+}
+
+export async function pollDeviceCodeToken(
+  provider: "entra" | "okta" | "google",
+  deviceCode: string,
+  clientId = "00000003-0000-0ff1-ce00-000000000000",
+  live = false,
+): Promise<{ status: "pending" | "success" | "expired" | "error"; accessToken?: string; error?: string }> {
+  const endpoints = PROVIDER_ENDPOINTS[provider]
+  if (!endpoints) return { status: "error", error: "Unknown provider" }
+
+  if (!live) {
+    return { status: "success", accessToken: "dry-run-oauth-bearer-token-xyz" }
+  }
+
+  try {
+    const body = new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+      client_id: clientId,
+      device_code: deviceCode
+    })
+    const res = await fetch(endpoints.poll, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString()
+    })
+    const data = await res.json() as { access_token?: string; error?: string }
+    if (res.ok && data.access_token) {
+      return { status: "success", accessToken: data.access_token }
+    }
+    if (data.error === "authorization_pending" || data.error === "slow_down") {
+      return { status: "pending" }
+    }
+    if (data.error === "expired_token") {
+      return { status: "expired" }
+    }
+    return { status: "error", error: data.error ?? "Unknown error" }
+  } catch (e) {
+    return { status: "error", error: String(e) }
+  }
+}
+
+export default { auditDeviceCodeFlow, auditDeviceCodeFlowAsync, initiateDeviceCodeFlow, pollDeviceCodeToken }

@@ -117,6 +117,21 @@ export function buildIdentityTools(): McpTool[] {
           const live = mcpLive()
           return security.idp_oauth_audit.auditIdPAndOAuth({ domain: String(domain) }, { live })
         },
+      },
+    {
+        name: "ares_device_code_audit",
+        description: "Audit target for OAuth Device Code Flow (RFC 8628) support and initiate phishing/interception assessment.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            domain: { type: "string", description: "Target domain or identity provider" },
+          },
+          required: ["domain"],
+        },
+        async handler({ domain }) {
+          const live = mcpLive()
+          return dispatch.deviceCodeAuditExecute({ domain: String(domain) }, { live })
+        },
       }
   ]
 }

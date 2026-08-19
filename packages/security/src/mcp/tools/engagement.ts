@@ -177,6 +177,49 @@ export function buildEngagementTools(): McpTool[] {
           const { retestFinding } = await import("../../engagement_watch.ts")
           return retestFinding(String(target), String(findingId), { live })
         },
+      },
+    {
+        name: "ares_lateral_pathfinding",
+        description: "Autonomous lateral movement pathfinding: find multi-hop attack paths to a high-value target using the credential graph.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            source: { type: "string", description: "Source node (default: local)" },
+            target: { type: "string", description: "Target node (e.g. Domain Controller)" },
+          },
+          required: ["target"],
+        },
+        async handler({ source, target }) {
+          const live = mcpLive()
+          return dispatch.lateralPathfindingExecute({ source: String(source ?? "local"), target: String(target) }, { live })
+        },
+      },
+    {
+        name: "ares_self_healing_check",
+        description: "Autonomous agent resilience check: scan for lost agents and suggest C2 channel rotation to restore connectivity.",
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+        async handler({}) {
+          const live = mcpLive()
+          return dispatch.selfHealingCheckExecute({ live })
+        },
+      },
+    {
+        name: "ares_technique_discovery",
+        description: "Autonomous YARA-based technique discovery: identify new offensive techniques in findings and generate detection rules.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            finding: { type: "string", description: "Raw finding or technique description to analyze" },
+          },
+          required: ["finding"],
+        },
+        async handler({ finding }) {
+          const live = mcpLive()
+          return dispatch.techniqueDiscoveryExecute({ finding: String(finding) }, { live })
+        },
       }
   ]
 }

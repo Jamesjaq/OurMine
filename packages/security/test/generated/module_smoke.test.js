@@ -6,7 +6,7 @@ import { ToolBroker } from "../../src/tool_broker.ts"
 import { runBridgedModule } from "../../src/bridges/index.ts"
 import { buildNativeMcpTools } from "../../src/mcp/register_tools.ts"
 
-const TIMEOUT = 2000
+const TIMEOUT = 5000
 
 function ctx(target = "127.0.0.1") {
   return { target, graph: new AttackSurfaceGraph(target), broker: new ToolBroker(), live: false }

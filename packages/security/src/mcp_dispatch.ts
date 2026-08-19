@@ -564,3 +564,41 @@ export async function campaignPlan(
   )
   return moduleEnvelope(dryRun, campaign.getSummary())
 }
+
+export async function deviceCodeAuditExecute(
+  req: { domain: string },
+  opts: LiveOpts = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  return security.device_code_phish.auditDeviceCodeFlow(req.domain, { dryRun })
+}
+
+export async function lateralPathfindingExecute(
+  req: { source?: string; target: string },
+  opts: LiveOpts = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  const cg = security.credential_graph.CredentialGraph.load()
+  const engine = new security.ares.LateralMovementEngine(cg)
+  const path = engine.findPath(req.source ?? "local", req.target)
+  return moduleEnvelope(dryRun, { path, source: req.source ?? "local", target: req.target })
+}
+
+export async function selfHealingCheckExecute(
+  opts: LiveOpts = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  const engine = new security.ares.SelfHealingEngine(new security.covert_c2.CovertC2Engine())
+  const lost = engine.findLostAgents()
+  return moduleEnvelope(dryRun, { lostCount: lost.length, lostAgents: lost })
+}
+
+export async function techniqueDiscoveryExecute(
+  req: { finding: string },
+  opts: LiveOpts = {},
+) {
+  const dryRun = resolveDryRun(opts)
+  const yara = new security.yara.YaraEngine()
+  const matches = yara.scanText(req.finding)
+  return moduleEnvelope(dryRun, { matches, finding: req.finding })
+}
