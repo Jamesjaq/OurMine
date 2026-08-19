@@ -6,8 +6,8 @@
     "ttlDays": 7
   },
   "ransomwatch": {
-    "cachedAt": "2026-08-19T01:39:40.121Z",
-    "count": 2500,
+    "cachedAt": "2026-08-19T09:07:21.845Z",
+    "count": 16072,
     "latestDiscovered": "2025-06-16T20:30:52.596196Z",
     "source": "https://raw.githubusercontent.com/joshhighet/ransomwatch/main/posts.json",
     "ttlDays": 7
