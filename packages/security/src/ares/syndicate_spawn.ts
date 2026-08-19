@@ -116,7 +116,7 @@ export class SyndicateSpawner {
     }
 
     // 5. Specialized Impact / Hardware / OT / AI Cell
-    if (has(["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation"])) {
+    if (has(["ot", "scada", "ss7", "telecom", "satellite", "space", "fiber", "undersea", "building", "hvac", "bacnet", "ai", "ml", "neural", "grid", "energy", "substation", "atm", "jackpot", "hardware", "firmware", "hypervisor", "vm"])) {
       operatives.push({
         department: "Specialized Infrastructure & Impact Division",
         title: "Specialized Protocol Commander",
@@ -155,7 +155,7 @@ export class SyndicateSpawner {
     }
 
     // 8. Financial Warfare Cell
-    if (has(["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital"])) {
+    if (has(["financial", "bank", "money", "swift", "clearing", "market", "ledger", "transfer", "capital", "crypto", "defi", "flash", "arbitrage", "drain"])) {
       operatives.push({
         department: "Economic Disruption & Clearing Cell",
         title: "Ledger Disruption Architect",
@@ -181,7 +181,7 @@ export class SyndicateSpawner {
     }
 
     // 10. Malware Synthesis & Refactoring Cell
-    if (has(["malware", "ransom", "weapon", "vx", "underground", "payload", "encrypt", "refactor", "source"])) {
+    if (has(["malware", "ransom", "weapon", "vx", "underground", "payload", "encrypt", "refactor", "source", "exploit", "zero-day", "weaponize"])) {
       operatives.push({
         department: "Weapon Synthesis & Refactoring Factory",
         title: "Chief Arsenal Engineer",

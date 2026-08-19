@@ -1,6 +1,6 @@
 /**
  * @module ares/research_ingestor
- * ARES v3.4 Research Ingestor — Proactive exploit research and intelligence gathering.
+ * ARES v3.4.1 Research Ingestor — Proactive exploit research and intelligence gathering.
  * Fetches latest vulnerabilities (CISA KEV, NVD) and translates them into attack hypotheses.
  */
 
@@ -17,19 +17,41 @@ export interface ExploitIntelligence {
 
 export class ResearchIngestor {
   /**
-   * Fetches latest intelligence from simulated external sources.
-   * In a real engagement, this would query the CISA KEV API or exploit databases.
+   * Fetches latest intelligence from simulated external sources (2026 Updated).
    */
   public async fetchLatestIntelligence(): Promise<ExploitIntelligence[]> {
-    // Simulated CISA KEV / NVD feed ingestion (2026 Updated)
     const intel: ExploitIntelligence[] = [
       {
-        cveId: "CVE-2026-41940",
-        title: "cPanel & WHM Improper Input Validation (CRLF)",
-        description: "Allows attackers to bypass security filters via specially crafted HTTP requests.",
+        cveId: "CVE-2026-47876",
+        title: "VMware ESXi Critical VM Escape (Ring -1 Execution)",
+        description: "Allows attackers to escape a guest VM and execute arbitrary code on the ESXi host.",
         knownRansomwareUsage: true,
-        vectorHeuristic: "http_header_injection",
-        dateAdded: "2026-08-01"
+        vectorHeuristic: "hypervisor_escape",
+        dateAdded: "2026-07-30"
+      },
+      {
+        cveId: "CVE-2026-64561",
+        title: "Linux KVM Use-After-Free Host Escape",
+        description: "CWE-416 vulnerability in Linux kernel KVM module allowing guest-to-host breakout.",
+        knownRansomwareUsage: false,
+        vectorHeuristic: "hypervisor_escape",
+        dateAdded: "2026-08-07"
+      },
+      {
+        cveId: "DEFI-2026-BUNNI",
+        title: "Smart Contract Precision Rounding Exploit",
+        description: "Exploiting rounding errors in liquidity accounting to drain DeFi pools via flash loans.",
+        knownRansomwareUsage: false,
+        vectorHeuristic: "crypto_defi_drainer",
+        dateAdded: "2026-09-01"
+      },
+      {
+        cveId: "XFS-2026-PLOUTUS",
+        title: "ATM XFS Protocol Command Injection (Jackpotting)",
+        description: "Injecting WFS_CMD_CDM_DISPENSE commands into the XFS service provider to dispense cash.",
+        knownRansomwareUsage: true,
+        vectorHeuristic: "atm_jackpotting",
+        dateAdded: "2026-02-27"
       },
       {
         cveId: "CVE-2026-52211",
@@ -46,14 +68,6 @@ export class ResearchIngestor {
         knownRansomwareUsage: true,
         vectorHeuristic: "financial_iso20022_injection",
         dateAdded: "2026-07-20"
-      },
-      {
-        cveId: "CVE-2026-88219",
-        title: "Telemetry Complexity Attack (TCA) via Serialization Overload",
-        description: "USENIX WOOT '26 finding: Exhausting EDR/XDR JSON serialization pipelines to induce Denial-of-Analysis.",
-        knownRansomwareUsage: false,
-        vectorHeuristic: "telemetry_overload",
-        dateAdded: "2026-08-18"
       }
     ]
     return intel
@@ -63,13 +77,14 @@ export class ResearchIngestor {
    * Maps intelligence to specific target surfaces.
    */
   public async mapIntelToTarget(target: string, intel: ExploitIntelligence[]): Promise<ExploitIntelligence[]> {
-    const nmapRes = executeLiveCommand(`nmap -p 80,443,2087,502 --open ${target}`)
+    const nmapRes = executeLiveCommand(`nmap -p 80,443,2087,502,20000 --open ${target}`)
     
     return intel.filter(i => {
-      if (i.vectorHeuristic === "http_header_injection" && (nmapRes.stdout.includes("2087") || nmapRes.stdout.includes("80"))) return true
+      if (i.vectorHeuristic === "hypervisor_escape") return true // Assume high-value targets might be virtualized
+      if (i.vectorHeuristic === "crypto_defi_drainer" && nmapRes.stdout.includes("443")) return true
+      if (i.vectorHeuristic === "atm_jackpotting") return true
       if (i.vectorHeuristic === "financial_iso20022_injection" && nmapRes.stdout.includes("443")) return true
       if (i.vectorHeuristic === "byovd_kernel_privesc") return true
-      if (i.vectorHeuristic === "telemetry_overload") return true
       return false
     })
   }
