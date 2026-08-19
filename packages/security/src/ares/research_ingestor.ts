@@ -21,7 +21,7 @@ export class ResearchIngestor {
    * In a real engagement, this would query the CISA KEV API or exploit databases.
    */
   public async fetchLatestIntelligence(): Promise<ExploitIntelligence[]> {
-    // Simulated CISA KEV / NVD feed ingestion
+    // Simulated CISA KEV / NVD feed ingestion (2026 Updated)
     const intel: ExploitIntelligence[] = [
       {
         cveId: "CVE-2026-41940",
@@ -33,9 +33,9 @@ export class ResearchIngestor {
       },
       {
         cveId: "CVE-2026-52211",
-        title: "Windows Kernel Privilege Escalation (BYOVD)",
-        description: "Vulnerability in a common signed driver allows for arbitrary kernel memory read/write.",
-        knownRansomwareUsage: false,
+        title: "Windows Kernel Privilege Escalation via AuKill Driver Abuse",
+        description: "Abusing legitimate signed Microsoft Process Explorer driver for kernel-mode EDR termination.",
+        knownRansomwareUsage: true,
         vectorHeuristic: "byovd_kernel_privesc",
         dateAdded: "2026-08-15"
       },
@@ -46,6 +46,14 @@ export class ResearchIngestor {
         knownRansomwareUsage: true,
         vectorHeuristic: "financial_iso20022_injection",
         dateAdded: "2026-07-20"
+      },
+      {
+        cveId: "CVE-2026-88219",
+        title: "Telemetry Complexity Attack (TCA) via Serialization Overload",
+        description: "USENIX WOOT '26 finding: Exhausting EDR/XDR JSON serialization pipelines to induce Denial-of-Analysis.",
+        knownRansomwareUsage: false,
+        vectorHeuristic: "telemetry_overload",
+        dateAdded: "2026-08-18"
       }
     ]
     return intel
@@ -55,14 +63,13 @@ export class ResearchIngestor {
    * Maps intelligence to specific target surfaces.
    */
   public async mapIntelToTarget(target: string, intel: ExploitIntelligence[]): Promise<ExploitIntelligence[]> {
-    // Heuristic: Check if target surface matches intel vectors
-    // (e.g., if target has port 2087 open, cPanel intel is relevant)
     const nmapRes = executeLiveCommand(`nmap -p 80,443,2087,502 --open ${target}`)
     
     return intel.filter(i => {
       if (i.vectorHeuristic === "http_header_injection" && (nmapRes.stdout.includes("2087") || nmapRes.stdout.includes("80"))) return true
       if (i.vectorHeuristic === "financial_iso20022_injection" && nmapRes.stdout.includes("443")) return true
-      if (i.vectorHeuristic === "byovd_kernel_privesc") return true // Generic OS-level
+      if (i.vectorHeuristic === "byovd_kernel_privesc") return true
+      if (i.vectorHeuristic === "telemetry_overload") return true
       return false
     })
   }
