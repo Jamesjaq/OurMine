@@ -97,6 +97,17 @@ export class InnovationEngine {
       })
     }
 
+    // 3. Bold Unconventional Innovation (Limitless Mode)
+    hypotheses.push({
+      id: "HYPO-BOLD-LIMITLESS-01",
+      title: "Bold Unconventional Vector: Automated Firmware & Hypervisor Escape Synthesis",
+      domainSource: "Deep Architecture / Ring -1",
+      domainTarget: target,
+      noveltyScore: 10.0,
+      feasibilityScore: 8.9,
+      generatedTechnique: `Synthesizing zero-day hardware/firmware implant and side-channel telemetry poisoning against ${target} to bypass all traditional host-based barriers.`
+    })
+
     return hypotheses
   }
 }

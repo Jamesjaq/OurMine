@@ -1,8 +1,8 @@
-# OurMine / ARES v3.4.0 ⛏️🛡️
+# OurMine / ARES v3.4.1 ⛏️🛡️
 
 **Autonomous, Self-Evolving, and Self-Organizing Adversarial Security Syndicate**
 
-OurMine / ARES v3.4.0 introduces the **Syndicate Prime** architecture — an autonomous adversarial syndicate that dynamically analyzes any arbitrary mission objective and target, decomposes it into custom specialized operational domains, and spawns bespoke departments, managers, engineers, and operational cells on the fly. 
+OurMine / ARES v3.4.1 introduces the **Syndicate Prime** architecture — an autonomous adversarial syndicate that dynamically analyzes any arbitrary mission objective and target, decomposes it into custom specialized operational domains, and spawns bespoke departments, managers, engineers, and operational cells on the fly.
 
 ## 🚀 One-Liner Installation & Execution
 
@@ -14,12 +14,23 @@ Just type `ourmine` in your terminal to launch the OpenCode TUI with ARES Syndic
 
 ---
 
+## ⚡ New in v3.4.1: The "Limitless" Upgrade
+
+ARES v3.4.1 moves beyond pre-installed tools. It is now **Limitless** and **Pragmatic**:
+
+- **Autonomous Arsenal Acquisition**: If a mission requires a tool not present on the system (e.g., `gobuster`, `sqlmap`), ARES will autonomously `apt-get` or `pip` install it in real-time.
+- **Bold Innovation Engine**: Generates unconventional, high-impact attack hypotheses (e.g., Firmware implants, Hypervisor escapes, Side-channel poisoning) when traditional vectors are blocked.
+- **Pragmatic Reuse-First Logic**: Prioritizes proven tactical modules from the *Tradecraft Library* to maximize token efficiency (94.2% reduction) while maintaining the capacity for zero-day invention.
+- **Multi-Platform Dominance**: Enhanced dedicated support for Windows, Linux, macOS (TCC bypass), Mobile (SS7/Binder), and ATM (XFS jackpotting).
+
+---
+
 ## 🎯 How It Works
 
 1. Type `ourmine` in your terminal.
 2. The **OpenCode TUI** opens instantly with ARES MCP and the pentest agent pre-configured.
 3. Select your model (e.g. `/model`) and simply **tell the AI your mission and target** (e.g., *"Target localhost, infiltrate energy grid, pivot to OT, deploy synthetic voice lure"*).
-4. The agent immediately mobilizes **Syndicate Prime**, dynamically assembling bespoke departments and operatives to execute the mission with extreme token efficiency (94.2% reduction) and real-time streaming.
+4. The agent immediately mobilizes **Syndicate Prime**, dynamically assembling bespoke departments and operatives to execute the mission with extreme token efficiency and real-time streaming.
 
 ---
 

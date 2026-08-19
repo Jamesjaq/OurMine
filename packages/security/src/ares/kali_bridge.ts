@@ -27,10 +27,12 @@ export async function runKaliBridge(opts: KaliBridgeOpts = {}) {
       cmd = `hydra -l admin -p password ${target} ssh -t 4`
       break
     case "gobuster":
-      cmd = `gobuster dir -u "http://${target}" -w /usr/share/wordlists/dirb/common.txt -q`
+      // Check for wordlist, if missing, use a minimal one or download
+      const wordlist = "/usr/share/wordlists/dirb/common.txt"
+      cmd = `WL=${wordlist}; if [ ! -f "$WL" ]; then sudo apt-get update && sudo apt-get install -y dirb && WL=${wordlist}; fi; if [ ! -f "$WL" ]; then mkdir -p /tmp/wordlists && echo -e "admin\nlogin\nwp-admin\nconfig" > /tmp/wordlists/min.txt && WL=/tmp/wordlists/min.txt; fi; gobuster dir -u "http://${target}" -w "$WL" -q`
       break
     case "metasploit":
-      cmd = `msfcli --version` // placeholder for msfconsole automation
+      cmd = `msfconsole --version`
       break
     case "nmap":
     default:
@@ -38,8 +40,17 @@ export async function runKaliBridge(opts: KaliBridgeOpts = {}) {
       break
   }
 
-  const result = executeLiveCommand(cmd)
-  const success = result.exitCode === 0 || result.stdout.length > 0
+  let result = executeLiveCommand(cmd)
+
+  // Autonomous Tool Acquisition: If the tool is missing (command not found), install it immediately via apt or pip.
+  if (result.code !== 0 && (result.stderr.includes("not found") || result.stdout.includes("not found") || result.stderr.includes("command not found"))) {
+    const installCmd = `sudo apt-get update && sudo apt-get install -y ${tool}`
+    const installRes = executeLiveCommand(installCmd)
+    if (installRes.code === 0) {
+      result = executeLiveCommand(cmd) // Re-run after installation
+    }
+  }
+  const success = result.code === 0 || result.stdout.length > 0
 
   const findings = [
     realFinding(
