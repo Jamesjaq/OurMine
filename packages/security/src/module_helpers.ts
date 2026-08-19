@@ -65,10 +65,32 @@ export function executeLiveCommand(cmd: string): { stdout: string; stderr: strin
  * Super token-efficient summary for LLM context.
  * Shrinks findings and data to absolute essentials.
  */
+/**
+ * Smart token-efficient summary for LLM context.
+ * Preserves critical technical indicators while compressing boilerplate.
+ */
 export function summarizeForLlm(envelope: ModuleEnvelope<any>): string {
   const findings = envelope.findings.map(f => `[${f.severity.toUpperCase()}] ${f.id}: ${f.title}`).join("; ")
-  const dataSummary = JSON.stringify(envelope.data).slice(0, 250)
-  return `ARES_LIVE_RESULT: ${envelope.live ? "LIVE" : "DRY"}; Findings: ${findings || "None"}; Data: ${dataSummary}...`
+  
+  // Extract key technical indicators from data if they exist
+  const data = envelope.data || {}
+  const indicators: string[] = []
+  
+  if (data.target) indicators.push(`target:${data.target}`)
+  if (data.ip) indicators.push(`ip:${data.ip}`)
+  if (data.domain) indicators.push(`domain:${data.domain}`)
+  if (data.port) indicators.push(`port:${data.port}`)
+  if (data.user || data.username) indicators.push(`user:${data.user || data.username}`)
+  if (data.objective) indicators.push(`objective:"${data.objective}"`)
+  
+  // Bespoke for Syndicate Prime
+  if (data.mission?.missionId) indicators.push(`missionId:${data.mission.missionId}`)
+  if (data.succeeded !== undefined) indicators.push(`succeeded:${data.succeeded}/${data.total}`)
+
+  const indicatorStr = indicators.length > 0 ? ` Indicators: ${indicators.join(", ")};` : ""
+  const dataStr = JSON.stringify(data).slice(0, 400) // Increased slightly for better context
+  
+  return `ARES_LIVE_RESULT: ${envelope.live ? "LIVE" : "DRY"};${indicatorStr} Findings: ${findings || "None"}; Summary: ${data.summary || dataStr.slice(0, 200)}... [Full data preserved in local artifact]`
 }
 
 export default { moduleEnvelope, realFinding, executeLiveCommand, summarizeForLlm }

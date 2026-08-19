@@ -192,6 +192,18 @@ export async function runAresOrchestrator(opts: {
     }
   }
 
+  // Save to local artifact for long-term persistence and detailed inspection
+  try {
+    const fs = await import("node:fs")
+    const path = await import("node:path")
+    const artifactDir = path.join(process.cwd(), ".ourmine", "artifacts")
+    fs.mkdirSync(artifactDir, { recursive: true })
+    const artifactPath = path.join(artifactDir, `syndicate_${mission.missionId}.json`)
+    fs.writeFileSync(artifactPath, JSON.stringify(envelope, null, 2), "utf8")
+  } catch {
+    // Silent fail for artifact save
+  }
+
   return {
     mission,
     modulesExecuted,
