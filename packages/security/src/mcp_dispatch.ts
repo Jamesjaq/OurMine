@@ -5,7 +5,8 @@ import * as fs from "node:fs"
 import * as os from "node:os"
 import * as path from "node:path"
 import * as security from "./index.ts"
-import { resolveDryRun, moduleEnvelope, dryRunSkipped } from "./module_helpers.ts"
+import { moduleEnvelope } from "./module_helpers.ts"
+import { resolveDryRun } from "./exec_options.ts"
 import {
   LegitC2Server,
   InMemoryTransport,
@@ -120,7 +121,7 @@ export async function adExploitExecute(
     case "acl_abuse":
       return mod.enumeratePrivilegedUsers(base)
     default:
-      return moduleEnvelope(dryRun, { error: `Unknown technique: ${req.technique}` })
+      throw new Error(`[ARES] Unknown AD exploit technique: ${req.technique}`)
   }
 }
 
@@ -205,7 +206,7 @@ export async function c2Execute(
     })
   }
 
-  return moduleEnvelope(dryRun, { error: `Unknown C2 action: ${action}` })
+  throw new Error(`[ARES] Unknown C2 action: ${action}`)
 }
 
 export async function strixExecute(

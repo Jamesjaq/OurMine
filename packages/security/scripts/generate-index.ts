@@ -53,6 +53,11 @@ const files = fs
   .filter((f) => f.endsWith(".ts") && !EXCLUDE.has(f))
   .sort()
 
+const aresDir = path.join(srcDir, "ares")
+const aresFiles = fs.existsSync(aresDir)
+  ? fs.readdirSync(aresDir).filter((f) => f.endsWith(".ts") && !f.includes("test")).sort()
+  : []
+
 const lines: string[] = [
   "/**",
   " * @module security",
@@ -75,6 +80,16 @@ lines.push("")
 for (const f of files) {
   const name = f.replace(/\.ts$/, "")
   lines.push(`export * as ${name} from './${f}'`)
+}
+
+if (aresFiles.length > 0) {
+  lines.push("")
+  lines.push("// ─── ARES Syndicate modules (security.ares.<module>.<fn>) ───")
+  lines.push("")
+  for (const f of aresFiles) {
+    const name = f.replace(/\.ts$/, "").replace(/[^a-zA-Z0-9_]/g, "_")
+    lines.push(`export * as ares_${name} from './ares/${f}'`)
+  }
 }
 
 lines.push("")

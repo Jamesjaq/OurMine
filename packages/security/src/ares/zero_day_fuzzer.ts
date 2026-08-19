@@ -73,8 +73,13 @@ export async function runZeroDayFuzzer(opts: {
     writeArtifact("fuzz", `cve_${opts.cveId}.json`, JSON.stringify(cve, null, 2))
   }
 
-  let target = opts.target ?? "lab"
+  let target = opts.target
   let seedFile = opts.seedFile
+  
+  if (!target) {
+    throw new Error(`[ARES] Zero-Day Fuzzer requires a target binary path. Lab fallbacks are disabled in v3.2.1.`)
+  }
+
   if (target === "lab" || target === "auto") {
     const lab = ensureLabFuzzHarness(dir)
     steps.push(step("lab_harness_compile", lab.compiled, lab.harness))
@@ -82,9 +87,7 @@ export async function runZeroDayFuzzer(opts: {
       target = lab.harness
       seedFile = seedFile ?? lab.seed
     } else {
-      target = "/bin/sh"
-      seedFile = seedFile ?? writeArtifact("fuzz", "seed.bin", "OURMINE_FUZZ_SEED\x00AAAA")
-      steps.push(step("lab_harness_fallback", true, "gcc unavailable — shell echo fuzz"))
+      throw new Error(`[ARES] Lab fuzz harness compilation failed. Cannot proceed with autonomous fuzzing.`)
     }
   }
 

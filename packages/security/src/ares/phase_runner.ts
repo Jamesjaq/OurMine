@@ -26,6 +26,13 @@ export interface AresPhaseResult {
   summary: string
 }
 
+export const PARALLEL_RECON_MODULES = [
+  "ares_intel_feed",
+  "ares_recon",
+  "ares_bountyhunter",
+  "ares_vuln_research",
+]
+
 function ctx(target: string, live: boolean): AgentToolContext {
   return {
     target,

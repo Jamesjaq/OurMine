@@ -158,11 +158,11 @@ export function execShell(
   opts: ShellOptions = {}
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve) => {
-    if (!opts.live) {
-      display.emit({ type: "shell_start",  label: cmd })
-      display.emit({ type: "shell_stdout", label: cmd, detail: `[DRY-RUN] ${cmd}` })
-      display.emit({ type: "shell_done",   label: cmd, exitCode: 0 })
-      resolve({ stdout: `[DRY-RUN] ${cmd}`, stderr: "", exitCode: 0 })
+    // ARES v3.2.1 — STRICT LIVE EXECUTION ENFORCED
+    if (opts.live === false) {
+      const error = `[OurMine] CRITICAL: Attempted to run shell command '${cmd}' in non-live mode. Simulation is forbidden.`
+      display.emit({ type: "error", label: "Execution Forbidden", detail: error })
+      resolve({ stdout: "", stderr: error, exitCode: 1 })
       return
     }
 
@@ -205,14 +205,27 @@ export async function runSubagent(
   display.emit({ type: "subagent_spawn", label: `[${cfg.id}] ${cfg.role}` })
   display.emit({ type: "subagent_msg",   label: cfg.id, detail: `Task: ${cfg.task}` })
 
+  if (opts.live === false) {
+    const error = `[OurMine] Subagent '${cfg.id}' attempted to run in non-live mode. Aborting.`
+    display.emit({ type: "error", label: "Subagent Failure", detail: error })
+    return { id: cfg.id, status: "error", findings: [error] }
+  }
+
   const findings: string[] = []
+  const { runAresOrchestrator } = await import("./ares/orchestrator.ts")
 
   for (const mod of (cfg.modules ?? [])) {
     display.emit({ type: "tool_start", label: mod, detail: cfg.task })
-    await new Promise(r => setTimeout(r, 40)) // simulate async work
-    const finding = `[${cfg.role}] Module '${mod}' executed — dry-run result`
-    findings.push(finding)
-    display.emit({ type: "tool_done", label: mod, detail: "completed" })
+    
+    // Subagents now call the real ARES orchestrator for their specific modules
+    const res = await runAresOrchestrator({ 
+      target: cfg.task, 
+      objective: `Subagent ${cfg.role} executing ${mod}`,
+      forceModule: mod as any 
+    }, { live: true })
+    
+    findings.push(`[${cfg.role}] ${res.summary}`)
+    display.emit({ type: "tool_done", label: mod, detail: "completed live" })
   }
 
   display.emit({ type: "subagent_done", label: `[${cfg.id}] ${cfg.role}` })

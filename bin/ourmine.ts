@@ -42,32 +42,30 @@ const SECURITY_COMMANDS = new Set([
 
 function securityHelp() {
   console.log(`
-${C.bold}${C.orange}OurMine Security Commands (ARES Suite):${C.reset}
-  ourmine recon <target>       AI-driven recon: OSINT, subdomains, email enum
-  ourmine audit <target>       Container + cloud vulnerability audit
-  ourmine pentest <target>     Full autonomous PentestGPT attack plan
+${C.bold}${C.orange}OurMine Syndicate Prime (v3.2.1):${C.reset}
+  ourmine recon <target>       Syndicate-driven recon: Dynamic cell synthesis
+  ourmine audit <target>       High-fidelity infrastructure & sector audit
+  ourmine pentest <target>     Full autonomous Syndicate Prime engagement
   ourmine yara <path>          YARA rulepack scan on a file/path
-  ourmine c2 [status]          C2 channel & beacon management
-  ourmine serve                Start ARES MCP server on stdio (for LLM agents)
-  ourmine agent <target>       Interactive LLM-driven pentest agent
-  ourmine toolcheck            Check which security tools are installed
+  ourmine c2 [status]          Covert mesh C2 & ghost autonomy management
+  ourmine serve                Start ARES MCP server (Syndicate Prime backend)
+  ourmine agent <target>       Autonomous Syndicate operative (LLM-driven)
+  ourmine toolcheck            Check arsenal availability and tradecraft
   ourmine watch <target> [min]     Continuous engagement snapshots (default 60 min)
   ourmine watch <target> --daemon    Run scheduled watch daemon (interval from [min] or 60)
   ourmine retest <target> <id> Retest a finding for remediation status
   ourmine topcut                 Score readiness vs enterprise BAS platforms
-  ourmine depth                  Operational depth score (tier-1 capability)
-  ourmine tier1 [target]         Run tier-1 orchestrator + depth metrics (set OURMINE_TIER1=1)
+  ourmine depth                  Operational depth score (Syndicate capability)
+  ourmine tier1 [target]         Run tier-1 orchestrator + depth metrics
   ourmine tier1bench             Lab benchmark for tier-1 capabilities
-  ourmine security list        Same as 'modules'
+  ourmine security list        List all 200+ ARES security modules
 
-${C.bold}Security Flags:${C.reset}
-  ${C.grey}--live${C.reset}                       Enable real network/exec mode
-  ${C.grey}--dry-run${C.reset}                    Force simulation (overrides Kali auto-live)
-  ${C.grey}--require-live${C.reset}               Fail if tools unavailable (no fallbacks)
+${C.bold}Syndicate Directives:${C.reset}
+  ${C.grey}--live${C.reset}                       Enable ABSOLUTE LIVE execution (no mocks)
+  ${C.grey}--dry-run${C.reset}                    Simulation is FORBIDDEN in v3.2.1 (throws error)
+  ${C.grey}--require-live${C.reset}               Strict dependency enforcement
 
-${C.grey}All other commands (tui, run, models, session, mcp, providers, stats,
-export, import, session, github, pr, db, web, acp, attach, upgrade)
-are passed directly to the real OpenCode binary.${C.reset}
+${C.grey}All other commands are passed directly to the real OpenCode binary.${C.reset}
 `)
 }
 
@@ -101,90 +99,44 @@ function delegateToOpenCode(args: string[]): void {
 // ─── Security command handlers ────────────────────────────────────────────────
 
 async function cmdRecon(target: string, display: ExecutionDisplay, isLive: boolean) {
-  display.emit({ type: "agent_start", label: `Recon → ${target}` })
+  display.emit({ type: "agent_start", label: `Syndicate Recon → ${target}` })
+  const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")
+  
+  const res = await runAresOrchestrator({
+    target,
+    objective: "Full spectrum reconnaissance and attack surface mapping",
+    forceModule: "ares_innovation_engine"
+  }, { live: isLive })
 
-  display.emit({ type: "tool_start", label: "ai_recon.runRecon", detail: target })
-  const r = await security.ai_recon.runRecon({ domain: target }, { live: isLive })
-  display.emit({ type: "tool_done",  label: "ai_recon.runRecon",
-    detail: `${r.employees?.length ?? 0} employees, ${r.emailPatterns?.length ?? 0} email patterns` })
-
-  display.emit({ type: "tool_start", label: "bountyhunter.recon", detail: target })
-  const b = await security.bountyhunter.recon({ target, endpoints: [] }, { live: isLive })
-  display.emit({ type: "tool_done",  label: "bountyhunter.recon",
-    detail: `${b.subdomains?.length ?? 0} subdomains` })
-
-  display.emit({ type: "subagent_spawn", label: "[osint] Passive OSINT Worker" })
-  display.emit({ type: "subagent_msg",   label: "osint", detail: "crt.sh, Shodan, HaveIBeenPwned, LinkedIn..." })
-  await new Promise(r => setTimeout(r, 80))
-  display.emit({ type: "subagent_done",  label: "[osint] Passive OSINT Worker" })
-
-  if (r.employees?.length) {
-    r.employees.forEach(e =>
-      display.emit({ type: "finding", label: `Employee: ${e.fullName}`, severity: "info", detail: e.email }))
-  }
-  if (b.subdomains?.length) {
-    b.subdomains.slice(0, 5).forEach(sd =>
-      display.emit({ type: "finding", label: `Subdomain: ${sd}`, severity: "info" }))
-  }
-
-  display.emit({ type: "agent_done", label: `Recon → ${target}` })
+  display.emit({ type: "finding", label: "Syndicate Findings", severity: "info", detail: res.summary })
+  display.emit({ type: "agent_done", label: `Syndicate Recon → ${target}` })
 }
 
 async function cmdAudit(target: string, display: ExecutionDisplay, isLive: boolean) {
-  display.emit({ type: "agent_start", label: `Audit → ${target}` })
+  display.emit({ type: "agent_start", label: `Syndicate Audit → ${target}` })
+  const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")
 
-  display.emit({ type: "tool_start", label: "container.auditContainer" })
-  const c = security.container.auditContainer({ live: isLive })
-  display.emit({ type: "tool_done",  label: "container.auditContainer",
-    detail: `docker=${c.dockerSocketMounted} cgroup=${c.cgroupEscapePossible}` })
-  if (c.dockerSocketMounted)
-    display.emit({ type: "finding", label: "Docker socket mounted", severity: "high", detail: "/var/run/docker.sock exposed" })
+  const res = await runAresOrchestrator({
+    target,
+    objective: "Deep infrastructure audit and vulnerability discovery",
+    forceModule: "ares_specialized_impact"
+  }, { live: isLive })
 
-  display.emit({ type: "tool_start", label: "cloud_token.fetchAWSMetadata" })
-  const aws = await security.cloud_token.fetchAWSMetadata({ live: isLive })
-  display.emit({ type: "tool_done",  label: "cloud_token.fetchAWSMetadata",
-    detail: aws ? `KeyId=${aws.accessKeyId}` : "No IMDS" })
-  if (aws)
-    display.emit({ type: "finding", label: "AWS credentials from IMDS", severity: "critical", detail: aws.accessKeyId })
-
-  display.emit({ type: "tool_start", label: "counter_intel.auditDefenses" })
-  const ci = security.counter_intel.auditDefenses({ live: isLive })
-  display.emit({ type: "tool_done",  label: "counter_intel.auditDefenses",
-    detail: `honeypot=${ci.honeypotDetected}` })
-
-  display.emit({ type: "agent_done", label: `Audit → ${target}` })
+  display.emit({ type: "finding", label: "Syndicate Audit Results", severity: "high", detail: res.summary })
+  display.emit({ type: "agent_done", label: `Syndicate Audit → ${target}` })
 }
 
 async function cmdPentest(target: string, display: ExecutionDisplay, isLive: boolean) {
-  display.emit({ type: "agent_start", label: `Autonomous Pentest → ${target}` })
+  display.emit({ type: "agent_start", label: `Syndicate Prime Engagement → ${target}` })
+  const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")
 
-  display.emit({ type: "tool_start", label: "pentestgpt_ptt.buildDefaultTree", detail: target })
-  const tree = security.pentestgpt_ptt.buildDefaultTree(target)
-  const summary = security.pentestgpt_ptt.treeSummary(tree)
-  display.emit({ type: "tool_done",  label: "pentestgpt_ptt.buildDefaultTree",
-    detail: `${summary.total} nodes across ${Object.keys(summary.byPhase ?? {}).length} phases` })
+  const res = await runAresOrchestrator({
+    target,
+    objective: "Full-scale autonomous adversarial operation",
+  }, { live: isLive })
 
-  const subagents = [
-    { id: "sa-recon", role: "Recon Subagent",      task: `Enumerate ${target}`, modules: ["ai_recon","bountyhunter","scanner_parsers"] },
-    { id: "sa-ad",    role: "AD Attack Subagent",   task: `Kerberoast ${target}`, modules: ["identity","ad_exploit"] },
-    { id: "sa-web",   role: "Web Exploit Subagent", task: `Exploit web surface`, modules: ["strix_engine","oauth_chain"] },
-    { id: "sa-infra", role: "Infra Subagent",       task: `Cloud & container escape`, modules: ["cloud_token","container","pivot_tunnel"] },
-  ]
-
-  for (const sa of subagents) {
-    const res = await runSubagent(sa, display, { live: isLive })
-    res.findings.forEach(f => display.emit({ type: "finding", label: f, severity: "info" }))
-  }
-
-  display.emit({ type: "tool_start", label: "PentestAgent.runAutonomous", detail: target })
-  const agent = new PentestAgent({ target, scope: [target], live: isLive, requireLive: false })
-  const result = await agent.runAutonomous()
-  display.emit({ type: "tool_done",  label: "PentestAgent.runAutonomous",
-    detail: `${result.summary["completed"]}/${result.summary["totalTasks"]} tasks` })
-  result.findings.forEach(f =>
-    display.emit({ type: "finding", label: f.title, severity: f.severity, detail: f.recommendation }))
-
-  display.emit({ type: "agent_done", label: `Autonomous Pentest → ${target}` })
+  display.emit({ type: "finding", label: "Engagement Summary", severity: "critical", detail: res.summary })
+  display.emit({ type: "agent_done", label: `Syndicate Prime Engagement → ${target}` })
 }
 
 async function cmdModules() {

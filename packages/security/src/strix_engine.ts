@@ -72,15 +72,7 @@ export class BrowserSession {
   /** Fetch a page. Uses CDP when available, else plain HTTP fetch. */
   async navigate(url: string): Promise<PageResult> {
     if (!this.live) {
-      return {
-        url,
-        finalUrl: url,
-        status: 0,
-        headers: {},
-        body: "",
-        title: "",
-        cookies: {},
-      }
+      throw new Error(`[Strix] Navigation to ${url} blocked: Live mode required.`)
     }
 
     if (await this._cdpAvailable()) {
@@ -142,15 +134,7 @@ export class BrowserSession {
     headers: Record<string, string> = {}
   ): Promise<PageResult> {
     if (!this.live) {
-      return {
-        url,
-        finalUrl: url,
-        status: 0,
-        headers: {},
-        body: "",
-        title: "",
-        cookies: {},
-      };
+      throw new Error(`[Strix] Form submission to ${url} blocked: Live mode required.`)
     }
     const body = new URLSearchParams(data).toString();
     const resp = await fetch(url, {
@@ -231,7 +215,7 @@ export class CaidoClient {
   }
 
   async graphql(query: string, variables: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
-    if (!this.live) return { _dryRun: true };
+    if (!this.live) throw new Error(`[Caido] GraphQL query blocked: Live mode required.`);
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (this.apiToken) headers["Authorization"] = `Bearer ${this.apiToken}`;
     const resp = await fetch(`${this.baseUrl}/graphql`, {
