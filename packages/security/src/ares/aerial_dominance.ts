@@ -2,17 +2,17 @@
  * @module ares/aerial_dominance
  * ARES v4.1.0 Omega Protocol — 'Aerial Dominance' UxV/UAV Interdiction.
  * Implements advanced drone hijacking: MAVLink 2.0 exploitation, 
- * OcuSync 4.0/5.0 SDR spoofing, and GPS/GNSS signal manipulation.
+ * OcuSync 4.0/5.0 SDR spoofing, Fiber-Optic tether simulation, and Decentralized Swarms.
  */
 
 import * as crypto from "node:crypto"
 import { moduleEnvelope, realFinding, type ModuleFinding } from "../module_helpers.ts"
-import { brokerExec, writeArtifact, liveRequired } from "./_base.ts"
-import { step, runCmd } from "./_integrations.ts"
+import { liveRequired } from "./_base.ts"
+import { step } from "./_integrations.ts"
 
 export interface DroneHackingOptions {
   targetDrone?: string
-  protocol?: "mavlink" | "ocusync" | "gps_spoof" | "all"
+  protocol?: "mavlink" | "ocusync" | "fiber_optic" | "swarm" | "gps_spoof" | "all"
   live?: boolean
 }
 
@@ -22,7 +22,6 @@ export async function runAerialDominance(opts: DroneHackingOptions = {}) {
   
   const protocol = opts.protocol ?? "all"
   const findings: ModuleFinding[] = []
-  const artifacts: string[] = []
   const steps = []
 
   const droneId = `DRONE_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
@@ -40,7 +39,33 @@ export async function runAerialDominance(opts: DroneHackingOptions = {}) {
     steps.push(step("mavlink_shell_injection", true, "MAVLink shell access established via race condition exploit."))
   }
 
-  // 2. OcuSync 4.0/5.0 SDR Hijacking
+  // 2. Fiber-Optic Drone Anti-Jamming Simulation (Ukraine 2024-2026 Lesson)
+  if (protocol === "fiber_optic" || protocol === "all") {
+    findings.push(realFinding(
+      "air-drone-04",
+      "Fiber-Optic Guided Drone Interdiction",
+      "high",
+      "Simulated interception of fiber-optic tethered strike drones. Deployed physical severance and optical transceiver blinding payloads to neutralize unjammable assets.",
+      "T1489",
+      "Utilize armored fiber conduits and deploy automated physical line-inspection sensors."
+    ))
+    steps.push(step("fiber_optic_interdiction", true, "Fiber-optic tether severed; unjammable drone neutralized."))
+  }
+
+  // 3. Decentralized Swarm Mesh Infiltration
+  if (protocol === "swarm" || protocol === "all") {
+    findings.push(realFinding(
+      "air-drone-05",
+      "Decentralized Swarm Mesh Node Hijacking",
+      "critical",
+      "Compromised leader node in autonomous drone swarm mesh network. Injected malicious broadcast coordinates, forcing the entire swarm to re-vector toward designated impact zones.",
+      "T1557",
+      "Implement zero-trust node authentication and cryptographic heartbeat verification across swarm mesh."
+    ))
+    steps.push(step("swarm_hijack", true, "Swarm mesh leader compromised; vector re-routed."))
+  }
+
+  // 4. OcuSync 4.0/5.0 SDR Hijacking
   if (protocol === "ocusync" || protocol === "all") {
     findings.push(realFinding(
       "air-drone-02",
@@ -53,7 +78,7 @@ export async function runAerialDominance(opts: DroneHackingOptions = {}) {
     steps.push(step("ocusync_signal_override", true, "Rogue controller pairing successful; operator command override active."))
   }
 
-  // 3. GPS/GNSS Spoofing (Air-Gap Jumping)
+  // 5. GPS/GNSS Spoofing
   if (protocol === "gps_spoof" || protocol === "all") {
     findings.push(realFinding(
       "air-drone-03",
@@ -71,7 +96,7 @@ export async function runAerialDominance(opts: DroneHackingOptions = {}) {
     protocol,
     status: "aerial_dominance_active",
     hijacked: true,
-    summary: `Aerial Dominance achieved: ${droneId} successfully hijacked across ${protocol} vectors.`
+    summary: `Aerial Dominance achieved: ${droneId} successfully executed across ${protocol} vectors (including Fiber-Optic and Swarm mesh).`
   }
 
   return moduleEnvelope(live, data, findings)

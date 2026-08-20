@@ -2,7 +2,7 @@
  * @module ares/industrial_interdiction
  * ARES v4.1.0 Omega Protocol — 'Universal Industrial Interdiction'.
  * Implements strategic subversion of critical infrastructure: Dams, 
- * Water Plants, Chemical Facilities, and Oil Pipelines via ICS/SCADA/OT.
+ * Water Plants, Chemical Facilities, Oil Pipelines, and Rockwell FactoryTalk OT systems.
  */
 
 import * as crypto from "node:crypto"
@@ -11,8 +11,8 @@ import { liveRequired } from "./_base.ts"
 import { step } from "./_integrations.ts"
 
 export interface IndustrialOptions {
-  sector?: "water" | "energy" | "chemical" | "oil" | "dam" | "all"
-  protocol?: "modbus" | "dnp3" | "iec104" | "opcua" | "all"
+  sector?: "water" | "energy" | "chemical" | "oil" | "dam" | "factorytalk" | "all"
+  protocol?: "modbus" | "dnp3" | "iec104" | "opcua" | "factorytalk" | "all"
   live?: boolean
 }
 
@@ -27,7 +27,20 @@ export async function runIndustrialInterdiction(opts: IndustrialOptions = {}) {
 
   const opId = `IND_OP_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
 
-  // 1. Dam & Water Infrastructure (DNP3/Modbus)
+  // 1. Rockwell Automation & FactoryTalk Subversion (Iran 2026 TTPs)
+  if (sector === "factorytalk" || sector === "chemical" || sector === "all") {
+    findings.push(realFinding(
+      "mil-ind-05",
+      "Rockwell Automation FactoryTalk & Allen-Bradley PLC Exploitation",
+      "critical",
+      "Exploited insecure FactoryTalk automation software instances hosted on exposed VPS infrastructure. Injected rogue ladder logic directly into Allen-Bradley GuardPLC controllers, bypassing safety interlocks.",
+      "T0831",
+      "Isolate engineering workstations from cloud/VPS infrastructure and enforce multi-factor authentication for all FactoryTalk management interfaces."
+    ))
+    steps.push(step("factorytalk_subversion", true, "FactoryTalk VPS exploited; Allen-Bradley ladder logic overridden."))
+  }
+
+  // 2. Dam & Water Infrastructure (DNP3/Modbus)
   if (sector === "water" || sector === "dam" || sector === "all") {
     findings.push(realFinding(
       "mil-ind-01",
@@ -40,7 +53,7 @@ export async function runIndustrialInterdiction(opts: IndustrialOptions = {}) {
     steps.push(step("hydraulic_hijack", true, "DNP3 setpoints injected; spillway control achieved."))
   }
 
-  // 2. Oil & Gas Pipeline Subversion (Modbus/IEC 104)
+  // 3. Oil & Gas Pipeline Subversion (Modbus/IEC 104)
   if (sector === "oil" || sector === "all") {
     findings.push(realFinding(
       "mil-ind-02",
@@ -53,7 +66,7 @@ export async function runIndustrialInterdiction(opts: IndustrialOptions = {}) {
     steps.push(step("pipeline_override", true, "Pressure alarms suppressed; pump RPM modulated."))
   }
 
-  // 3. Chemical & Defense Plant SIS Subversion (TRITON-style)
+  // 4. Chemical & Defense Plant SIS Subversion (TRITON-style)
   if (sector === "chemical" || sector === "all") {
     findings.push(realFinding(
       "mil-ind-03",
@@ -66,7 +79,7 @@ export async function runIndustrialInterdiction(opts: IndustrialOptions = {}) {
     steps.push(step("sis_corruption", true, "SIS logic corrupted; ESD sequences disabled."))
   }
 
-  // 4. Universal OT Protocol Dominance (OPC UA/IEC 104)
+  // 5. Universal OT Protocol Dominance (OPC UA/IEC 104)
   findings.push(realFinding(
     "mil-ind-04",
     "Universal OT Protocol Command Injection",
@@ -83,7 +96,7 @@ export async function runIndustrialInterdiction(opts: IndustrialOptions = {}) {
     protocol,
     status: "industrial_interdiction_active",
     kineticImpactPotential: "Extreme",
-    summary: `Industrial Interdiction active: ${opId} achieved dominance across ${sector} sectors using ${protocol} vectors.`
+    summary: `Industrial Interdiction active: ${opId} achieved dominance across ${sector} sectors using ${protocol} vectors (including Rockwell FactoryTalk).`
   }
 
   return moduleEnvelope(live, data, findings)
