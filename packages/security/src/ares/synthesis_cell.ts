@@ -7,7 +7,7 @@
 import * as fs from "node:fs"
 import * as path from "node:path"
 import { fileURLToPath } from "node:url"
-import { llmComplete, hasLLMKey } from "../llm_client.ts"
+import { llmComplete, llmChat, hasLLMKey } from "../llm_client.ts"
 
 export interface SynthesisOptions {
   objective: string
@@ -87,7 +87,7 @@ Requirements:
 3. Use 'node:crypto' for unique operation IDs.
 4. Output ONLY valid TypeScript code.`
 
-        const res = await llmComplete([
+        const res = await llmChat([
           { role: "system", content: "You are an expert offensive security engineer writing production TypeScript code." },
           { role: "user", content: prompt }
         ], { maxTokens: 1500 })

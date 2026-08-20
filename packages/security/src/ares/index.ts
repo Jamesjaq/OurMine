@@ -26,6 +26,10 @@ export { runSelfImprovement } from "./self_improvement.ts"
 export { runSpecializedImpact } from "./specialized_impact.ts"
 export { runGhostAutonomy } from "./ghost_autonomy.ts"
 export { runLateralMovement } from "./lateral_movement.ts"
+export { runAresKineticCyberSynergy } from "./custom_ares_kinetic_cyber_synergy.ts"
+export { runCustomModule as runAresKineticCyberSynergy } from "./custom_ares_kinetic_cyber_synergy.ts"
+export { runCustomModule as runAresSatelliteDominance } from "./custom_ares_satellite_dominance.ts"
+
 // Dynamic modules removed due to broken exports or missing files during upgrade.
 // ARES v3.4.1 uses Syndicate Prime for dynamic synthesis.
 export { runShadowOrganization } from "./shadow_org.ts"
@@ -48,6 +52,9 @@ export { runCognitiveWarfareAdvanced } from "./cognitive_warfare_advanced.ts"
 export { runDeFiPredator } from "./defi_predator.ts"
 export { runAdversarialAIEvasion } from "./adversarial_ai_evasion.ts"
 export { runBioDigitalInterdiction } from "./bio_digital_interdiction.ts"
+export { runBioDigitalWetware, runQuantumNativePersistence } from "./final_frontiers.ts"
+export { runProgramAnalysis, runRingMinusThreePersistence, runSwarmLearning, runSupplyChainPoisoning } from "./apex_modules.ts"
+export { runAdsBasedDelivery, runIdeExtensionPoisoning, runCloudApiC2, runRingMinusFourPersistence } from "./shadow_modules.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
@@ -76,6 +83,8 @@ export const ARES_MODULE_NAMES = [
   "ares_specialized_impact",
   "ares_ghost_autonomy",
   "ares_lateral_movement",
+  "ares_custom_ares_satellite_dominance",
+  "ares_custom_ares_kinetic_cyber_synergy",
   "ares_custom_ares_custom_dynamic_reuse_test",
   "ares_custom_ares_custom_dynamic_test_01",
   "ares_custom_live_vector_01",
@@ -100,6 +109,16 @@ export const ARES_MODULE_NAMES = [
   "ares_defi_predator",
   "ares_adversarial_ai_evasion",
   "ares_bio_digital_interdiction",
+  "ares_bio_digital_wetware",
+  "ares_quantum_native_persistence",
+  "ares_program_analysis",
+  "ares_ring_minus_three",
+  "ares_swarm_learning",
+  "ares_supply_chain_poison",
+  "ares_ads_delivery",
+  "ares_ide_poison",
+  "ares_cloud_api_c2",
+  "ares_ring_minus_four",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

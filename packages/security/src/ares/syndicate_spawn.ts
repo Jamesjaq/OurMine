@@ -188,6 +188,141 @@ export class SyndicateSpawner {
       workflow.push("ares_airgap_bridge")
     }
 
+    // 5. Final Frontiers (v4.2.0)
+    if (has(["bio", "wetware", "neural", "bci", "brain"])) {
+      operatives.push({
+        department: "Bio-Digital Dominance Cell",
+        title: "Neural Architect",
+        callsign: `NEURAL_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Neural interface interdiction and wetware data-tapping",
+        assignedTool: "ares_bio_digital_wetware",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_bio_digital_wetware")
+    }
+
+    if (has(["quantum", "pqc", "entanglement", "lattice"])) {
+      operatives.push({
+        department: "Quantum-Native Strike Force",
+        title: "Entanglement Specialist",
+        callsign: `QUANTUM_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Quantum-native persistence and PQC-immune C2 establishment",
+        assignedTool: "ares_quantum_native_persistence",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_quantum_native_persistence")
+    }
+
+    if (has(["hive", "decentralized", "headless", "consensus", "mesh"])) {
+      operatives.push({
+        department: "Headless Hive-Mind Syndicate",
+        title: "Consensus Architect",
+        callsign: `HIVE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Decentralized autonomous coordination and headless syndicate synchronization",
+        assignedTool: "ares_decentralized_hive_mind",
+        autonomyLevel: "strategic"
+      })
+      workflow.push("ares_decentralized_hive_mind")
+    }
+
+    // 6. Apex Dominance (Bridging the Gaps)
+    if (has(["symbolic", "formal", "verification", "analysis", "fuzzing"])) {
+      operatives.push({
+        department: "Program Analysis & Verification Cell",
+        title: "Symbolic Execution Lead",
+        callsign: `ANALYST_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Formal verification of synthesized payloads and deep symbolic path exploration",
+        assignedTool: "ares_program_analysis",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_program_analysis")
+    }
+
+    if (has(["ring-3", "management engine", "intel me", "amd psp", "firmware persistence"])) {
+      operatives.push({
+        department: "Deep-Hardware Persistence Wing",
+        title: "Ring -3 Operative",
+        callsign: `HARDWARE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Intel ME / AMD PSP firmware interdiction and absolute persistence",
+        assignedTool: "ares_ring_minus_three",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_ring_minus_three")
+    }
+
+    if (has(["swarm", "learning", "reinforcement", "local adaptation"])) {
+      operatives.push({
+        department: "Autonomous Swarm Learning Unit",
+        title: "Swarm Architect",
+        callsign: `SWARM_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Local reinforcement learning and autonomous node adaptation",
+        assignedTool: "ares_swarm_learning",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_swarm_learning")
+    }
+
+    if (has(["supply chain", "poison", "upstream", "dependency", "pipeline"])) {
+      operatives.push({
+        department: "Supply Chain Interdiction Syndicate",
+        title: "Pipeline Subverter",
+        callsign: `PIPELINE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Upstream dependency poisoning and CI/CD pipeline subversion",
+        assignedTool: "ares_supply_chain_poison",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_supply_chain_poison")
+    }
+
+    // 7. Shadow Intelligence (Leaked Tradecraft)
+    if (has(["ads", "malvertising", "rtb", "zero-click"])) {
+      operatives.push({
+        department: "Shadow Delivery Syndicate",
+        title: "Malvertising Architect",
+        callsign: `ADS_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "RTB-based zero-click exploit delivery and targeted malvertising",
+        assignedTool: "ares_ads_delivery",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_ads_delivery")
+    }
+
+    if (has(["ide", "extension", "vscode", "jetbrains", "developer"])) {
+      operatives.push({
+        department: "Developer Environment Interdiction Cell",
+        title: "IDE Subverter",
+        callsign: `IDE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "IDE extension poisoning and commit signing bypass",
+        assignedTool: "ares_ide_poison",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_ide_poison")
+    }
+
+    if (has(["cloud c2", "google calendar", "notion", "legitimate cloud"])) {
+      operatives.push({
+        department: "Shadow C2 Taskforce",
+        title: "Cloud Mesh Architect",
+        callsign: `CLOUD_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Legitimate Cloud C2 (LCC) mesh establishment and traffic rotation",
+        assignedTool: "ares_cloud_api_c2",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_cloud_api_c2")
+    }
+
+    if (has(["ring-4", "microcode", "cpu persistence", "ghost"])) {
+      operatives.push({
+        department: "Ghost Persistence Wing",
+        title: "Ring -4 Operative",
+        callsign: `GHOST_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "CPU microcode-level persistence and absolute hardware dominance",
+        assignedTool: "ares_ring_minus_four",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_ring_minus_four")
+    }
+
     // Final Sanitization
     operatives.push({
       department: "Anti-Forensics Taskforce",
