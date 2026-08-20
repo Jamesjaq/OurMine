@@ -49,6 +49,7 @@ import { runBioDigitalWetware, runQuantumNativePersistence } from "./final_front
 import { generateMissionReportPdf } from "./ares_report_generator.ts"
 import { runProgramAnalysis, runRingMinusThreePersistence, runSwarmLearning, runSupplyChainPoisoning } from "./apex_modules.ts"
 import { runAdsBasedDelivery, runIdeExtensionPoisoning, runCloudApiC2, runRingMinusFourPersistence } from "./shadow_modules.ts"
+import { runVishingHelpDesk, runMfaFatigue, runEsxiInterdiction, runSaasAdminSubversion } from "./spider_modules.ts"
 import { SynthesisCell } from "./synthesis_cell.ts"
 import { type ModuleFinding, realFinding, moduleEnvelope, executeLiveCommand } from "../module_helpers.ts"
 import { ExecutionDisplay } from "../runtime_exec.ts"
@@ -331,6 +332,22 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_ring_minus_four":
           res = await runRingMinusFourPersistence({ live: true })
+          res.success = true
+          break
+        case "ares_vishing_help_desk":
+          res = await runVishingHelpDesk({ live: true })
+          res.success = true
+          break
+        case "ares_mfa_fatigue":
+          res = await runMfaFatigue({ live: true })
+          res.success = true
+          break
+        case "ares_esxi_interdiction":
+          res = await runEsxiInterdiction({ live: true })
+          res.success = true
+          break
+        case "ares_saas_admin_subversion":
+          res = await runSaasAdminSubversion({ live: true })
           res.success = true
           break
         default:

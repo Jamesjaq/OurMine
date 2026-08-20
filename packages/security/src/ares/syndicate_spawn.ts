@@ -323,6 +323,44 @@ export class SyndicateSpawner {
       workflow.push("ares_ring_minus_four")
     }
 
+    // 8. Scattered Spider Syndicate (UNC3944 Tradecraft)
+    if (has(["spider", "unc3944", "vishing", "mfa fatigue", "esxi", "vcenter", "transport rule"])) {
+      operatives.push({
+        department: "Scattered Spider Syndicate",
+        title: "Social Engineering Architect",
+        callsign: `SPIDER_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Help-desk vishing and MFA fatigue orchestration",
+        assignedTool: "ares_vishing_help_desk",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_vishing_help_desk")
+      workflow.push("ares_mfa_fatigue")
+
+      if (has(["esxi", "vcenter", "virtualization"])) {
+        operatives.push({
+          department: "Virtualization Interdiction Cell",
+          title: "ESXi Subverter",
+          callsign: `VIRT_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+          missionFocus: "VMware vCenter/ESXi subversion and ransomware deployment",
+          assignedTool: "ares_esxi_interdiction",
+          autonomyLevel: "execution"
+        })
+        workflow.push("ares_esxi_interdiction")
+      }
+
+      if (has(["saas", "entra", "m365", "transport rule"])) {
+        operatives.push({
+          department: "Cloud Administrative Taskforce",
+          title: "SaaS Subverter",
+          callsign: `SAAS_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+          missionFocus: "Entra ID and M365 administrative subversion",
+          assignedTool: "ares_saas_admin_subversion",
+          autonomyLevel: "execution"
+        })
+        workflow.push("ares_saas_admin_subversion")
+      }
+    }
+
     // Final Sanitization
     operatives.push({
       department: "Anti-Forensics Taskforce",
