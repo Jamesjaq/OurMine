@@ -1,6 +1,5 @@
-// Stylometry-Entropy-ymu9cr
 import * as crypto from "node:crypto";
-export async async function runAutoModule(opts: { live?: boolean }) {
+export async function runAutoModule(opts: { live?: boolean }) {
   let id = crypto.randomUUID();
   return {
     success: true,
