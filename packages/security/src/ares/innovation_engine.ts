@@ -2,7 +2,7 @@
  * @module ares/innovation_engine
  * ARES v4.1.0 'Absolute Intelligence' Proactive Innovation Engine.
  * Implements self-researching zero-day synthesis, counter-defense adaptation,
- * and cross-domain tactical synthesis for Spies, Cartels, and Ransomware groups.
+ * and cross-domain tactical synthesis for Spies, Cartels, and Military Dominance.
  */
 import { moduleEnvelope, executeLiveCommand } from "../module_helpers.ts"
 import { ResearchIngestor, type ExploitIntelligence } from "./research_ingestor.ts"
@@ -53,7 +53,7 @@ export class InnovationEngine {
       }
     } catch {}
     
-    // 2. Proactive External Research Ingestion (2026-era)
+    // 2. Proactive External Research Ingestion (2026-era Military)
     const latestIntel = await this.ingestor.fetchLatestIntelligence()
     const relevantIntel = await this.ingestor.mapIntelToTarget(target, latestIntel)
 
@@ -67,24 +67,32 @@ export class InnovationEngine {
         feasibilityScore: 8.8,
         generatedTechnique: `Synthesized exploit vector for ${intel.cveId} targeting ${target}. Objective: ${intel.description}`,
         cveReference: intel.cveId,
-        strategicValue: "High-value infiltration vector for Intelligence Agencies."
+        strategicValue: "High-value infiltration vector for Military Intelligence."
       })
     }
 
-    // 3. Absolute Intelligence: Counter-Defense & Adaptive Strategy
-    const edrProbe = executeLiveCommand(`ps aux | grep -E "csagent|cb.exe|sentinelone|falcon" | grep -v grep`)
-    if (edrProbe.stdout.length > 0) {
-      hypotheses.push({
-        id: "HYPO-ADAPTIVE-EDR-01",
-        title: "Adaptive Strategy: EDR/XDR Blinding via Feature Noise Injection",
-        domainSource: "Adversarial AI Layer",
-        domainTarget: "EDR/XDR Classifiers",
-        noveltyScore: 9.9,
-        feasibilityScore: 9.5,
-        generatedTechnique: "Detected active EDR signatures. Synthesizing adversarial feature noise to blind ML-based detection heuristics.",
-        strategicValue: "Essential for Ransomware groups to ensure high-impact encryption."
-      })
-    }
+    // 3. Absolute Intelligence: Military & Kinetic Adaptation
+    hypotheses.push({
+      id: "HYPO-MIL-KINETIC-01",
+      title: "Kinetic-Cyber Synergy: AD Radar Signal Injection (S-400/Patriot)",
+      domainSource: "Electronic Warfare / Cyber-Kinetic",
+      domainTarget: "Air Defense Radars",
+      noveltyScore: 9.9,
+      feasibilityScore: 9.2,
+      generatedTechnique: "Synthesizing ghost tracks and acquisitions overrides to overwhelm AD logic during kinetic strikes.",
+      strategicValue: "Critical for high-intensity state conflicts (Ukraine/Iran lessons)."
+    })
+
+    hypotheses.push({
+      id: "HYPO-MIL-SAT-01",
+      title: "Satellite Dominance: Starlink Terminal Firmware Hijacking",
+      domainSource: "Orbital Infrastructure / User Segment",
+      domainTarget: "Tactical Satellite Terminals",
+      noveltyScore: 9.8,
+      feasibilityScore: 9.0,
+      generatedTechnique: "Exploiting UT bootloader vulnerabilities to intercept tactical traffic and inject telemetry offsets.",
+      strategicValue: "Denial of communication for autonomous drone swarms."
+    })
 
     // 4. Cross-Domain Synthesis: Drone & Air-Gap Interaction
     hypotheses.push({
@@ -95,7 +103,7 @@ export class InnovationEngine {
       noveltyScore: 10.0,
       feasibilityScore: 8.5,
       generatedTechnique: "Using hijacked drone as an ultrasonic/RF relay for exfiltrating data from air-gapped systems.",
-      strategicValue: "Unconventional exfiltration for Cartels and Espionage cells."
+      strategicValue: "Unconventional exfiltration for Military and Espionage cells."
     })
 
     return hypotheses

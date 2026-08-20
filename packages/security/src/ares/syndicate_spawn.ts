@@ -2,7 +2,7 @@
  * @module ares/syndicate_spawn
  * ARES v4.1.0 Syndicate Spawn Engine — 'Omega Protocol' Dynamic Architect.
  * Mobilizes specialized departments and strategic actor syndicates 
- * (Ransomware, Spy, Cartel, Red Team) based on mission parameters.
+ * (Ransomware, Spy, Cartel, Red Team, Military) based on mission parameters.
  */
 import { moduleEnvelope, summarizeForLlm } from "../module_helpers.ts"
 import * as crypto from "node:crypto"
@@ -76,7 +76,44 @@ export class SyndicateSpawner {
     })
     workflow.push("ares_innovation_engine")
 
-    // 1. Aerial Dominance (Drone Hacking)
+    // 1. Military Dominance & Kinetic Synergy
+    if (has(["military", "war", "kinetic", "radar", "missile", "ad", "air defense", "swarm", "weapon"])) {
+      operatives.push({
+        department: "Kinetic-Cyber Synergy Division",
+        title: "Strategic Impact Commander",
+        callsign: `STRIKE_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Cyber-kinetic convergence: AD radar subversion, missile guidance override, and drone swarm hijacking",
+        assignedTool: "ares_kinetic_cyber_synergy",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_kinetic_cyber_synergy")
+    }
+
+    if (has(["ew", "electronic warfare", "jamming", "spoofing", "gnss", "gps", "rf", "sigint"])) {
+      operatives.push({
+        department: "Electronic Warfare Interdiction Cell",
+        title: "Spectrum Dominance Specialist",
+        callsign: `SPECTRUM_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Strategic spectrum dominance: GPS/GNSS spoofing, wideband jamming, and tactical SIGINT",
+        assignedTool: "ares_ew_interdiction",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_ew_interdiction")
+    }
+
+    if (has(["satellite", "starlink", "orbital", "constellation", "space"])) {
+      operatives.push({
+        department: "Satellite Dominance Wing",
+        title: "Orbital Infiltrator",
+        callsign: `ORBIT_${crypto.randomBytes(1).toString("hex").toUpperCase()}`,
+        missionFocus: "Strategic satellite subversion: Starlink terminal exploits and orbital telemetry manipulation",
+        assignedTool: "ares_satellite_dominance",
+        autonomyLevel: "execution"
+      })
+      workflow.push("ares_satellite_dominance")
+    }
+
+    // 2. Aerial Dominance (Drone Hacking)
     if (has(["drone", "uav", "uxv", "aerial", "mavlink", "ocusync", "hijack", "gps_spoof"])) {
       operatives.push({
         department: "Aerial Dominance Division",
@@ -89,7 +126,7 @@ export class SyndicateSpawner {
       workflow.push("ares_aerial_dominance")
     }
 
-    // 2. Strategic Actor Syndicates
+    // 3. Strategic Actor Syndicates
     if (has(["cartel", "smuggling", "logistics", "narco", "tco"])) {
       operatives.push({
         department: "Dark Logistics Syndicate",
@@ -114,7 +151,7 @@ export class SyndicateSpawner {
       workflow.push("ares_infinite_innovation")
     }
 
-    // 3. Core ARES v4.0 Cells
+    // 4. Core ARES v4.0 Cells
     if (has(["bank", "financial", "swift", "iso20022"])) {
       operatives.push({
         department: "Financial Warfare Syndicate",
