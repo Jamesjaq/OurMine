@@ -1,0 +1,12 @@
+{
+  "task_kind": "new-document",
+  "output": "pdf",
+  "signals": ["report", "mission-report"],
+  "hard_constraints": ["high-impact", "military-style", "professional"],
+  "content_features": {
+    "code_blocks": 2,
+    "defined_terms": 5,
+    "portrait_images": 0,
+    "tables": 1
+  }
+}

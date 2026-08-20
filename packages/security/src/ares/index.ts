@@ -54,6 +54,7 @@ export { runBioDigitalInterdiction } from "./bio_digital_interdiction.ts"
 export { runBioDigitalWetware, runQuantumNativePersistence } from "./final_frontiers.ts"
 export { runProgramAnalysis, runRingMinusThreePersistence, runSwarmLearning, runSupplyChainPoisoning } from "./apex_modules.ts"
 export { runAdsBasedDelivery, runIdeExtensionPoisoning, runCloudApiC2, runRingMinusFourPersistence } from "./shadow_modules.ts"
+export { generateMissionReportPdf } from "./ares_report_generator.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 
