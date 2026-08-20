@@ -26,8 +26,7 @@ export { runSelfImprovement } from "./self_improvement.ts"
 export { runSpecializedImpact } from "./specialized_impact.ts"
 export { runGhostAutonomy } from "./ghost_autonomy.ts"
 export { runLateralMovement } from "./lateral_movement.ts"
-export { runAresKineticCyberSynergy } from "./custom_ares_kinetic_cyber_synergy.ts"
-export { runCustomModule as runAresKineticCyberSynergy } from "./custom_ares_kinetic_cyber_synergy.ts"
+export { runAutoModule as runAresKineticCyberSynergy } from "./custom_ares_kinetic_cyber_synergy.ts"
 export { runCustomModule as runAresSatelliteDominance } from "./custom_ares_satellite_dominance.ts"
 
 // Dynamic modules removed due to broken exports or missing files during upgrade.

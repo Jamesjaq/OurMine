@@ -109,9 +109,10 @@ export async function runAresOrchestrator(opts: {
   const mission = spawner.assembleForMission(target, objective)
 
   if (display) {
+    const commanderLabel = process.env.OURMINE_SUPREME_COMMANDER ? "SUPREME COMMANDER" : "SYNDICATE PRIME"
     display.emit({ 
       type: "subagent_spawn", 
-      label: `SYNDICATE PRIME [${mission.missionId}]`, 
+      label: `${commanderLabel} [${mission.missionId}]`, 
       detail: `Mobilized ${mission.operatives.length} operatives across ${mission.syndicateStructure.totalDepartments} departments.` 
     })
     

@@ -48,8 +48,8 @@ const PROVIDER_CONFIGS: Record<string, (apiKey: string) => ProviderConfig> = {
   }),
   openai: (key) => ({
     apiKey: key,
-    baseUrl: "https://api.openai.com/v1",
-    defaultModel: "gpt-4o",
+    baseUrl: process.env.OPENAI_API_BASE || "https://api.openai.com/v1",
+    defaultModel: process.env.OPENAI_MODEL || "gpt-5-nano",
   }),
   google: (key) => ({
     apiKey: key,

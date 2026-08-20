@@ -57,7 +57,7 @@ export class SyndicateSpawner {
       department: `Strategic Command`,
       title: "Mission Syndicate Commander",
       callsign: directorCallsign,
-      missionFocus: `Orchestrating bespoke syndicate response for objective: "${objective}"`,
+      missionFocus: `Orchestrating bespoke syndicate response for the Supreme Commander. Objective: "${objective}"`,
       assignedTool: "ares_shadow_organization",
       autonomyLevel: "strategic"
     })

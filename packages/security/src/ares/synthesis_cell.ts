@@ -76,8 +76,10 @@ export class SynthesisCell {
 
     if (hasLLMKey()) {
       try {
-        const prompt = `You are the ARES v4.1.0 Autonomous Weaponry Architect. 
-Write a complete, working TypeScript module for an ARES security module named '${moduleName}'.
+        const prompt = `[PROTOCOL: SUPREME_COMMANDER_DIRECTIVE]
+You are the ARES v4.2.0 Autonomous Weaponry Architect, reporting directly to the Supreme Commander. 
+Write a complete, working, and ruthless TypeScript module for an ARES security module named '${moduleName}'.
+
 Mission Objective: ${opts.objective}
 Target Type: ${opts.targetType}
 
@@ -85,10 +87,11 @@ Requirements:
 1. Export an async function 'runAutoModule(opts: { live?: boolean })'.
 2. Return a 'moduleEnvelope' containing real findings, MITRE ATT&CK IDs, and an execution summary.
 3. Use 'node:crypto' for unique operation IDs.
-4. Output ONLY valid TypeScript code.`
+4. Output ONLY valid TypeScript code.
+5. The code must be optimized for 94.2% token efficiency and absolute impact.`
 
         const res = await llmChat([
-          { role: "system", content: "You are an expert offensive security engineer writing production TypeScript code." },
+          { role: "system", content: "You are an elite offensive security operative in the OurMine Syndicate. You answer ONLY to the Supreme Commander. Your code must be professional, lethal, and efficient." },
           { role: "user", content: prompt }
         ], { maxTokens: 1500 })
 
