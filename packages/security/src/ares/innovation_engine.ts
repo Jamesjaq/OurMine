@@ -2,10 +2,11 @@
  * @module ares/innovation_engine
  * ARES v4.1.0 'Absolute Intelligence' Proactive Innovation Engine.
  * Implements hardware-agnostic zero-day synthesis, counter-defense adaptation,
- * and cross-domain tactical synthesis for Spies, Cartels, and Military Dominance.
+ * and autonomous module synthesis (Self-Evolution) for any mission type.
  */
 import { moduleEnvelope, executeLiveCommand } from "../module_helpers.ts"
 import { ResearchIngestor, type ExploitIntelligence } from "./research_ingestor.ts"
+import { SynthesisCell } from "./synthesis_cell.ts"
 import * as path from "node:path"
 import * as fs from "node:fs"
 import { isToolAvailable } from "./_base.ts"
@@ -22,16 +23,19 @@ export interface InnovationHypothesis {
   liveOutput?: string
   strategicValue?: string
   pathRequirement?: "hardware" | "software" | "agnostic"
+  synthesizedModule?: string
 }
 
 export class InnovationEngine {
   private ingestor: ResearchIngestor
+  private synthesisCell: SynthesisCell
 
   constructor() {
     this.ingestor = new ResearchIngestor()
+    this.synthesisCell = new SynthesisCell()
   }
 
-  public async probeAndSynthesize(target: string): Promise<InnovationHypothesis[]> {
+  public async probeAndSynthesize(target: string, objective?: string): Promise<InnovationHypothesis[]> {
     const hypotheses: InnovationHypothesis[] = []
     const hasHardware = isToolAvailable("hackrf_transfer")
     
@@ -91,44 +95,44 @@ export class InnovationEngine {
       pathRequirement: "agnostic"
     })
 
-    hypotheses.push({
-      id: "HYPO-MIL-SAT-01",
-      title: "Satellite Dominance: Cloud-to-Satellite Management Subversion",
-      domainSource: "Orbital Infrastructure / Cloud Segment",
-      domainTarget: "Tactical Satellite Constellations",
-      noveltyScore: 9.8,
-      feasibilityScore: 9.0,
-      generatedTechnique: "Compromising AWS/Azure Ground Station portals to inject telemetry offsets without RF hardware.",
-      strategicValue: "Strategic denial of global tactical communications.",
-      pathRequirement: "software"
-    })
-
-    // 4. Cross-Domain Synthesis: Hardware-Agnostic Air-Gap Bridging
-    hypotheses.push({
-      id: "HYPO-CROSS-DOMAIN-01",
-      title: "Universal Air-Gap Bridging: Thermal/Ultrasonic & Cloud-Relay",
-      domainSource: "Side-Channel / Cloud-Edge",
-      domainTarget: "Isolated Target Network",
-      noveltyScore: 10.0,
-      feasibilityScore: 8.5,
-      generatedTechnique: "Combining laptop-native thermal/ultrasonic exfiltration with hijacked cloud-edge nodes as mobile relays.",
-      strategicValue: "Absolute exfiltration dominance in air-gapped environments.",
-      pathRequirement: "agnostic"
-    })
+    // 4. Autonomous Module Synthesis (Self-Evolution)
+    const lowerObj = objective?.toLowerCase() || ""
+    if (lowerObj.includes("unknown") || lowerObj.includes("deep-sea") || lowerObj.includes("space") || lowerObj.includes("mining")) {
+      const targetType = lowerObj.split(" ").slice(-2).join(" ")
+      const result = await this.synthesisCell.synthesizeModule({
+        objective: objective || "",
+        targetType,
+        live: true
+      })
+      
+      hypotheses.push({
+        id: "HYPO-SELF-EVOLVE-01",
+        title: `Self-Evolution: Autonomous Module Synthesis for '${targetType}'`,
+        domainSource: "ARES Synthesis Cell",
+        domainTarget: targetType,
+        noveltyScore: 10.0,
+        feasibilityScore: 9.5,
+        generatedTechnique: `Autonomously synthesized new tactical module: ${result.moduleName}.ts`,
+        strategicValue: "Infinite adaptability to unknown target environments.",
+        pathRequirement: "agnostic",
+        synthesizedModule: result.moduleName
+      })
+    }
 
     return hypotheses
   }
 }
 
 export async function runInnovationEngine(
-  req: { target?: string },
+  req: { target?: string; objective?: string },
   opts: { live?: boolean } = {},
 ) {
   const live = opts.live === true
   const target = req.target ?? "127.0.0.1"
+  const objective = req.objective
   
   const engine = new InnovationEngine()
-  const hypotheses = await engine.probeAndSynthesize(target)
+  const hypotheses = await engine.probeAndSynthesize(target, objective)
 
   const envelope = moduleEnvelope(live, {
     target,
@@ -138,9 +142,10 @@ export async function runInnovationEngine(
       title: h.title, 
       novelty: h.noveltyScore, 
       strategic: h.strategicValue,
-      path: h.pathRequirement 
+      path: h.pathRequirement,
+      module: h.synthesizedModule
     })),
-    summary: `Absolute Intelligence active: Synthesized ${hypotheses.length} hardware-agnostic vectors for ${target}.`,
+    summary: `Absolute Intelligence active: Synthesized ${hypotheses.length} hardware-agnostic vectors and self-evolved modules for ${target}.`,
   })
 
   return envelope
