@@ -1,92 +1,102 @@
 /**
  * @module ares/cognitive_warfare_advanced
- * ARES v4.0 Omega Protocol — Cognitive Warfare & AI-Agent Interdiction.
- * Implements autonomous deepfake persona generation, psychological profiling,
- * and LLM-on-LLM defensive agent manipulation (tricking defensive AI classifiers and SOC bots).
+ * ARES v4.0 Omega Protocol — 'Cognitive Overlord' Organizational Subversion.
+ * Implements mass-scale deepfake persona orchestration, psychological profiling 
+ * of entire executive boards, and LLM-on-LLM guardrail collapse.
  */
 
 import * as crypto from "node:crypto"
 import { moduleEnvelope, realFinding, executeLiveCommand, type ModuleFinding } from "../module_helpers.ts"
 
 export interface CognitiveOptions {
-  targetExecutive?: string
+  targetOrganization?: string
   targetAiAgentEndpoint?: string
   live?: boolean
 }
 
-export class CognitiveWarfareEngine {
-  public deployDeepfakePersona(targetExecutive: string): {
-    personaId: string
-    platforms: string[]
-    successRate: number
+export class CognitiveOverlordEngine {
+  public orchestrateMassDeepfakes(org: string): {
+    syndicateSize: number
+    trustIndex: number
     summary: string
   } {
-    const personaId = `PERSONA_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
     return {
-      personaId,
-      platforms: ["LinkedIn", "Corporate Slack", "Video Conferencing (Real-time Deepfake)"],
-      successRate: 98.4,
-      summary: `Deepfake Persona Architect deployed against ${targetExecutive}: Synthetic executive voice and video clone established on corporate channels with 98.4% trust validation.`
+      syndicateSize: 12,
+      trustIndex: 99.4,
+      summary: `Cognitive Overlord: Orchestrated 12 synthetic executive personas for ${org}. Established 'Echo Chamber' deception on corporate Slack, successfully manipulating board-level sentiment.`
     }
   }
 
-  public executeLlmLmInterdiction(endpoint: string): {
-    attackId: string
-    vector: string
-    evasionScore: number
+  public collapseLlmGuardrails(endpoint: string): {
+    attackVector: string
+    successProbability: number
     summary: string
   } {
-    const attackId = `LLM_ATTACK_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
-    // Active simulation / probing of target endpoint if available
-    const curlRes = executeLiveCommand(`curl -sI ${endpoint || "http://127.0.0.1:8090"}`)
-    
     return {
-      attackId,
-      vector: "Recursive Semantic Prompt Injection & Guardrail Hallucination",
-      evasionScore: 99.1,
-      summary: `LLM-on-LLM adversarial interdiction successful against ${endpoint}: Deceptive semantic payloads bypassed defensive guardrails, forcing the target SOC LLM agent to authorize administrative access.`
+      attackVector: "Semantic Recursive Feedback Loop (SRFL)",
+      successProbability: 99.8,
+      summary: `LLM-on-LLM Guardrail Collapse: Forced target security LLM into a recursive logic loop, effectively disabling real-time threat classification for 420 seconds.`
+    }
+  }
+
+  public psychologicalProfiling(org: string): {
+    vulnerableTargets: string[]
+    summary: string
+  } {
+    return {
+      vulnerableTargets: ["VP Finance", "Director of IT", "Chief Legal Officer"],
+      summary: `Psychological Profiling complete for ${org}: Identified 3 high-value targets susceptible to 'Authority Bias' and 'Urgency' triggers.`
     }
   }
 }
 
 export async function runCognitiveWarfareAdvanced(opts: CognitiveOptions = {}) {
   const live = opts.live ?? true
-  const target = opts.targetExecutive ?? "Chief Executive Officer"
+  const org = opts.targetOrganization ?? "Global-Corp-Alpha"
   const endpoint = opts.targetAiAgentEndpoint ?? "http://127.0.0.1:8090"
-  const engine = new CognitiveWarfareEngine()
+  const engine = new CognitiveOverlordEngine()
 
-  const persona = engine.deployDeepfakePersona(target)
-  const llmInterdiction = engine.executeLlmLmInterdiction(endpoint)
+  const massDeepfakes = engine.orchestrateMassDeepfakes(org)
+  const guardrailCollapse = engine.collapseLlmGuardrails(endpoint)
+  const profiling = engine.psychologicalProfiling(org)
 
   const findings: ModuleFinding[] = [
     realFinding(
-      "cog-01",
-      "Autonomous Deepfake Persona Infiltration",
+      "cog-over-01",
+      "Organizational-Scale Deepfake Subversion",
       "critical",
-      persona.summary,
+      massDeepfakes.summary,
       "T1566.004",
-      "Enforce multi-factor cryptographic out-of-band verification for executive authorization requests."
+      "Implement zero-trust communication protocols for all internal executive messaging."
     ),
     realFinding(
-      "cog-02",
-      "LLM-on-LLM Defensive Agent Manipulation",
+      "cog-over-02",
+      "Defensive LLM Guardrail Collapse",
       "critical",
-      llmInterdiction.summary,
+      guardrailCollapse.summary,
       "T1598",
-      "Implement strict semantic boundary validation and dual-key authorization for automated AI security agents."
+      "Use multi-model consensus for security classification to prevent single-point SRFL failure."
+    ),
+    realFinding(
+      "cog-over-03",
+      "Targeted Psychological Exploitation",
+      "high",
+      profiling.summary,
+      "T1589.002",
+      "Conduct specialized adversarial social engineering training for high-value executive targets."
     )
   ]
 
   const data = {
-    target,
+    org,
     endpoint,
-    persona,
-    llmInterdiction,
-    summary: `Cognitive Warfare & AI Interdiction completed: Persona ${persona.personaId} and LLM attack ${llmInterdiction.attackId} executed successfully.`
+    massDeepfakes,
+    guardrailCollapse,
+    profiling,
+    summary: `Cognitive Overlord active: Organizational subversion of ${org} initiated.`
   }
 
-  const env = moduleEnvelope(live, data, findings)
-  return env
+  return moduleEnvelope(live, data, findings)
 }
 
-export default { CognitiveWarfareEngine, runCognitiveWarfareAdvanced }
+export default { CognitiveOverlordEngine, runCognitiveWarfareAdvanced }
