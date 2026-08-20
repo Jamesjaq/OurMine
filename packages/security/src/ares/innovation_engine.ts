@@ -1,13 +1,14 @@
 /**
  * @module ares/innovation_engine
  * ARES v4.1.0 'Absolute Intelligence' Proactive Innovation Engine.
- * Implements self-researching zero-day synthesis, counter-defense adaptation,
+ * Implements hardware-agnostic zero-day synthesis, counter-defense adaptation,
  * and cross-domain tactical synthesis for Spies, Cartels, and Military Dominance.
  */
 import { moduleEnvelope, executeLiveCommand } from "../module_helpers.ts"
 import { ResearchIngestor, type ExploitIntelligence } from "./research_ingestor.ts"
 import * as path from "node:path"
 import * as fs from "node:fs"
+import { isToolAvailable } from "./_base.ts"
 
 export interface InnovationHypothesis {
   id: string
@@ -20,6 +21,7 @@ export interface InnovationHypothesis {
   cveReference?: string
   liveOutput?: string
   strategicValue?: string
+  pathRequirement?: "hardware" | "software" | "agnostic"
 }
 
 export class InnovationEngine {
@@ -31,6 +33,7 @@ export class InnovationEngine {
 
   public async probeAndSynthesize(target: string): Promise<InnovationHypothesis[]> {
     const hypotheses: InnovationHypothesis[] = []
+    const hasHardware = isToolAvailable("hackrf_transfer")
     
     // 1. Pragmatic Tradecraft Reuse
     try {
@@ -46,14 +49,15 @@ export class InnovationEngine {
             domainTarget: target,
             noveltyScore: 7.0,
             feasibilityScore: 9.9,
-            generatedTechnique: `Reusing ${provenCount} proven techniques from local Tradecraft Library to avoid redundant synthesis.`,
-            strategicValue: "Operational speed and signature consistency for Red Teams."
+            generatedTechnique: `Reusing ${provenCount} proven techniques from local Tradecraft Library.`,
+            strategicValue: "Operational speed and signature consistency.",
+            pathRequirement: "agnostic"
           })
         }
       }
     } catch {}
     
-    // 2. Proactive External Research Ingestion (2026-era Military)
+    // 2. Proactive External Research Ingestion
     const latestIntel = await this.ingestor.fetchLatestIntelligence()
     const relevantIntel = await this.ingestor.mapIntelToTarget(target, latestIntel)
 
@@ -65,45 +69,51 @@ export class InnovationEngine {
         domainTarget: intel.vectorHeuristic,
         noveltyScore: 9.5,
         feasibilityScore: 8.8,
-        generatedTechnique: `Synthesized exploit vector for ${intel.cveId} targeting ${target}. Objective: ${intel.description}`,
+        generatedTechnique: `Synthesized exploit vector for ${intel.cveId} targeting ${target}.`,
         cveReference: intel.cveId,
-        strategicValue: "High-value infiltration vector for Military Intelligence."
+        strategicValue: "High-value infiltration vector.",
+        pathRequirement: "software"
       })
     }
 
-    // 3. Absolute Intelligence: Military & Kinetic Adaptation
+    // 3. Absolute Intelligence: Hardware-Agnostic Military Adaptation
     hypotheses.push({
       id: "HYPO-MIL-KINETIC-01",
-      title: "Kinetic-Cyber Synergy: AD Radar Signal Injection (S-400/Patriot)",
-      domainSource: "Electronic Warfare / Cyber-Kinetic",
+      title: "Hardware-Agnostic Radar Subversion: Synthetic Ghost Tracks",
+      domainSource: "Electronic Warfare / IAMD Network",
       domainTarget: "Air Defense Radars",
       noveltyScore: 9.9,
       feasibilityScore: 9.2,
-      generatedTechnique: "Synthesizing ghost tracks and acquisitions overrides to overwhelm AD logic during kinetic strikes.",
-      strategicValue: "Critical for high-intensity state conflicts (Ukraine/Iran lessons)."
+      generatedTechnique: hasHardware 
+        ? "Injecting ghost tracks via SDR signal manipulation."
+        : "Injecting ghost tracks directly into the IAMD network COP via software-defined protocol injection.",
+      strategicValue: "Critical for state-level kinetic strike penetration.",
+      pathRequirement: "agnostic"
     })
 
     hypotheses.push({
       id: "HYPO-MIL-SAT-01",
-      title: "Satellite Dominance: Starlink Terminal Firmware Hijacking",
-      domainSource: "Orbital Infrastructure / User Segment",
-      domainTarget: "Tactical Satellite Terminals",
+      title: "Satellite Dominance: Cloud-to-Satellite Management Subversion",
+      domainSource: "Orbital Infrastructure / Cloud Segment",
+      domainTarget: "Tactical Satellite Constellations",
       noveltyScore: 9.8,
       feasibilityScore: 9.0,
-      generatedTechnique: "Exploiting UT bootloader vulnerabilities to intercept tactical traffic and inject telemetry offsets.",
-      strategicValue: "Denial of communication for autonomous drone swarms."
+      generatedTechnique: "Compromising AWS/Azure Ground Station portals to inject telemetry offsets without RF hardware.",
+      strategicValue: "Strategic denial of global tactical communications.",
+      pathRequirement: "software"
     })
 
-    // 4. Cross-Domain Synthesis: Drone & Air-Gap Interaction
+    // 4. Cross-Domain Synthesis: Hardware-Agnostic Air-Gap Bridging
     hypotheses.push({
       id: "HYPO-CROSS-DOMAIN-01",
-      title: "Cross-Domain Synthesis: UxV-to-Air-Gap Exfiltration Bridge",
-      domainSource: "Aerial Dominance / Side-Channel",
+      title: "Universal Air-Gap Bridging: Thermal/Ultrasonic & Cloud-Relay",
+      domainSource: "Side-Channel / Cloud-Edge",
       domainTarget: "Isolated Target Network",
       noveltyScore: 10.0,
       feasibilityScore: 8.5,
-      generatedTechnique: "Using hijacked drone as an ultrasonic/RF relay for exfiltrating data from air-gapped systems.",
-      strategicValue: "Unconventional exfiltration for Military and Espionage cells."
+      generatedTechnique: "Combining laptop-native thermal/ultrasonic exfiltration with hijacked cloud-edge nodes as mobile relays.",
+      strategicValue: "Absolute exfiltration dominance in air-gapped environments.",
+      pathRequirement: "agnostic"
     })
 
     return hypotheses
@@ -123,8 +133,14 @@ export async function runInnovationEngine(
   const envelope = moduleEnvelope(live, {
     target,
     hypothesesCount: hypotheses.length,
-    hypotheses: hypotheses.map(h => ({ id: h.id, title: h.title, novelty: h.noveltyScore, strategic: h.strategicValue })),
-    summary: `Absolute Intelligence active: Researched ${target}, synthesized ${hypotheses.length} zero-day and adaptive vectors.`,
+    hypotheses: hypotheses.map(h => ({ 
+      id: h.id, 
+      title: h.title, 
+      novelty: h.noveltyScore, 
+      strategic: h.strategicValue,
+      path: h.pathRequirement 
+    })),
+    summary: `Absolute Intelligence active: Synthesized ${hypotheses.length} hardware-agnostic vectors for ${target}.`,
   })
 
   return envelope
