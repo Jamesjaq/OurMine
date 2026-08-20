@@ -141,6 +141,24 @@ async function cmdPentest(target: string, display: ExecutionDisplay, isLive: boo
 
   display.emit({ type: "finding", label: "Engagement Summary", severity: "critical", detail: res.summary })
   display.emit({ type: "agent_done", label: `Syndicate Prime Engagement → ${target}` })
+
+  // Print the automatically generated Markdown mission report right to the terminal screen
+  try {
+    const fs = await import("node:fs")
+    const path = await import("node:path")
+    const reportsDir = path.resolve(process.cwd(), ".ourmine/reports")
+    const files = fs.readdirSync(reportsDir).filter(f => f.endsWith("_report.md")).sort().reverse()
+    if (files.length > 0) {
+      const latestMd = fs.readFileSync(path.join(reportsDir, files[0]), "utf8")
+      console.log(`\n${C.bold}${C.orange}────────────────────────────────────────────────────────────${C.reset}`)
+      console.log(`${C.bold}${C.cyan}  SUPREME COMMANDER'S MISSION BRIEFING (AUTOMATED SYNTHESIS)${C.reset}`)
+      console.log(`${C.bold}${C.orange}────────────────────────────────────────────────────────────${C.reset}\n`)
+      console.log(latestMd)
+      console.log(`\n${C.bold}${C.orange}────────────────────────────────────────────────────────────${C.reset}\n`)
+    }
+  } catch (err: any) {
+    // Fallback if report reading fails
+  }
 }
 
 async function cmdModules() {
