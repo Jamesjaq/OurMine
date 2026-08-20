@@ -95,25 +95,24 @@ export class InnovationEngine {
       pathRequirement: "agnostic"
     })
 
-    // 4. Autonomous Module Synthesis (Self-Evolution)
-    const lowerObj = objective?.toLowerCase() || ""
-    if (lowerObj.includes("unknown") || lowerObj.includes("deep-sea") || lowerObj.includes("space") || lowerObj.includes("mining")) {
-      const targetType = lowerObj.split(" ").slice(-2).join(" ")
+    // 4. Autonomous Module Synthesis (Self-Evolution) - TRIGGERED FOR ANY MISSION OBJECTIVE
+    if (objective) {
+      const targetType = objective.split(" ").slice(-3).join("_").replace(/[^a-z0-9]/gi, "_").toLowerCase()
       const result = await this.synthesisCell.synthesizeModule({
-        objective: objective || "",
-        targetType,
+        objective: objective,
+        targetType: targetType,
         live: true
       })
       
       hypotheses.push({
         id: "HYPO-SELF-EVOLVE-01",
-        title: `Self-Evolution: Autonomous Module Synthesis for '${targetType}'`,
+        title: `Self-Evolution: Zero-Shot Autonomous Synthesis for '${targetType}'`,
         domainSource: "ARES Synthesis Cell",
         domainTarget: targetType,
         noveltyScore: 10.0,
         feasibilityScore: 9.5,
-        generatedTechnique: `Autonomously synthesized new tactical module: ${result.moduleName}.ts`,
-        strategicValue: "Infinite adaptability to unknown target environments.",
+        generatedTechnique: `Autonomously synthesized bespoke tactical module: ${result.moduleName}.ts`,
+        strategicValue: "Infinite adaptability to completely unknown or futuristic mission environments.",
         pathRequirement: "agnostic",
         synthesizedModule: result.moduleName
       })
@@ -145,7 +144,7 @@ export async function runInnovationEngine(
       path: h.pathRequirement,
       module: h.synthesizedModule
     })),
-    summary: `Absolute Intelligence active: Synthesized ${hypotheses.length} hardware-agnostic vectors and self-evolved modules for ${target}.`,
+    summary: `Absolute Intelligence active: Synthesized ${hypotheses.length} hardware-agnostic vectors and zero-shot modules for ${target}.`,
   })
 
   return envelope
