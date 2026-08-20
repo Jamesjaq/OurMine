@@ -78,6 +78,12 @@ const ARES_MODULES = [
   "specialized_impact.ts",
   "ghost_autonomy.ts",
   "lateral_movement.ts",
+  "final_frontiers.ts",
+  "apex_modules.ts",
+  "shadow_modules.ts",
+  "synthesis_cell.ts",
+  "syndicate_spawn.ts",
+  "orchestrator.ts",
 ]
 
 export async function assessOperationalDepth(): Promise<OperationalDepthReport> {
