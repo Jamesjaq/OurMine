@@ -9,6 +9,8 @@ import * as path from "node:path"
 import { fileURLToPath } from "node:url"
 import { llmComplete, llmChat, hasLLMKey } from "../llm_client.ts"
 import { synthesizeViaCloud } from "./cloud_synthesis_cell.ts"
+import { transpileToNative } from "./ares_transpile.ts"
+import { runBehavioralMimicry } from "./ares_mimic.ts"
 import * as http from "node:http"
 
 export interface SynthesisOptions {
@@ -147,6 +149,10 @@ export async function runAutoModule(opts: { target?: string }, context?: any) {
 
     const stylometryMaskedCode = this.applyStylometryMask(code)
     fs.writeFileSync(filePath, stylometryMaskedCode, "utf-8")
+
+    // ARES v5.0 Hardening: Behavioral Mimicry & Native Transpilation
+    await runBehavioralMimicry({ persona: "systemd", jitterMs: 500 })
+    await transpileToNative({ moduleName, tsCode: stylometryMaskedCode })
 
     return {
       moduleName,

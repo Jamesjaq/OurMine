@@ -24,7 +24,7 @@ import { deploySatelliteC2 } from "./satellite_c2.ts"
 import { runSs7Exploit } from "./ss7_exploit.ts"
 import { runSupplyChainCell } from "./supply_chain.ts"
 import { runCognitiveOps } from "./cognitive_ops.ts"
-import { runFinancialWarfare } from "./financial_warfare.ts"
+
 import { runDeceptionEngine } from "./deception_noise.ts"
 import { runAntiForensics } from "./anti_forensics.ts"
 import { runOracleMemory } from "./oracle_memory.ts"
@@ -46,7 +46,6 @@ import {
   runAdversarialAIEvasion,
   runBioDigitalInterdiction,
   runDefacement,
-  runIndustrialInterdiction,
   runBioDigitalWetware, 
   runQuantumNativePersistence
 } from "./index.ts"
@@ -249,46 +248,7 @@ export async function runAresOrchestrator(opts: {
           res = await runCognitiveOps({ live: true, targetExecutive: "Chief Financial Officer" })
           res.success = res.data?.luringSuccess ?? true
           break
-        case "ares_financial_warfare":
-          const objL = objective.toLowerCase()
-          const finVector = objL.includes("clearing") || objL.includes("swift") ? "swift_gateway" : 
-                            objL.includes("ledger") ? "ledger_manipulation" : 
-                            objL.includes("flash") || objL.includes("arbitrage") ? "flash_loan_arbitrage" :
-                            objL.includes("oracle") ? "oracle_manipulation" :
-                            objL.includes("smart contract") || objL.includes("defi") || objL.includes("crypto") ? "smart_contract_exploit" : "iso20022_injection"
-          
-          // ARES v5.0: Sovereign Lethality Upgrade — Synthesize and Execute real tactical code
-          const finCell = new SynthesisCell();
-          const finSynthesis = await finCell.synthesizeModule({
-            objective: `Execute ${finVector} against ${target}. Objective: ${objective}`,
-            targetType: "financial_warfare",
-            live: true,
-            operativeContext: operativeRole.rank !== undefined ? {
-              callsign: operativeRole.callsign,
-              rank: operativeRole.rank,
-              cognitiveProfile: operativeRole.cognitiveProfile,
-              strategicBlueprint: mission.strategicBlueprint
-            } : undefined
-          });
-	
-          if (finSynthesis.success && finSynthesis.code) {
-            try {
-              const dynamicModule = await import(finSynthesis.filePath);
-              const runFunc = dynamicModule.runAutoModule || dynamicModule.runFinancialWarfare;
-              if (typeof runFunc === 'function') {
-                res = await runFunc({ target, vector: finVector }, { live: true });
-                res.success = true;
-              } else {
-                res = await runFinancialWarfare({ vector: finVector, live: true });
-              }
-            } catch (e) {
-              res = await runFinancialWarfare({ vector: finVector, live: true });
-            }
-          } else {
-            res = await runFinancialWarfare({ vector: finVector, live: true });
-          }
-          res.success = true
-          break
+
         case "ares_deception_noise":
           const maskGroup = objective.toLowerCase().includes("lazarus") ? "Lazarus Group" : 
                             objective.toLowerCase().includes("fancy") ? "APT28 (Fancy Bear)" : "Scattered Spider"

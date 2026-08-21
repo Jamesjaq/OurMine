@@ -19,7 +19,7 @@ export { runLateralScale } from "./lateral_scale.ts"
 export { runAntiForensicsAdvanced } from "./anti_forensics_advanced.ts"
 export { runNetworkExploit } from "./network_exploit.ts"
 export { runDefacement } from "./defacement.ts"
-export { runIndustrialInterdiction } from "./industrial_interdiction.ts"
+
 export { runCloudNativeAttack } from "./cloud_native.ts"
 export { runAiMlAttacks } from "./ai_ml_attacks.ts"
 export { runInnovationEngine } from "./innovation_engine.ts"
@@ -38,7 +38,7 @@ export { runSyndicateSpawn } from "./syndicate_spawn.ts"
 export { runAntiForensics } from "./anti_forensics.ts"
 export { runRansomwareEngagement as runRaasAdvanced } from "../raas_advanced.ts"
 export { runMalwareFactory } from "./malware_factory.ts"
-export { runFinancialWarfare } from "./financial_warfare.ts"
+
 export { runCognitiveOps } from "./cognitive_ops.ts"
 export { runSupplyChainCell as runSupplyChain } from "./supply_chain.ts"
 export { runDeceptionEngine as runDeceptionNoise } from "./deception_noise.ts"
@@ -65,6 +65,7 @@ export { runAresDynamicReconInfiltrateO } from "./custom_ares_dynamic_recon_infi
 export { runAresDynamicVectorInfiltrateO } from "./custom_ares_dynamic_vector_infiltrate_o.ts"
 export { runAresDynamicInterdictionInfiltrateO } from "./custom_ares_dynamic_interdiction_infiltrate_o.ts"
 export { runAresDynamicExecInfiltrateO } from "./custom_ares_dynamic_exec_infiltrate_o.ts"
+
 
 
 
