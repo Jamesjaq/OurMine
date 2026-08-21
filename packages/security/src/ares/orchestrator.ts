@@ -216,7 +216,7 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_self_healing":
           res = await runSelfHealing({ agentIds: ["syndicate-node-01"] }, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_self_improvement":
           res = await runSelfImprovement({}, { live: true })
@@ -224,7 +224,7 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_lateral_movement":
           res = await runLateralMovement({ target }, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_specialized_impact":
           const objLower = objective.toLowerCase()
@@ -253,18 +253,18 @@ export async function runAresOrchestrator(opts: {
           const maskGroup = objective.toLowerCase().includes("lazarus") ? "Lazarus Group" : 
                             objective.toLowerCase().includes("fancy") ? "APT28 (Fancy Bear)" : "Scattered Spider"
           res = await runDeceptionEngine({ attributedGroup: maskGroup, live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_anti_forensics":
           res = await runAntiForensics({ action: "artifact_clean", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_raas_advanced":
           const manifest = path.join(process.cwd(), ".ourmine", "artifacts", `exfil_manifest_${Date.now()}.json`)
           fs.mkdirSync(path.dirname(manifest), { recursive: true })
           fs.writeFileSync(manifest, JSON.stringify({ target, timestamp: new Date().toISOString(), files: ["lab_vm.vmdk"] }))
           res = await runRaasAdvanced(target, manifest, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_malware_factory":
           const objFactory = objective.toLowerCase()
@@ -281,27 +281,27 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_zero_day_fuzzer":
           res = await runZeroDayFuzzer({ target }, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_fileless_implant":
           res = await buildFilelessImplant({ target }, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_firmware_implant":
           res = await deployFirmwareImplant({ target }, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_hypervisor_rootkit":
           res = await deployHypervisorRootkit({ target }, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_airgap_bridge":
           res = await runAirgapBridge({ target }, { live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_c2_resilience":
           res = await runC2Resilience({ live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_multi_platform_arsenal":
           const plat = objective.toLowerCase().includes("mac") ? "macos" :
@@ -309,95 +309,95 @@ export async function runAresOrchestrator(opts: {
                        objective.toLowerCase().includes("atm") ? "atm" :
                        objective.toLowerCase().includes("win") ? "windows" : "linux"
           res = await runMultiPlatformArsenal({ platform: plat as any, target, live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_kali_bridge":
           res = await runKaliBridge({ tool: "nmap", target, live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_infinite_innovation":
           res = await runInfiniteInnovation({ target, missionHorizon: "multi_year_dormant", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_strategic_gap_analysis":
           res = await runStrategicGapAnalysis({ live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_quantum_dominance":
           res = await runQuantumDominance({ target, live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_sub_hardware_persistence":
           res = await runSubHardwarePersistence({ target, vector: "ring_minus_two", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_cognitive_warfare_advanced":
           res = await runCognitiveWarfareAdvanced({ targetExecutive: "Chief Executive Officer", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_defi_predator":
           res = await runDeFiPredator({ targetBridge: "Wormhole-Bridge", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_defacement":
           res = await runDefacement({ target, objective }, { live: true })
-          res.success = res.success !== false
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_industrial_interdiction":
           res = await runIndustrialInterdiction({ target, live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_adversarial_ai_evasion":
           res = await runAdversarialAIEvasion({ targetModel: "CrowdStrike-XDR", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_bio_digital_interdiction":
           res = await runBioDigitalInterdiction({ targetNode: "Neural-Node-Alpha", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_bio_digital_wetware":
           res = await runBioDigitalWetware({ targetSubject: "NEURAL_NODE_ALPHA", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_quantum_native_persistence":
           res = await runQuantumNativePersistence({ live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_decentralized_hive_mind":
           res = await runDecentralizedHiveMind({ live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_program_analysis":
           res = await runProgramAnalysis({ targetBinary: "target_service", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_ring_minus_three":
           res = await runRingMinusThreePersistence({ live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_swarm_learning":
           res = await runSwarmLearning({ nodeId: "SYNDICATE_NODE_01", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_supply_chain_poison":
           res = await runSupplyChainPoisoning({ targetCatalog: "npm_registry", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_ads_delivery":
           res = await runAdsBasedDelivery({ targetRegion: "GLOBAL_NORTH", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_ide_poison":
           res = await runIdeExtensionPoisoning({ targetExtension: "vscode-nx-console", live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_cloud_api_c2":
           res = await runCloudApiC2({ live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
         case "ares_ring_minus_four":
           res = await runRingMinusFourPersistence({ live: true })
-          res.success = true
+          res.success = res?.ok ?? res?.success ?? false
           break
 
         default:
@@ -436,13 +436,13 @@ export async function runAresOrchestrator(opts: {
                                 dynamicModule[`run${moduleName.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}`];
                 if (typeof runFunc === 'function') {
                   res = await runFunc({ target }, { live: true });
-                  res.success = true;
+                  res.success = res?.ok ?? res?.success ?? false;
                   res.summary = `Autonomously synthesized, validated, and EXECUTED real tactical module: ${moduleName}.ts`;
                 } else {
-                  res = { success: true, summary: `Synthesized and registered ${moduleName}.ts (Manual execution required)` };
+                  res = { success: false, summary: `Synthesized and registered ${moduleName}.ts but no executable export found` };
                 }
               } catch (importErr) {
-                res = { success: true, summary: `Synthesized and registered ${moduleName}.ts (Dynamic execution failed: ${importErr})` };
+                res = { success: false, summary: `Synthesized and registered ${moduleName}.ts (Dynamic execution failed: ${importErr})` };
               }
             } else {
               res = moduleEnvelope(true, { error: "Synthesis validation failed" }, [realFinding("ERR-01", "Synthesis Failure", "medium", "Synthesized module failed validation.", "T1059", "Refine synthesis prompts.")]);
@@ -524,14 +524,11 @@ export async function runAresOrchestrator(opts: {
         department: u.department, 
         callSign: u.callsign, 
         tool: u.assignedTool, 
-        status: "Success (11/10)", 
+        status: u.status ?? "Executed", 
         rank: u.rank,
-        pli: u.metrics?.pli ?? 95
+        pli: u.metrics?.pli ?? 90
       })),
-      findings: findings.length > 0 ? findings.map(f => ({ id: f.id, severity: f.severity, title: f.title, description: f.description })) : [
-        { id: "fin-01", severity: "Critical", title: "Financial Gateway Vulnerability", description: "Identified misconfigured message signing in Core Financial Gateway permitting fraudulent ISO 20022 transaction injection." },
-        { id: "af-01", severity: "Medium", title: "Anti-Forensic Trace Sanitization", description: "Executed artifact_clean to hinder forensic reconstruction of operative activity." }
-      ]
+      findings: findings.map(f => ({ id: f.id, severity: f.severity, title: f.title, description: f.description }))
     }, { live: opts.live ?? true });
     if (display) {
       display.emit({ type: "subagent_msg", label: "REPORT WING", detail: `[SUCCESS] Automatically synthesized Supreme Commander Mission Report PDF.` });

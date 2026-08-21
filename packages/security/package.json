@@ -5,8 +5,10 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "dependencies": {
-    "@ourmine/core": "1.0.0"
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "*",
+    "typescript": "*"
   },
   "scripts": {
     "build": "tsc"
