@@ -61,8 +61,18 @@ export { generateMissionReportPdf } from "./ares_report_generator.ts"
 export { runAresOrchestrator } from "./orchestrator.ts"
 export { runOracleMemory } from "./oracle_memory.ts"
 export { runGhostDaemon } from "./ghost_daemon.ts"
+export { runAresDynamicReconInfiltrateO } from "./custom_ares_dynamic_recon_infiltrate_o.ts"
+export { runAresDynamicVectorInfiltrateO } from "./custom_ares_dynamic_vector_infiltrate_o.ts"
+export { runAresDynamicInterdictionInfiltrateO } from "./custom_ares_dynamic_interdiction_infiltrate_o.ts"
+export { runAresDynamicExecInfiltrateO } from "./custom_ares_dynamic_exec_infiltrate_o.ts"
+
+
 
 export const ARES_MODULE_NAMES = [
+  "ares_custom_ares_dynamic_exec_infiltrate_o",
+  "ares_custom_ares_dynamic_interdiction_infiltrate_o",
+  "ares_custom_ares_dynamic_vector_infiltrate_o",
+  "ares_custom_ares_dynamic_recon_infiltrate_o",
   "ares_zero_day_fuzzer",
   "ares_fileless_implant",
   "ares_firmware_implant",

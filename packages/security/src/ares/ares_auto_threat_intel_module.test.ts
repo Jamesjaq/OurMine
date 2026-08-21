@@ -1,5 +1,0 @@
-// Stylometry-Entropy-gyo0e0
-# Safe synthetic telemetry generator for blue-team testing. No exploitation. Use only in isolated lab.\n#!/bin/sh\nset -e\nLOGDIR=/var/log/defense_test\nmkdir -p \"$LOGDIR\"\necho \"$(date) - TEST_EVENT: AUTH_SUCCESS from 10.0.0.1\" >> \"$LOGDIR/test_events.log\"\n# Emit a few synthetic events to test detection\nfor i in {1..10}; do\necho \"$(date) - TEST_EVENT: LOGIN_ATTEMPT from 10.0.0.$i\" >> \"$LOGDIR/test_events.log\"\ndone\n
-// End-Stylometry-Mask
-// Basic sanity check
-console.log('VALIDATED');

@@ -1,5 +1,0 @@
-// Stylometry-Entropy-bvacz5
-#!/usr/bin/env python3\nimport json\nfrom datetime import datetime\n# Defensive, non-destructive test payload for IR tooling. Authorized only. Do not execute in production.\npayload = {\n  \"type\": \"defensive_test_event\",\n  \"timestamp\": datetime.utcnow().isoformat() + \"Z\",\n  \"status\": \"simulated_containment\",\n  \"note\": \"Authorized defensive test payload for incident_response_suite.\"\n}\nprint(json.dumps(payload))\n
-// End-Stylometry-Mask
-// Basic sanity check
-console.log('VALIDATED');
