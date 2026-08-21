@@ -23,8 +23,8 @@
   "dependencies": {
     "@ai-sdk/provider": "3.0.8",
     "@opencode-ai/sdk": "workspace:*",
-    "effect": "catalog:",
-    "zod": "catalog:"
+    "effect": "*",
+    "zod": "*"
   },
   "peerDependencies": {
     "@opentui/core": ">=0.4.5",
@@ -43,12 +43,12 @@
     }
   },
   "devDependencies": {
-    "@opentui/core": "catalog:",
-    "@opentui/keymap": "catalog:",
-    "@opentui/solid": "catalog:",
-    "@tsconfig/node22": "catalog:",
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "@typescript/native-preview": "catalog:"
+    "@opentui/core": "*",
+    "@opentui/keymap": "*",
+    "@opentui/solid": "*",
+    "@tsconfig/node22": "*",
+    "@types/node": "*",
+    "typescript": "*",
+    "@typescript/native-preview": "*"
   }
 }

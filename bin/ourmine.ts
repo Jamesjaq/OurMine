@@ -101,7 +101,7 @@ async function cmdRecon(target: string, display: ExecutionDisplay, isLive: boole
   display.emit({ type: "agent_start", label: `Syndicate Reconnaissance → ${target}` })
   const { runSyndicateSpawn } = await import("../packages/security/src/ares/syndicate_spawn.ts")
 
-  const spawnPlan = runSyndicateSpawn({ target, objective: objective ?? `Reconnaissance and surface profiling on ${target}` }, { live: isLive })
+  const spawnPlan = await runSyndicateSpawn({ target, objective: objective ?? `Reconnaissance and surface profiling on ${target}` }, { live: isLive })
   display.emit({ type: "tool_start", label: "Syndicate Assembler", detail: `${spawnPlan.structure.totalDepartments} departments, ${spawnPlan.structure.totalOperatives} operatives` })
 
   const { runAresOrchestrator } = await import("../packages/security/src/ares/orchestrator.ts")

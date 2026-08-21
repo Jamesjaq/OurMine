@@ -52,22 +52,22 @@
     "@opencode-ai/plugin": "workspace:*",
     "@opencode-ai/sdk": "workspace:*",
     "@opencode-ai/ui": "workspace:*",
-    "@opentui/core": "catalog:",
-    "@opentui/keymap": "catalog:",
-    "@opentui/solid": "catalog:",
+    "@opentui/core": "*",
+    "@opentui/keymap": "*",
+    "@opentui/solid": "*",
     "clipboardy": "4.0.0",
-    "diff": "catalog:",
-    "effect": "catalog:",
-    "fuzzysort": "catalog:",
+    "diff": "*",
+    "effect": "*",
+    "fuzzysort": "*",
     "open": "10.1.2",
-    "opentui-spinner": "catalog:",
-    "remeda": "catalog:",
+    "opentui-spinner": "*",
+    "remeda": "*",
     "strip-ansi": "7.1.2",
-    "solid-js": "catalog:"
+    "solid-js": "*"
   },
   "devDependencies": {
-    "@tsconfig/bun": "catalog:",
-    "@types/bun": "catalog:",
-    "@typescript/native-preview": "catalog:"
+    "@tsconfig/bun": "*",
+    "@types/bun": "*",
+    "@typescript/native-preview": "*"
   }
 }

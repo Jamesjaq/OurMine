@@ -15,17 +15,17 @@
   },
   "dependencies": {
     "@aws-sdk/client-firehose": "3.933.0",
-    "@effect/platform-node": "catalog:",
+    "@effect/platform-node": "*",
     "@opencode-ai/stats-core": "workspace:*",
-    "effect": "catalog:",
-    "sst": "catalog:"
+    "effect": "*",
+    "sst": "*"
   },
   "devDependencies": {
-    "@tsconfig/node22": "catalog:",
-    "@types/bun": "catalog:",
-    "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "typescript": "catalog:"
+    "@tsconfig/node22": "*",
+    "@types/bun": "*",
+    "@types/node": "*",
+    "@typescript/native-preview": "*",
+    "typescript": "*"
   },
   "engines": {
     "node": ">=22"

@@ -12,6 +12,7 @@ export interface ReportConfig {
   target: string
   objective: string
   chainOfCommand?: string
+  strategicBlueprint?: string
   operatives: Array<{ department: string; callSign: string; tool: string; status: string; rank?: number; pli?: number }>
   findings: Array<{ id: string; severity: string; title: string; description: string }>
   outputDir?: string
@@ -40,12 +41,17 @@ export async function generateMissionReportPdf(config: ReportConfig, opts: { liv
   const mdContent = `# ARES v5.0 'Singularity Protocol' Mission Report: Target \`${config.target}\`
 
 **Mission ID:** \`${config.missionId}\`  
-**Target Objective:** ${config.objective}  
-**Execution Status:** **SUCCESS (11/10 Operational Depth, 100% Objective Fulfillment)**
+	**Target Objective:** ${config.objective}  
+	**Execution Status:** **SUCCESS (11/10 Operational Depth, 100% Objective Fulfillment)**
 
----
+	---
 
-## Executive Summary
+	## Strategic Blueprint
+	${config.strategicBlueprint || "No strategic blueprint recorded."}
+
+	---
+
+	## Executive Summary
 Under the direct command of the Supreme Commander, the ARES v5.0 **Singularity Protocol** executed a live operational infiltration against target **${config.target}**. 
 
 The system mobilized a **Sovereign Hierarchical Chain of Command**, delegating tactical authority to autonomous Theater Commanders and specialized Cells. This v5.0 upgrade achieved complete perimeter penetration, Ring -2 persistence, and air-gap traversal with **99.2% hierarchical efficiency** and a **98.7% Precision & Lethality Index (PLI)**.
@@ -105,13 +111,20 @@ The Syndicate is operational, hierarchical, and awaiting your next directive.
 
 #v(0.5em)
 
-#text(weight: "bold")[Mission ID:] #raw("${config.missionId}") \\
-#text(weight: "bold")[Target Objective:] #raw("${config.objective}") \\
-#text(weight: "bold")[Execution Status:] *SUCCESS (11/10 Operational Depth, 100% Objective Fulfillment)*
+	#text(weight: "bold")[Mission ID:] #raw("${config.missionId}") \\
+	#text(weight: "bold")[Target Objective:] #raw("${config.objective}") \\
+	#text(weight: "bold")[Execution Status:] *SUCCESS (11/10 Operational Depth, 100% Objective Fulfillment)*
 
-#v(1em)
+	#v(1em)
 
-== Executive Summary
+	== Strategic Blueprint
+	#block(fill: luma(250), inset: 8pt, radius: 2pt, width: 100%)[
+	  #text(style: "italic")[${config.strategicBlueprint || "No strategic blueprint recorded."}]
+	]
+
+	#v(1em)
+
+	== Executive Summary
 Under the direct command of the Supreme Commander, the ARES v5.0 *Singularity Protocol* executed a live operational infiltration against target #raw("${config.target}"). 
 
 The system mobilized a *Sovereign Hierarchical Chain of Command*, delegating tactical authority to autonomous Theater Commanders and specialized Cells. This v5.0 upgrade achieved complete perimeter penetration, Ring -2 persistence, and air-gap traversal with *99.2% hierarchical efficiency* and a *98.7% Precision & Lethality Index (PLI)*.

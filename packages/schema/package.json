@@ -12,11 +12,11 @@
     "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
-    "effect": "catalog:"
+    "effect": "*"
   },
   "devDependencies": {
-    "@tsconfig/bun": "catalog:",
-    "@types/bun": "catalog:",
-    "@typescript/native-preview": "catalog:"
+    "@tsconfig/bun": "*",
+    "@types/bun": "*",
+    "@typescript/native-preview": "*"
   }
 }

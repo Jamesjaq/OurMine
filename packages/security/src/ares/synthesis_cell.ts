@@ -14,6 +14,7 @@ export interface SynthesisOptions {
   objective: string
   targetType: string
   live?: boolean
+  strategicBlueprint?: string
   operativeContext?: {
     callsign: string
     rank: number
@@ -23,6 +24,7 @@ export interface SynthesisOptions {
       lethalityIndex: number
       specialization: string
     }
+    strategicBlueprint?: string
   }
 }
 
@@ -99,10 +101,12 @@ Lethality Index: ${ctx.cognitiveProfile.lethalityIndex}/100
 Specialization: ${ctx.cognitiveProfile.specialization}` : ""
 
     try {
+      const blueprint = opts.strategicBlueprint || opts.operativeContext?.strategicBlueprint || ""
       const localPrompt = `[SYNDICATE_LOCAL_INFERENCE_v5.0]
 Architecting ARES v5.0 module: ${moduleName}
 Objective: ${opts.objective}
 Target: ${opts.targetType}${cognitiveContext}
+Strategic Blueprint: ${blueprint}
 Output ONLY the raw TypeScript code. No markdown.`
 
       const localRes = await this.callLocalInference(localPrompt)
@@ -117,12 +121,14 @@ Output ONLY the raw TypeScript code. No markdown.`
 
     if (!localLlmSuccess && hasLLMKey()) {
       try {
+        const blueprint = opts.strategicBlueprint || opts.operativeContext?.strategicBlueprint || ""
         const prompt = `[PROTOCOL: SUPREME_COMMANDER_DIRECTIVE]
 You are the ARES v5.0 Autonomous Weaponry Architect, reporting directly to the Supreme Commander. 
 Write a complete, working, and ruthless TypeScript module for an ARES security module named '${moduleName}'.
 
 Mission Objective: ${opts.objective}
 Target Type: ${opts.targetType}${cognitiveContext}
+Strategic Blueprint: ${blueprint}
 
 Requirements:
 1. Export an async function 'runAutoModule(opts: { live?: boolean })'.

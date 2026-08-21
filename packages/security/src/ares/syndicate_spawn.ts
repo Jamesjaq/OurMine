@@ -6,6 +6,7 @@
  */
 import { moduleEnvelope, summarizeForLlm } from "../module_helpers.ts"
 import * as crypto from "node:crypto"
+import { llmComplete } from "../llm_client.ts"
 
 export interface CognitiveProfile {
   strategicForesight: number
@@ -47,6 +48,7 @@ export interface SyndicateMissionPlan {
   executionGraph: string[]
   chainOfCommand: string // Visual tree representation
   efficiencyGain: string
+  strategicBlueprint: string // High-density instructions for autonomous execution
 }
 
 export class SyndicateSpawner {
@@ -55,11 +57,59 @@ export class SyndicateSpawner {
    * The model now possesses full sovereignty to name departments, assign roles, 
    * and plan mission execution graphs without hardcoded constraints.
    */
-  public assembleForMission(target: string, objective: string, modelIntelligence?: any): SyndicateMissionPlan {
+  public async assembleForMission(target: string, objective: string, modelIntelligence?: any): Promise<SyndicateMissionPlan> {
+    const missionId = `SINGULARITY_${crypto.randomBytes(4).toString("hex").toUpperCase()}`
+    
+    // 1. Invoke Sovereign Strategic Engine for Hierarchy Synthesis
+    const prompt = `
+      Objective: "${objective}"
+      Target: "${target}"
+      
+      You are the ARES Sovereign Strategic Engine. Synthesize a unique, mission-specific hierarchical chain of command.
+      Assign intelligent, lethal names to Theaters and Cells. 
+      The hierarchy must be efficient, token-zero (autonomous after plan), and lethal.
+      
+      Respond ONLY with JSON matching this structure:
+      {
+        "theaters": [
+          {
+            "department": "Name of Theater (e.g., Ledger Predation Theater)",
+            "title": "Title of Theater Commander (e.g., Arch-Strategist of Liquidity)",
+            "prefix": "3-4 letter prefix",
+            "tool": "ares_tool_name",
+            "focus": "Strategic focus",
+            "cells": [
+              {
+                "title": "Cell Lead Title",
+                "prefix": "3-4 letter prefix",
+                "tool": "ares_tool_name",
+                "focus": "Tactical focus"
+              }
+            ]
+          }
+        ],
+        "strategicBlueprint": "High-density strategic instructions for the entire chain to follow autonomously."
+      }
+      
+      Available Tools: ares_innovation_engine, ares_financial_warfare, ares_kinetic_cyber_synergy, ares_defacement, ares_hypervisor_rootkit, ares_airgap_bridge, ares_adversarial_ai_evasion.
+    `
+
+    let synthesis
+    try {
+      const response = await llmComplete(prompt, { temperature: 0.2 })
+      synthesis = JSON.parse(response.content.replace(/```json|```/g, ""))
+    } catch (e) {
+      console.error("Hierarchy synthesis failed, falling back to heuristic assembly.")
+      synthesis = {
+        theaters: this.deriveTheaters(objective),
+        strategicBlueprint: "Execute standard ARES Singularity Protocol with maximum lethality."
+      }
+    }
+
     const operatives: OperativeRole[] = []
     const workflow: string[] = []
 
-    // 1. Supreme Strategic Command (Rank 0)
+    // 2. Supreme Strategic Command (Rank 0)
     const supremeCallsign = `SUPREME_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
     const supreme: OperativeRole = {
       department: "Supreme Command",
@@ -76,9 +126,8 @@ export class SyndicateSpawner {
     operatives.push(supreme)
     workflow.push("ares_shadow_organization")
 
-    // 2. Theater Command Mobilization (Rank 1)
-    const theaters = this.deriveTheaters(objective, modelIntelligence)
-    for (const t of theaters) {
+    // 3. Theater & Cell Mobilization
+    for (const t of synthesis.theaters) {
       const theaterCallsign = `${t.prefix}_${crypto.randomBytes(1).toString("hex").toUpperCase()}`
       const theater: OperativeRole = {
         department: t.department,
@@ -97,8 +146,7 @@ export class SyndicateSpawner {
       supreme.subordinates!.push(theaterCallsign)
       workflow.push(t.tool)
 
-      // 3. Cell-Level Delegation (Rank 2)
-      const cells = this.deriveCells(t.department, objective)
+      const cells = t.cells || this.deriveCells(t.department, objective)
       for (const c of cells) {
         const cellCallsign = `${c.prefix}_${crypto.randomBytes(1).toString("hex").toUpperCase()}`
         const cell: OperativeRole = {
@@ -120,7 +168,7 @@ export class SyndicateSpawner {
       }
     }
 
-    // Always include Anti-Forensics at the end (Rank 1 reporting to Supreme)
+    // 4. Always include Anti-Forensics at the end
     const shadowCallsign = `SHADOW_${crypto.randomBytes(1).toString("hex").toUpperCase()}`
     operatives.push({
       department: "Anti-Forensics Taskforce",
@@ -138,7 +186,7 @@ export class SyndicateSpawner {
     workflow.push("ares_anti_forensics")
 
     return {
-      missionId: `SINGULARITY_${crypto.randomBytes(4).toString("hex").toUpperCase()}`,
+      missionId,
       target,
       objective,
       syndicateStructure: {
@@ -149,7 +197,8 @@ export class SyndicateSpawner {
       operatives,
       executionGraph: workflow,
       chainOfCommand: this.generateChainOfCommandMap(operatives),
-      efficiencyGain: "99.2% (Hierarchical Sovereign Architecture)"
+      efficiencyGain: "99.2% (Hierarchical Sovereign Architecture)",
+      strategicBlueprint: synthesis.strategicBlueprint
     }
   }
 
@@ -169,6 +218,9 @@ export class SyndicateSpawner {
     if (has(["military", "defense", "war"])) {
       theaters.push({ prefix: "MIL", department: "Kinetic-Cyber Synergy Theater", title: "Theater Commander of Cyber-Kinetic Ops", tool: "ares_kinetic_cyber_synergy", focus: "Cyber-kinetic convergence and IAMD subversion" })
     }
+    if (has(["deface", "visual", "psyops"])) {
+      theaters.push({ prefix: "PSY", department: "Psychological Warfare Theater", title: "Arch-Strategist of Visual Dominance", tool: "ares_defacement", focus: "Target defacement and psychological impact" })
+    }
     return theaters
   }
 
@@ -180,6 +232,9 @@ export class SyndicateSpawner {
     }
     if (department.includes("Innovation")) {
       cells.push({ prefix: "ZERO", title: "Zero-Day Synthesis Lead", tool: "ares_innovation_engine", focus: "Bespoke vector generation" })
+    }
+    if (department.includes("Psychological")) {
+      cells.push({ prefix: "SIGIL", title: "Visual Dominance Lead", tool: "ares_defacement", focus: "Sigil injection and visual verification" })
     }
     return cells
   }
@@ -211,7 +266,7 @@ export async function runSyndicateSpawn(
   const objective = req.objective ?? "Perform autonomous penetration and covert persistence"
 
   const spawner = new SyndicateSpawner()
-  const plan = spawner.assembleForMission(target, objective)
+  const plan = await spawner.assembleForMission(target, objective)
 
   const envelope = moduleEnvelope(live, {
     syndicateAssembled: true,

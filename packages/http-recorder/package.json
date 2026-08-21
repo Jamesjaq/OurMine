@@ -43,12 +43,12 @@
     "LICENSE"
   ],
   "devDependencies": {
-    "@tsconfig/node22": "catalog:",
-    "@types/bun": "catalog:",
-    "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "effect": "catalog:",
-    "typescript": "catalog:"
+    "@tsconfig/node22": "*",
+    "@types/bun": "*",
+    "@types/node": "*",
+    "@typescript/native-preview": "*",
+    "effect": "*",
+    "typescript": "*"
   },
   "dependencies": {
     "@effect/platform-node": "4.0.0-beta.83",

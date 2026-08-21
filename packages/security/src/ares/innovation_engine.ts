@@ -60,7 +60,7 @@ export class InnovationEngine {
     return { ok: false, confidence: 0 }
   }
 
-  public async probeAndSynthesize(target: string, objective?: string): Promise<InnovationHypothesis[]> {
+  public async probeAndSynthesize(target: string, objective?: string, blueprint?: string): Promise<InnovationHypothesis[]> {
     const hypotheses: InnovationHypothesis[] = []
     const hasHardware = isToolAvailable("hackrf_transfer")
     
@@ -128,7 +128,8 @@ export class InnovationEngine {
       const result = await this.synthesisCell.synthesizeModule({
         objective: objective,
         targetType: targetType,
-        live: true
+        live: true,
+        strategicBlueprint: blueprint
       })
 
       // v5.0 Battle-Hardening
@@ -163,15 +164,16 @@ export class InnovationEngine {
 }
 
 export async function runInnovationEngine(
-  req: { target?: string; objective?: string },
+  req: { target?: string; objective?: string; strategicBlueprint?: string },
   opts: { live?: boolean } = {},
 ) {
   const live = opts.live === true
   const target = req.target ?? "127.0.0.1"
   const objective = req.objective
+  const blueprint = req.strategicBlueprint
   
   const engine = new InnovationEngine()
-  const hypotheses = await engine.probeAndSynthesize(target, objective)
+  const hypotheses = await engine.probeAndSynthesize(target, objective, blueprint)
 
   const envelope = moduleEnvelope(live, {
     target,

@@ -28,17 +28,17 @@
   "dependencies": {
     "@aws-sdk/client-athena": "3.933.0",
     "@planetscale/database": "1.19.0",
-    "drizzle-orm": "catalog:",
-    "effect": "catalog:",
-    "sst": "catalog:"
+    "drizzle-orm": "*",
+    "effect": "*",
+    "sst": "*"
   },
   "devDependencies": {
-    "@tsconfig/node22": "catalog:",
-    "@types/bun": "catalog:",
-    "@types/node": "catalog:",
-    "@typescript/native-preview": "catalog:",
-    "drizzle-kit": "catalog:",
-    "typescript": "catalog:"
+    "@tsconfig/node22": "*",
+    "@types/bun": "*",
+    "@types/node": "*",
+    "@typescript/native-preview": "*",
+    "drizzle-kit": "*",
+    "typescript": "*"
   },
   "engines": {
     "node": ">=22"

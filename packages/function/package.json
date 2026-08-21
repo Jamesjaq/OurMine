@@ -6,15 +6,15 @@
   "type": "module",
   "license": "MIT",
   "devDependencies": {
-    "@cloudflare/workers-types": "catalog:",
+    "@cloudflare/workers-types": "*",
     "@tsconfig/node22": "22.0.2",
-    "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "@types/node": "*",
+    "typescript": "*"
   },
   "dependencies": {
     "@octokit/auth-app": "8.0.1",
-    "@octokit/rest": "catalog:",
-    "hono": "catalog:",
+    "@octokit/rest": "*",
+    "hono": "*",
     "jose": "6.0.11"
   }
 }

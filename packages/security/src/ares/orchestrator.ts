@@ -44,7 +44,8 @@ import {
   runCognitiveWarfareAdvanced,
   runDeFiPredator,
   runAdversarialAIEvasion,
-  runBioDigitalInterdiction
+  runBioDigitalInterdiction,
+  runDefacement
 } from "./index.ts"
 import { runBioDigitalWetware, runQuantumNativePersistence } from "./final_frontiers.ts"
 import { generateMissionReportPdf } from "./ares_report_generator.ts"
@@ -129,7 +130,7 @@ export async function runAresOrchestrator(opts: {
   // Step 1: Self-organize into specialized syndicate cells.
   // v5.0 grants full sovereignty to the model to architect the mission.
   const spawner = new SyndicateSpawner()
-  const mission = spawner.assembleForMission(target, objective, opts.modelIntelligence)
+  const mission = await spawner.assembleForMission(target, objective, opts.modelIntelligence)
 
   if (display) {
     const commanderLabel = process.env.OURMINE_SUPREME_COMMANDER ? "SUPREME COMMANDER" : "SYNDICATE PRIME"
@@ -191,7 +192,7 @@ export async function runAresOrchestrator(opts: {
           res = { summary: `Syndicate Prime active: ${mission.operatives.length} operatives mobilized across ${mission.syndicateStructure.totalDepartments} departments.`, success: true }
           break
         case "ares_innovation_engine":
-          res = await runInnovationEngine({ focus: objective }, { live: true })
+          res = await runInnovationEngine({ objective, strategicBlueprint: mission.strategicBlueprint }, { live: true })
           res.success = (res.data?.hypothesesCount ?? 0) > 0
           break
         case "ares_self_healing":
@@ -328,6 +329,10 @@ export async function runAresOrchestrator(opts: {
           res = await runDeFiPredator({ targetBridge: "Wormhole-Bridge", live: true })
           res.success = true
           break
+        case "ares_defacement":
+          res = await runDefacement({ target, objective }, { live: true })
+          res.success = res.success !== false
+          break
         case "ares_adversarial_ai_evasion":
           res = await runAdversarialAIEvasion({ targetModel: "CrowdStrike-XDR", live: true })
           res.success = true
@@ -385,13 +390,14 @@ export async function runAresOrchestrator(opts: {
           // Autonomous Self-Coding: Synthesize, Validate, and Execute a real bespoke module on the fly!
           const cell = new SynthesisCell();
           const synthesis = await cell.synthesizeModule({
-            objective: `Develop a tactical vector for ${moduleName} targeting ${mission.target}`,
+            objective: `Develop a tactical vector for ${moduleName} targeting ${mission.target}. Strategic Blueprint: ${mission.strategicBlueprint}`,
             targetType: moduleName,
             live: true,
             operativeContext: operativeRole.rank !== undefined ? {
               callsign: operativeRole.callsign,
               rank: operativeRole.rank,
-              cognitiveProfile: operativeRole.cognitiveProfile
+              cognitiveProfile: operativeRole.cognitiveProfile,
+              strategicBlueprint: mission.strategicBlueprint
             } : undefined
           });
           
@@ -503,6 +509,7 @@ export async function runAresOrchestrator(opts: {
       target,
       objective,
       chainOfCommand: mission.chainOfCommand,
+      strategicBlueprint: mission.strategicBlueprint,
       operatives: mission.operatives.map(u => ({ 
         department: u.department, 
         callSign: u.callsign, 

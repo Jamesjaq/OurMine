@@ -16,13 +16,13 @@
     "./sqlite-core/effect": "./src/sqlite-core/effect/index.ts"
   },
   "devDependencies": {
-    "@effect/sql-sqlite-bun": "catalog:",
-    "@tsconfig/bun": "catalog:",
-    "@types/bun": "catalog:",
-    "@typescript/native-preview": "catalog:"
+    "@effect/sql-sqlite-bun": "*",
+    "@tsconfig/bun": "*",
+    "@types/bun": "*",
+    "@typescript/native-preview": "*"
   },
   "dependencies": {
-    "drizzle-orm": "catalog:",
-    "effect": "catalog:"
+    "drizzle-orm": "*",
+    "effect": "*"
   }
 }

@@ -18,6 +18,7 @@ export { installAdvancedPersistence } from "./persistence_advanced.ts"
 export { runLateralScale } from "./lateral_scale.ts"
 export { runAntiForensicsAdvanced } from "./anti_forensics_advanced.ts"
 export { runNetworkExploit } from "./network_exploit.ts"
+export { runDefacement } from "./defacement.ts"
 export { runCloudNativeAttack } from "./cloud_native.ts"
 export { runAiMlAttacks } from "./ai_ml_attacks.ts"
 export { runInnovationEngine } from "./innovation_engine.ts"
@@ -78,6 +79,7 @@ export const ARES_MODULE_NAMES = [
   "ares_lateral_scale",
   "ares_anti_forensics_advanced",
   "ares_network_exploit",
+  "ares_defacement",
   "ares_cloud_native",
   "ares_ai_ml_attacks",
   "ares_innovation_engine",

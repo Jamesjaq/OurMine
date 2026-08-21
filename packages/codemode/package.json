@@ -15,12 +15,12 @@
   },
   "dependencies": {
     "acorn": "8.15.0",
-    "effect": "catalog:",
-    "typescript": "catalog:"
+    "effect": "*",
+    "typescript": "*"
   },
   "devDependencies": {
-    "@tsconfig/bun": "catalog:",
-    "@types/bun": "catalog:",
-    "@typescript/native-preview": "catalog:"
+    "@tsconfig/bun": "*",
+    "@types/bun": "*",
+    "@typescript/native-preview": "*"
   }
 }
