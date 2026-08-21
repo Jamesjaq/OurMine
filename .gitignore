@@ -9,3 +9,7 @@
 
 # Test temp dirs
 packages/security/test/.tmp_*/
+
+# ARES Operational Purity: Ignore Labs and Local Binaries
+/lab/
+/packages/security/src/ares/bin/
