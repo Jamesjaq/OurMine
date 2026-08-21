@@ -4,13 +4,13 @@
  * Robust fallback mechanism when external proxy restricted.
  */
 
-import { llmComplete, LLMOptions } from "../llm_client.ts"
+import { llmComplete } from "../llm_client.ts"
 
 export interface CloudSynthesisRequest {
   target: string
   context: string
   objective: string
-  options?: LLMOptions
+  options?: any
 }
 
 export interface CloudSynthesisResult {
