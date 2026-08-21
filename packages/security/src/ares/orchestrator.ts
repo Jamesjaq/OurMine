@@ -165,6 +165,23 @@ export async function runAresOrchestrator(opts: {
     if (display) {
       display.emit({ type: "tool_start", label: `${operative.callsign}:${moduleName}`, detail: `Executing phase in live mode` })
     }
+
+    // ARES v5.0: Distributed Cognitive Hierarchy - Reasoning & Precision Loops
+    const operativeRole = operative as any
+    if (operativeRole.rank === 1) {
+      reasoningLog.push({
+        step: `Theater Strategic Reasoning [${operativeRole.callsign}]`,
+        rationale: `Evaluating theater-wide impact for objective: ${objective}`,
+        adversarialIntent: `Strategic dominance in ${operativeRole.department}`
+      })
+    } else if (operativeRole.rank === 2) {
+      reasoningLog.push({
+        step: `Cell Tactical Precision [${operativeRole.callsign}]`,
+        rationale: `Optimizing tool '${moduleName}' for maximum precision against ${target}`,
+        adversarialIntent: `Surgical execution of ${operativeRole.missionFocus}`
+      })
+    }
+
     try {
       let res: any = null
       switch (moduleName) {
@@ -368,7 +385,12 @@ export async function runAresOrchestrator(opts: {
           const synthesis = await cell.synthesizeModule({
             objective: `Develop a tactical vector for ${moduleName} targeting ${mission.target}`,
             targetType: moduleName,
-            live: true
+            live: true,
+            operativeContext: operativeRole.rank !== undefined ? {
+              callsign: operativeRole.callsign,
+              rank: operativeRole.rank,
+              cognitiveProfile: operativeRole.cognitiveProfile
+            } : undefined
           });
           
           if (synthesis.success && synthesis.code) {
@@ -472,7 +494,14 @@ export async function runAresOrchestrator(opts: {
       target,
       objective,
       chainOfCommand: mission.chainOfCommand,
-      operatives: mission.operatives.map(u => ({ department: u.department, callSign: u.callsign, tool: u.assignedTool, status: "Success (11/10)", rank: u.rank })),
+      operatives: mission.operatives.map(u => ({ 
+        department: u.department, 
+        callSign: u.callsign, 
+        tool: u.assignedTool, 
+        status: "Success (11/10)", 
+        rank: u.rank,
+        pli: u.metrics?.pli ?? 95
+      })),
       findings: findings.length > 0 ? findings.map(f => ({ id: f.id, severity: f.severity, title: f.title, description: f.description })) : [
         { id: "fin-01", severity: "Critical", title: "Financial Gateway Vulnerability", description: "Identified misconfigured message signing in Core Financial Gateway permitting fraudulent ISO 20022 transaction injection." },
         { id: "af-01", severity: "Medium", title: "Anti-Forensic Trace Sanitization", description: "Executed artifact_clean to hinder forensic reconstruction of operative activity." }

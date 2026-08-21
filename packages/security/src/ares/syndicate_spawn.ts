@@ -7,6 +7,19 @@
 import { moduleEnvelope, summarizeForLlm } from "../module_helpers.ts"
 import * as crypto from "node:crypto"
 
+export interface CognitiveProfile {
+  strategicForesight: number
+  tacticalPrecision: number
+  lethalityIndex: number
+  specialization: string
+}
+
+export interface PrecisionMetrics {
+  pli: number // Precision & Lethality Index
+  successRate: number
+  evasionEfficiency: number
+}
+
 export interface OperativeRole {
   department: string
   title: string
@@ -17,6 +30,8 @@ export interface OperativeRole {
   rank: number // 0 = Supreme, 1 = Theater, 2 = Cell Lead, 3 = Operative
   parentId?: string // Callsign of the superior officer
   subordinates?: string[] // Callsigns of reporting officers
+  cognitiveProfile: CognitiveProfile
+  metrics: PrecisionMetrics
 }
 
 export interface SyndicateMissionPlan {
@@ -54,7 +69,9 @@ export class SyndicateSpawner {
       assignedTool: "ares_shadow_organization",
       autonomyLevel: "strategic",
       rank: 0,
-      subordinates: []
+      subordinates: [],
+      cognitiveProfile: { strategicForesight: 100, tacticalPrecision: 95, lethalityIndex: 98, specialization: "Global Strategic Orchestration" },
+      metrics: { pli: 99.2, successRate: 100, evasionEfficiency: 99.9 }
     }
     operatives.push(supreme)
     workflow.push("ares_shadow_organization")
@@ -72,7 +89,9 @@ export class SyndicateSpawner {
         autonomyLevel: "strategic",
         rank: 1,
         parentId: supremeCallsign,
-        subordinates: []
+        subordinates: [],
+        cognitiveProfile: { strategicForesight: 95, tacticalPrecision: 90, lethalityIndex: 95, specialization: t.department },
+        metrics: { pli: 94.5, successRate: 98, evasionEfficiency: 96.2 }
       }
       operatives.push(theater)
       supreme.subordinates!.push(theaterCallsign)
@@ -91,7 +110,9 @@ export class SyndicateSpawner {
           autonomyLevel: "tactical",
           rank: 2,
           parentId: theaterCallsign,
-          subordinates: []
+          subordinates: [],
+          cognitiveProfile: { strategicForesight: 80, tacticalPrecision: 98, lethalityIndex: 99, specialization: c.title },
+          metrics: { pli: 98.7, successRate: 99.5, evasionEfficiency: 98.1 }
         }
         operatives.push(cell)
         theater.subordinates!.push(cellCallsign)
@@ -109,7 +130,9 @@ export class SyndicateSpawner {
       assignedTool: "ares_anti_forensics",
       autonomyLevel: "execution",
       rank: 1,
-      parentId: supremeCallsign
+      parentId: supremeCallsign,
+      cognitiveProfile: { strategicForesight: 70, tacticalPrecision: 99.9, lethalityIndex: 50, specialization: "Forensic Invisibility" },
+      metrics: { pli: 99.9, successRate: 100, evasionEfficiency: 100 }
     })
     supreme.subordinates!.push(shadowCallsign)
     workflow.push("ares_anti_forensics")

@@ -14,6 +14,16 @@ export interface SynthesisOptions {
   objective: string
   targetType: string
   live?: boolean
+  operativeContext?: {
+    callsign: string
+    rank: number
+    cognitiveProfile: {
+      strategicForesight: number
+      tacticalPrecision: number
+      lethalityIndex: number
+      specialization: string
+    }
+  }
 }
 
 export interface SynthesisResult {
@@ -79,11 +89,20 @@ export class SynthesisCell {
 
     // ARES v5.0: Sovereign Local Weight Pinning check
     let localLlmSuccess = false
+    const ctx = opts.operativeContext
+    const cognitiveContext = ctx ? `
+[COGNITIVE_PROFILE: ${ctx.callsign}]
+Rank: ${ctx.rank}
+Strategic Foresight: ${ctx.cognitiveProfile.strategicForesight}/100
+Tactical Precision: ${ctx.cognitiveProfile.tacticalPrecision}/100
+Lethality Index: ${ctx.cognitiveProfile.lethalityIndex}/100
+Specialization: ${ctx.cognitiveProfile.specialization}` : ""
+
     try {
       const localPrompt = `[SYNDICATE_LOCAL_INFERENCE_v5.0]
 Architecting ARES v5.0 module: ${moduleName}
 Objective: ${opts.objective}
-Target: ${opts.targetType}
+Target: ${opts.targetType}${cognitiveContext}
 Output ONLY the raw TypeScript code. No markdown.`
 
       const localRes = await this.callLocalInference(localPrompt)
@@ -103,7 +122,7 @@ You are the ARES v5.0 Autonomous Weaponry Architect, reporting directly to the S
 Write a complete, working, and ruthless TypeScript module for an ARES security module named '${moduleName}'.
 
 Mission Objective: ${opts.objective}
-Target Type: ${opts.targetType}
+Target Type: ${opts.targetType}${cognitiveContext}
 
 Requirements:
 1. Export an async function 'runAutoModule(opts: { live?: boolean })'.
