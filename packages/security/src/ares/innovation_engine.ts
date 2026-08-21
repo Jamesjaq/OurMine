@@ -61,43 +61,45 @@ export class InnovationEngine {
     const hypotheses: InnovationHypothesis[] = []
     const hasHardware = isToolAvailable("hackrf_transfer")
     
-    // 1. Pragmatic Tradecraft Reuse
+    // ARES v5.0 Strategic Hierarchy: [Available] -> [Latest] -> [Synthesized]
+
+    // 1. [Available] — Tradecraft Reuse (Efficiency First)
     try {
       const libPath = path.join(process.cwd(), ".ourmine", "tradecraft", "library.json")
       if (fs.existsSync(libPath)) {
         const lib = JSON.parse(fs.readFileSync(libPath, "utf8"))
-        const provenCount = Object.values(lib).filter((r: any) => r.proven).length
-        if (provenCount > 0) {
+        const proven = Object.values(lib).filter((r: any) => r.proven)
+        if (proven.length > 0) {
           hypotheses.push({
             id: "HYPO-REUSE-PRAGMATIC",
-            title: "Pragmatic Tool Reuse: Leveraging Proven Tradecraft Library",
-            domainSource: "Tradecraft Library Cache",
+            title: "STRATEGIC REUSE: Leveraging Proven Syndicate Tradecraft",
+            domainSource: "Proven Library",
             domainTarget: target,
-            noveltyScore: 7.0,
-            feasibilityScore: 9.9,
-            generatedTechnique: `Reusing ${provenCount} proven techniques from local Tradecraft Library.`,
-            strategicValue: "Operational speed and signature consistency.",
+            noveltyScore: 5.0, // Low novelty, high efficiency
+            feasibilityScore: 10.0,
+            generatedTechnique: `Deploying ${proven.length} battle-hardened vectors from local vault.`,
+            strategicValue: "Maximum efficiency; zero footprint variability.",
             pathRequirement: "agnostic"
           })
         }
       }
     } catch {}
     
-    // 2. Proactive External Research Ingestion
+    // 2. [Latest] — Intelligence Adaptation (Smart Research)
     const latestIntel = await this.ingestor.fetchLatestIntelligence()
     const relevantIntel = await this.ingestor.mapIntelToTarget(target, latestIntel)
 
     for (const intel of relevantIntel) {
       hypotheses.push({
         id: `HYPO-INTEL-${intel.cveId}`,
-        title: `Proactive Adaption: ${intel.title}`,
-        domainSource: "External Research / CISA KEV",
+        title: `INTELLIGENCE ADAPTATION: ${intel.title}`,
+        domainSource: "Live Research / CISA KEV 2026",
         domainTarget: intel.vectorHeuristic,
-        noveltyScore: 9.5,
-        feasibilityScore: 8.8,
-        generatedTechnique: `Synthesized exploit vector for ${intel.cveId} targeting ${target}.`,
+        noveltyScore: 9.0,
+        feasibilityScore: 9.5,
+        generatedTechnique: `Adapting ${intel.cveId} for immediate tactical deployment.`,
         cveReference: intel.cveId,
-        strategicValue: "High-value infiltration vector.",
+        strategicValue: "Utilizing latest known-exploited vulnerabilities.",
         pathRequirement: "software"
       })
     }
