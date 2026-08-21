@@ -59,6 +59,7 @@ export { generateMissionReportPdf } from "./ares_report_generator.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
 export { runOracleMemory } from "./oracle_memory.ts"
+export { runGhostDaemon } from "./ghost_daemon.ts"
 
 export const ARES_MODULE_NAMES = [
   "ares_zero_day_fuzzer",
@@ -126,6 +127,7 @@ export const ARES_MODULE_NAMES = [
   "ares_esxi_interdiction",
   "ares_saas_admin_subversion",
   "ares_oracle_memory",
+  "ares_ghost_daemon",
 ] as const
 
 export type AresModuleName = (typeof ARES_MODULE_NAMES)[number]

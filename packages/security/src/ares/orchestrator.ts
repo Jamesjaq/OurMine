@@ -489,11 +489,12 @@ export async function runAresOrchestrator(opts: {
   return {
     mission,
     modulesExecuted,
+    reasoningLog,
     findings,
     succeeded,
     total: modulesExecuted.length,
     summary,
-    tokenEfficientSummary: summarizeForLlm(envelope),
+    tokenEfficientSummary: summarizeForLlm({ ...envelope, reasoningLog }),
     data: envelope.data
   }
 }
