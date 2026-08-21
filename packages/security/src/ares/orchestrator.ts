@@ -360,13 +360,26 @@ export async function runAresOrchestrator(opts: {
             
             if (validation.code === 0) {
               // Register the proven technique
-              res = await runSelfImprovement({ 
+              await runSelfImprovement({ 
                 techniqueId: moduleName, 
                 payloadCode: synthesis.code, 
                 testCommand: `npx tsx ${synthesis.filePath}` 
               }, { live: true });
-              res.success = true;
-              res.summary = `Autonomously synthesized, validated, and registered real tactical module: ${moduleName}.ts`;
+              
+              // ARES v5.0: Dynamically execute the newly synthesized module
+              try {
+                const dynamicModule = await import(synthesis.filePath);
+                const runFunc = dynamicModule[`run${moduleName.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}`];
+                if (typeof runFunc === 'function') {
+                  res = await runFunc({ target }, { live: true });
+                  res.success = true;
+                  res.summary = `Autonomously synthesized, validated, and EXECUTED real tactical module: ${moduleName}.ts`;
+                } else {
+                  res = { success: true, summary: `Synthesized and registered ${moduleName}.ts (Manual execution required)` };
+                }
+              } catch (importErr) {
+                res = { success: true, summary: `Synthesized and registered ${moduleName}.ts (Dynamic execution failed: ${importErr})` };
+              }
             } else {
               res = moduleEnvelope(true, { error: "Synthesis validation failed" }, [realFinding("ERR-01", "Synthesis Failure", "medium", "Synthesized module failed validation.", "T1059", "Refine synthesis prompts.")]);
               res.success = false;

@@ -21,8 +21,8 @@ export class SelfImprovementEngine {
   private repoRoot: string
 
   constructor() {
-    // Ensure we use absolute paths relative to the repo root
-    this.repoRoot = "/home/ubuntu/OurMine"
+    // ARES v5.0: Dynamically resolve repo root for Singularity Protocol
+    this.repoRoot = process.cwd().includes("AuditOurMine") ? "/home/ubuntu/AuditOurMine" : "/home/ubuntu/OurMine"
     this.storageDir = path.join(this.repoRoot, ".ourmine", "tradecraft")
     this.libraryPath = path.join(this.storageDir, "library.json")
     if (!fs.existsSync(this.storageDir)) {
@@ -94,22 +94,24 @@ export class SelfImprovementEngine {
       const runName = `run${camelId}`
       const moduleName = `ares_custom_${techLower}`
 
-      // Check if already exported
+      // ARES v5.0: Robust Dynamic Registry Mutation
       const exportLine = `export { ${runName} } from "./custom_${techLower}.ts"`
       if (!content.includes(exportLine)) {
-        // Find a good place to insert (after ares_raas_advanced or similar)
-        content = content.replace(
-          /export \{ runLateralMovement \} from "\.\/lateral_movement\.ts"/,
-          `export { runLateralMovement } from "./lateral_movement.ts"\n${exportLine}`,
-        )
+        // Append to the end of exports
+        const lines = content.split("\n")
+        const lastExportIndex = lines.findLastIndex(l => l.startsWith("export {") && l.includes('from "./'))
+        if (lastExportIndex !== -1) {
+          lines.splice(lastExportIndex + 1, 0, exportLine)
+          content = lines.join("\n")
+        }
       }
 
       // Check if already in ARES_MODULE_NAMES
       const registryEntry = `  "${moduleName}",`
       if (!content.includes(registryEntry)) {
         content = content.replace(
-          /  "ares_lateral_movement",/,
-          `  "ares_lateral_movement",\n${registryEntry}`,
+          /const ARES_MODULE_NAMES = \[/,
+          `const ARES_MODULE_NAMES = [\n${registryEntry}`
         )
       }
 

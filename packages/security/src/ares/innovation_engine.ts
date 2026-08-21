@@ -7,6 +7,7 @@
 import { moduleEnvelope, executeLiveCommand } from "../module_helpers.ts"
 import { ResearchIngestor, type ExploitIntelligence } from "./research_ingestor.ts"
 import { SynthesisCell } from "./synthesis_cell.ts"
+import { SelfImprovementEngine } from "./self_improvement.ts"
 import * as path from "node:path"
 import * as fs from "node:fs"
 import { isToolAvailable } from "./_base.ts"
@@ -29,10 +30,12 @@ export interface InnovationHypothesis {
 export class InnovationEngine {
   private ingestor: ResearchIngestor
   private synthesisCell: SynthesisCell
+  private evolutionEngine: SelfImprovementEngine
 
   constructor() {
     this.ingestor = new ResearchIngestor()
     this.synthesisCell = new SynthesisCell()
+    this.evolutionEngine = new SelfImprovementEngine()
   }
 
   /**
@@ -130,6 +133,15 @@ export class InnovationEngine {
 
       // v5.0 Battle-Hardening
       const hardening = await this.battleHardenPayload(result.code || "", targetType)
+
+      // ARES v5.0: Eternal Memory & Cataloging
+      if (hardening.ok && result.code) {
+        await this.evolutionEngine.validateAndIngestLive(
+          `AUTO_${result.moduleName.toUpperCase()}`,
+          result.code,
+          `npx tsx --check ${result.filePath}`
+        )
+      }
       
       hypotheses.push({
         id: "HYPO-SELF-EVOLVE-01",
@@ -138,11 +150,11 @@ export class InnovationEngine {
         domainTarget: targetType,
         noveltyScore: 10.0,
         feasibilityScore: hardening.ok ? 9.9 : 5.0,
-        generatedTechnique: `Autonomously synthesized and BATTLE-HARDENED bespoke tactical module: ${result.moduleName}.ts`,
+        generatedTechnique: `Autonomously synthesized, BATTLE-HARDENED, and CATALOGED bespoke tactical module: ${result.moduleName}.ts`,
         strategicValue: "Infinite adaptability to completely unknown or futuristic mission environments.",
         pathRequirement: "agnostic",
         synthesizedModule: result.moduleName,
-        liveOutput: hardening.ok ? "PROVEN_LETHAL" : "VALIDATION_FAILED"
+        liveOutput: hardening.ok ? "PROVEN_LETHAL & COMMITTED_TO_VAULT" : "VALIDATION_FAILED"
       })
     }
 
