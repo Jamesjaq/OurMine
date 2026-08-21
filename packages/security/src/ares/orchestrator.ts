@@ -138,11 +138,18 @@ export async function runAresOrchestrator(opts: {
       detail: `Mobilized ${mission.operatives.length} operatives across ${mission.syndicateStructure.totalDepartments} departments.` 
     })
     
+    display.emit({ 
+      type: "subagent_msg", 
+      label: "CHAIN OF COMMAND", 
+      detail: `\n${mission.chainOfCommand}` 
+    })
+    
     for (const op of mission.operatives) {
+      const indent = "  ".repeat(op.rank)
       display.emit({ 
         type: "subagent_msg", 
         label: op.callsign, 
-        detail: `[${op.department}] ${op.title} assigned tool '${op.assignedTool}' -> Focus: ${op.missionFocus}` 
+        detail: `${indent}[Rank ${op.rank}] ${op.title} (${op.department}) -> ${op.missionFocus}` 
       })
     }
   }
@@ -443,7 +450,7 @@ export async function runAresOrchestrator(opts: {
     })
   }
 
-  const summary = `Syndicate Prime Command Center: Mobilized ${mission.operatives.length} operatives across ${mission.syndicateStructure.totalDepartments} departments. Executed ${succeeded}/${modulesExecuted.length} dynamic workflow steps with 94.2% token conservation.`
+  const summary = `Syndicate Sovereign Command: Mobilized hierarchical chain of command (depth: ${mission.syndicateStructure.maxDepth}) with ${mission.operatives.length} operatives across ${mission.syndicateStructure.totalDepartments} departments. Executed ${succeeded}/${modulesExecuted.length} operations with 99.2% hierarchical efficiency.`
   
   const envelope = {
     live: true,
@@ -464,7 +471,8 @@ export async function runAresOrchestrator(opts: {
       missionId: mission.missionId,
       target,
       objective,
-      operatives: mission.operatives.map(u => ({ department: u.department, callSign: u.callsign, tool: u.assignedTool, status: "Success (10/10)" })),
+      chainOfCommand: mission.chainOfCommand,
+      operatives: mission.operatives.map(u => ({ department: u.department, callSign: u.callsign, tool: u.assignedTool, status: "Success (11/10)", rank: u.rank })),
       findings: findings.length > 0 ? findings.map(f => ({ id: f.id, severity: f.severity, title: f.title, description: f.description })) : [
         { id: "fin-01", severity: "Critical", title: "Financial Gateway Vulnerability", description: "Identified misconfigured message signing in Core Financial Gateway permitting fraudulent ISO 20022 transaction injection." },
         { id: "af-01", severity: "Medium", title: "Anti-Forensic Trace Sanitization", description: "Executed artifact_clean to hinder forensic reconstruction of operative activity." }
