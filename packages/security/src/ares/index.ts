@@ -54,7 +54,7 @@ export { runBioDigitalInterdiction } from "./bio_digital_interdiction.ts"
 export { runBioDigitalWetware, runQuantumNativePersistence } from "./final_frontiers.ts"
 export { runProgramAnalysis, runRingMinusThreePersistence, runSwarmLearning, runSupplyChainPoisoning } from "./apex_modules.ts"
 export { runAdsBasedDelivery, runIdeExtensionPoisoning, runCloudApiC2, runRingMinusFourPersistence } from "./shadow_modules.ts"
-export { runVishingHelpDesk, runMfaFatigue, runEsxiInterdiction, runSaasAdminSubversion } from "./spider_modules.ts"
+// export { runVishingHelpDesk, runMfaFatigue, runEsxiInterdiction, runSaasAdminSubversion } from "./spider_modules.ts"
 export { generateMissionReportPdf } from "./ares_report_generator.ts"
 
 export { runAresOrchestrator } from "./orchestrator.ts"
@@ -122,10 +122,10 @@ export const ARES_MODULE_NAMES = [
   "ares_ide_poison",
   "ares_cloud_api_c2",
   "ares_ring_minus_four",
-  "ares_vishing_help_desk",
-  "ares_mfa_fatigue",
-  "ares_esxi_interdiction",
-  "ares_saas_admin_subversion",
+  // "ares_vishing_help_desk",
+  // "ares_mfa_fatigue",
+  // "ares_esxi_interdiction",
+  // "ares_saas_admin_subversion",
   "ares_oracle_memory",
   "ares_ghost_daemon",
 ] as const

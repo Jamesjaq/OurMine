@@ -27,6 +27,7 @@ import { runCognitiveOps } from "./cognitive_ops.ts"
 import { runFinancialWarfare } from "./financial_warfare.ts"
 import { runDeceptionEngine } from "./deception_noise.ts"
 import { runAntiForensics } from "./anti_forensics.ts"
+import { runOracleMemory } from "./oracle_memory.ts"
 import { 
   runRaasAdvanced, 
   runMalwareFactory,
@@ -157,6 +158,7 @@ export async function runAresOrchestrator(opts: {
   const modulesExecuted: SyndicatePrimeResult["modulesExecuted"] = []
   const findings: ModuleFinding[] = []
   let succeeded = 0
+  const reasoningLog: Array<{ step: string; rationale: string; adversarialIntent: string }> = []
 
   // Step 2: Execute the dynamically generated workflow sequence with local recursive reasoning
   for (const moduleName of mission.executionGraph) {
@@ -451,7 +453,14 @@ export async function runAresOrchestrator(opts: {
         success: res.success !== false,
         summary: summaryText
       })
-      if (res.success !== false) succeeded++
+      if (res.success !== false) {
+        succeeded++
+        if (res.findings && Array.isArray(res.findings)) {
+          findings.push(...res.findings)
+        } else if (res.data && res.data.findings && Array.isArray(res.data.findings)) {
+          findings.push(...res.data.findings)
+        }
+      }
     } catch (err: any) {
       if (display) {
         display.emit({ type: "error", label: `${operative.callsign}:${moduleName}`, detail: err.message })

