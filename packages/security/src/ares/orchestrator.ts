@@ -113,6 +113,18 @@ export async function runAresOrchestrator(opts: {
   const objective = opts.objective ?? "Autonomous penetration, tactical pivoting, covert persistence, and zero-day synthesis"
   const display = opts.display
 
+  // ARES v5.0: Recall prior heuristics from Encrypted Ephemeral Memory
+  let priorHeuristics: Record<string, any> = {}
+  try {
+    const memory = await runOracleMemory({ action: "recall" }, { live: true })
+    const memoryData = memory as any
+    if (memoryData.status === "RECALLED" && memoryData.state) {
+      priorHeuristics = memoryData.state.heuristics || {}
+    }
+  } catch (e) {
+    // Initial mission run
+  }
+
   // Step 1: Self-organize into specialized syndicate cells.
   // v5.0 grants full sovereignty to the model to architect the mission.
   const spawner = new SyndicateSpawner()

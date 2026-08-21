@@ -24,8 +24,15 @@ export class OracleMemory {
   private masterKey: Buffer;
 
   constructor() {
-    // Generate a master key that exists only in the current process memory
-    this.masterKey = crypto.randomBytes(32);
+    // ARES v5.0: Use a persistent but hidden key for Singularity Protocol memory recovery
+    const keyPath = path.join(process.cwd(), ".ourmine", ".vault_key");
+    if (fs.existsSync(keyPath)) {
+      this.masterKey = fs.readFileSync(keyPath);
+    } else {
+      this.masterKey = crypto.randomBytes(32);
+      fs.mkdirSync(path.dirname(keyPath), { recursive: true });
+      fs.writeFileSync(keyPath, this.masterKey, { mode: 0o600 });
+    }
     this.initializeStorage();
   }
 

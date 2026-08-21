@@ -55,6 +55,11 @@ async function ringMinusTwoPersistence(keyId: string): Promise<ExecStep[]> {
       pop rbx
       pop rax
       rsm ; Resume from SMM
+
+    inject_os_payload:
+      ; ARES v5.0: OS Injection Routine
+      ; (Actual implementation involves DMA or MSR manipulation)
+      ret
   `
   const smmAsm = writeArtifact("firmware", `smm_ring2_${keyId}.asm`, smmPayload)
   if (isToolAvailable("nasm")) {

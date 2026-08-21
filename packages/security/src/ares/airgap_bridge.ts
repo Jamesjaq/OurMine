@@ -43,7 +43,8 @@ async function modulateAcousticFan(data: string): Promise<ExecStep> {
     echo 150 > ${fanPath} # Reset
   `
   const scriptPath = writeArtifact("airgap", "fan_modulator.sh", script, 0o755)
-  return step("acoustic_fan_modulation", true, `Transmitting data via acoustic fan PWM modulation: ${scriptPath}`)
+  const res = await brokerExec(`bash ${scriptPath} 2>&1`)
+  return step("acoustic_fan_modulation", res.ok, `Transmitting data via acoustic fan PWM modulation: ${scriptPath}`)
 }
 
 async function modulateEMBus(data: string): Promise<ExecStep> {
@@ -62,7 +63,8 @@ async function modulateEMBus(data: string): Promise<ExecStep> {
     done
   `
   const scriptPath = writeArtifact("airgap", "em_modulator.sh", script, 0o755)
-  return step("em_bus_modulation", true, `Transmitting data via EM bus emission (CPU freq toggling): ${scriptPath}`)
+  const res = await brokerExec(`bash ${scriptPath} 2>&1`)
+  return step("em_bus_modulation", res.ok, `Transmitting data via EM bus emission (CPU freq toggling): ${scriptPath}`)
 }
 
 export async function runAirgapBridge(opts: {
