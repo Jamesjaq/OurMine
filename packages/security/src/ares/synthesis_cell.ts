@@ -8,6 +8,7 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import { fileURLToPath } from "node:url"
 import { llmComplete, llmChat, hasLLMKey } from "../llm_client.ts"
+import * as http from "node:http"
 
 export interface SynthesisOptions {
   objective: string
@@ -27,10 +28,12 @@ export interface SynthesisResult {
 
 export class SynthesisCell {
   private baseDir: string
+  private localEndpoint: string = "http://localhost:11434/api/generate" // ARES v5.0 Sovereign Local Inference
 
-  constructor() {
+  constructor(endpoint?: string) {
     const __filename = fileURLToPath(import.meta.url)
     this.baseDir = path.dirname(__filename)
+    if (endpoint) this.localEndpoint = endpoint
   }
 
   /**
@@ -74,10 +77,29 @@ export class SynthesisCell {
     let code = ""
     let source: "llm_synthesized" | "fallback_template" = "fallback_template"
 
-    if (hasLLMKey()) {
+    // ARES v5.0: Sovereign Local Weight Pinning check
+    let localLlmSuccess = false
+    try {
+      const localPrompt = `[SYNDICATE_LOCAL_INFERENCE_v5.0]
+Architecting ARES v5.0 module: ${moduleName}
+Objective: ${opts.objective}
+Target: ${opts.targetType}
+Output ONLY the raw TypeScript code. No markdown.`
+
+      const localRes = await this.callLocalInference(localPrompt)
+      if (localRes && localRes.includes("export async function")) {
+        code = localRes.trim()
+        source = "llm_synthesized"
+        localLlmSuccess = true
+      }
+    } catch (e) {
+      console.warn("[SynthesisCell] Local weight pinning unavailable. Checking external telemetry-risk APIs...")
+    }
+
+    if (!localLlmSuccess && hasLLMKey()) {
       try {
         const prompt = `[PROTOCOL: SUPREME_COMMANDER_DIRECTIVE]
-You are the ARES v4.2.0 Autonomous Weaponry Architect, reporting directly to the Supreme Commander. 
+You are the ARES v5.0 Autonomous Weaponry Architect, reporting directly to the Supreme Commander. 
 Write a complete, working, and ruthless TypeScript module for an ARES security module named '${moduleName}'.
 
 Mission Objective: ${opts.objective}
@@ -130,5 +152,39 @@ export async function runAutoModule(opts: { live?: boolean }) {
       stylometryMasked: true,
       kineticVerified
     }
+  }
+
+  private async callLocalInference(prompt: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const body = JSON.stringify({
+        model: "llama3:70b-instruct-q4_K_M",
+        prompt: prompt,
+        stream: false
+      })
+
+      const req = http.request(this.localEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": body.length
+        },
+        timeout: 30000 // 30s timeout for local inference
+      }, (res) => {
+        let data = ""
+        res.on("data", chunk => data += chunk)
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data)
+            resolve(parsed.response || parsed.generated_text || "")
+          } catch (e) {
+            reject(e)
+          }
+        })
+      })
+
+      req.on("error", reject)
+      req.write(body)
+      req.end()
+    })
   }
 }

