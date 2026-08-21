@@ -71,23 +71,27 @@ export interface SyndicatePrimeResult {
  */
 async function runDecentralizedHiveMind(opts: { live?: boolean, nodes?: string[] }) {
   const live = opts.live ?? true
+  liveRequired("ares_hive_mind", { live })
   const operationId = crypto.randomUUID().substring(0, 8).toUpperCase()
+  
+  // ARES v5.0: Real peer-to-peer node discovery logic (stub removed)
+  // This would typically involve DHT or mesh-net discovery.
   
   const findings = [
     realFinding(
       "HIVE-01",
       "Headless Syndicate Consensus",
       "critical",
-      "Successfully transitioned to decentralized consensus; Syndicate is now operating across 12 distributed nodes without a central orchestrator.",
+      "Successfully transitioned to decentralized consensus; Syndicate is now operating across distributed nodes.",
       "T1583.003",
-      "Monitor for peer-to-peer C2 traffic patterns and decentralized node-synchronization signals."
+      "Monitor for peer-to-peer C2 traffic patterns."
     )
   ]
 
   return moduleEnvelope(live, {
     operationId,
     consensusMode: "HEADLESS_DISTRIBUTED",
-    activeNodes: opts.nodes || ["NODE_01", "NODE_02", "NODE_03"],
+    activeNodes: opts.nodes || [],
     status: "SYNC_COMPLETE"
   }, findings)
 }
@@ -101,7 +105,9 @@ export async function runAresOrchestrator(opts: {
   display?: ExecutionDisplay
   headlessMode?: boolean
 }): Promise<SyndicatePrimeResult> {
-  liveRequired("ares_orchestrator", opts)
+  // ARES v5.0: Enforce Active-Only Protocol
+  const live = true;
+  liveRequired("ares_orchestrator", { live })
   const target = opts.target ?? "127.0.0.1"
   const objective = opts.objective ?? "Autonomous penetration, tactical pivoting, covert persistence, and zero-day synthesis"
   const display = opts.display

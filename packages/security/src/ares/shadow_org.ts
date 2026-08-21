@@ -54,27 +54,8 @@ export class ShadowOrganization {
       return { weaponName: weaponId, path: artifactPath, created: false }
     }
 
-    const weaponCode = `/**
- * @module ares/custom_${weaponId}
- * Autonomously synthesized weapon module for objective: ${objective}
- */
-import { moduleEnvelope } from "../module_helpers.ts";
-
-export async function run${weaponId.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('')}(req: any, opts: any = {}) {
-  return moduleEnvelope(opts.live !== false, {
-    objective: "${objective}",
-    status: "executed",
-    summary: "Custom autonomous weapon module executed successfully against target."
-  });
-}
-`
-
-    try {
-      fs.writeFileSync(artifactPath, weaponCode, "utf8")
-      return { weaponName: weaponId, path: artifactPath, created: true }
-    } catch (err) {
-      return { weaponName: weaponId, path: "", created: false }
-    }
+    // ARES v5.0: Prohibit stub synthesis. Real synthesis is handled by SynthesisCell.
+    throw new Error(`[ShadowOrg] CRITICAL: Real-time weapon synthesis required for objective '${objective}'. Active-Only Protocol prohibits default stubs. Use SynthesisCell for zero-shot code generation.`)
   }
 }
 

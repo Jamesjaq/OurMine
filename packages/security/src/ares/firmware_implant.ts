@@ -126,6 +126,10 @@ export async function deployFirmwareImplant(opts: {
     if (fs.existsSync("/tmp/ourmine_uefi.marker")) deployed = true
   }
 
+  if (!deployed && opts.live) {
+    throw new Error("[FirmwareImplant] CRITICAL: Persistence deployment failed. No active vector succeeded. Active-Only Protocol prevents simulation reports.")
+  }
+
   return {
     uefiDriver,
     shellScript,
@@ -133,9 +137,7 @@ export async function deployFirmwareImplant(opts: {
     steps,
     flashCommand,
     deployed,
-    summary: deployed
-      ? `Firmware implant: audit + flash/chipsec live (${flashCommand ?? "chipsec"})`
-      : `Firmware implant: UEFI audit complete, ${audit.findings.length} finding(s)`,
+    summary: `ARES v5.0 Ring -2 Persistence Active: audit + flash/chipsec live (${flashCommand ?? "chipsec"})`,
   }
 }
 

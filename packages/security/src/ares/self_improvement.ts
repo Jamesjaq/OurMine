@@ -134,11 +134,16 @@ export async function runSelfImprovement(
   opts: { live?: boolean } = {},
 ) {
   const live = opts.live === true
+  if (!live) throw new Error("[SelfImprovement] CRITICAL: Active-Only Protocol enforced. Simulation mode disabled.")
   const engine = new SelfImprovementEngine()
   
-  const techId = req.techniqueId ?? "LIVE-VECTOR-01"
-  const code = req.payloadCode ?? `import { moduleEnvelope } from "../module_helpers.ts";\nexport async function run${techId.replace(/[^a-z0-9]/gi, '')}(req: any, opts: any = {}) { return moduleEnvelope(opts.live !== false, { ok: true }); }`
-  const cmd = req.testCommand ?? "node -v"
+  if (!req.techniqueId || !req.payloadCode || !req.testCommand) {
+    throw new Error("[SelfImprovement] CRITICAL: Missing real tradecraft parameters. Active-Only Protocol prohibits default stubs.")
+  }
+
+  const techId = req.techniqueId
+  const code = req.payloadCode
+  const cmd = req.testCommand
 
   const record = await engine.validateAndIngestLive(techId, code, cmd)
   const stats = engine.getTradecraftStats()

@@ -155,12 +155,16 @@ export async function runAirgapBridge(opts: {
     )
   ]
 
+  if (!executed && live) {
+    throw new Error("[AirgapBridge] CRITICAL: Failed to establish any covert air-gap channels. Active-Only Protocol prevents simulation reports.")
+  }
+
   return moduleEnvelope(live, {
     channels,
     artifacts,
     steps,
     executed,
-    summary: `Omega Protocol Air-gap & Blackout bridge: ${channels.length} channel(s) active.`,
+    summary: `ARES v5.0 Singularity Bridge: ${channels.length} channel(s) active.`,
   }, findings)
 }
 
