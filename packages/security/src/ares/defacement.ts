@@ -5,7 +5,7 @@
 import { moduleEnvelope, executeLiveCommand } from "../module_helpers.ts"
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { crypto } from "node:crypto"
+
 
 export async function runDefacement(
   req: { target?: string; objective?: string },

@@ -3,7 +3,7 @@
 ARES v4.2.0 Target Infiltration: Safaricom Investment Co-operative (sic.co.ke)
 */
 
-import { runAresOrchestrator } from "./orchestrator.js"
+import { runAresOrchestrator } from "./orchestrator.ts"
 
 async function executeSicMission() {
   console.log("[SIC Mission] Initializing ARES v4.2.0 Syndicate Prime Orchestrator against sic.co.ke...")
