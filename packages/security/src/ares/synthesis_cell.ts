@@ -31,8 +31,8 @@ export class SynthesisCell {
   private localEndpoint: string = "http://localhost:11434/api/generate" // ARES v5.0 Sovereign Local Inference
 
   constructor(endpoint?: string) {
-    const __filename = fileURLToPath(import.meta.url)
-    this.baseDir = path.dirname(__filename)
+    // ARES v5.0: Use absolute path mapping for Singularity Protocol
+    this.baseDir = path.join(process.cwd(), "packages/security/src/ares")
     if (endpoint) this.localEndpoint = endpoint
   }
 
@@ -117,8 +117,9 @@ Requirements:
           { role: "user", content: prompt }
         ], { maxTokens: 1500 })
 
-        if (res.text && res.text.includes("export async function")) {
-          code = res.text.replace(/```typescript/g, "").replace(/```ts/g, "").replace(/```/g, "").trim()
+        const llmRes = res as any
+        if (llmRes.text && llmRes.text.includes("export async function")) {
+          code = llmRes.text.replace(/```typescript/g, "").replace(/```ts/g, "").replace(/```/g, "").trim()
           source = "llm_synthesized"
         }
       } catch (err) {

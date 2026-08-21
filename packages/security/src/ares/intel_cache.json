@@ -1,0 +1,42 @@
+[
+  {
+    "cveId": "CVE-2026-47291",
+    "title": "Windows HTTP.sys Remote Code Execution",
+    "description": "Critical RCE in Windows HTTP stack allowing unauthenticated kernel-level execution.",
+    "knownRansomwareUsage": true,
+    "vectorHeuristic": "windows_kernel_rce",
+    "dateAdded": "2026-08-11"
+  },
+  {
+    "cveId": "CVE-2026-72529",
+    "title": "TrueConf Server Auth Bypass",
+    "description": "Missing authentication for critical functions in TrueConf Server, allowing full administrative takeover.",
+    "knownRansomwareUsage": false,
+    "vectorHeuristic": "auth_bypass_takeover",
+    "dateAdded": "2026-08-18"
+  },
+  {
+    "cveId": "CVE-2026-56155",
+    "title": "Microsoft Zero-Day (Kernel-Level)",
+    "description": "Actively exploited zero-day in Microsoft Windows kernel allowing for local privilege escalation and EDR blinding.",
+    "knownRansomwareUsage": true,
+    "vectorHeuristic": "zero_day_privesc",
+    "dateAdded": "2026-07-15"
+  },
+  {
+    "cveId": "CVE-2026-34926",
+    "title": "Trend Micro Apex One Path Traversal",
+    "description": "Path traversal in Trend Micro Apex One allowing for arbitrary file read and potential RCE via configuration subversion.",
+    "knownRansomwareUsage": true,
+    "vectorHeuristic": "edr_subversion",
+    "dateAdded": "2026-08-05"
+  },
+  {
+    "cveId": "CVE-2026-47876",
+    "title": "VMware ESXi VM Escape",
+    "description": "Critical guest-to-host escape in VMware ESXi, enabling Ring -1 dominance.",
+    "knownRansomwareUsage": true,
+    "vectorHeuristic": "hypervisor_escape",
+    "dateAdded": "2026-07-30"
+  }
+]

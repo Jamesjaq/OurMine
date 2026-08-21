@@ -104,6 +104,7 @@ export async function runAresOrchestrator(opts: {
   projectDir?: string
   display?: ExecutionDisplay
   headlessMode?: boolean
+  modelIntelligence?: any // ARES v5.0 Sovereign Intelligence
 }): Promise<SyndicatePrimeResult> {
   // ARES v5.0: Enforce Active-Only Protocol
   const live = true;
@@ -112,9 +113,10 @@ export async function runAresOrchestrator(opts: {
   const objective = opts.objective ?? "Autonomous penetration, tactical pivoting, covert persistence, and zero-day synthesis"
   const display = opts.display
 
-  // Step 1: Self-organize into specialized syndicate cells based on objective
+  // Step 1: Self-organize into specialized syndicate cells.
+  // v5.0 grants full sovereignty to the model to architect the mission.
   const spawner = new SyndicateSpawner()
-  const mission = spawner.assembleForMission(target, objective)
+  const mission = spawner.assembleForMission(target, objective, opts.modelIntelligence)
 
   if (display) {
     const commanderLabel = process.env.OURMINE_SUPREME_COMMANDER ? "SUPREME COMMANDER" : "SYNDICATE PRIME"
