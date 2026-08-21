@@ -6,7 +6,7 @@
  */
 
 import * as crypto from "node:crypto"
-import { llmComplete } from "../llm_client.ts"
+import { llmComplete } from "../llm_client.js"
 
 export interface OperativeRole {
   department: string
