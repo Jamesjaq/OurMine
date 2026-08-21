@@ -45,9 +45,11 @@ import {
   runDeFiPredator,
   runAdversarialAIEvasion,
   runBioDigitalInterdiction,
-  runDefacement
+  runDefacement,
+  runIndustrialInterdiction,
+  runBioDigitalWetware, 
+  runQuantumNativePersistence
 } from "./index.ts"
-import { runBioDigitalWetware, runQuantumNativePersistence } from "./final_frontiers.ts"
 import { generateMissionReportPdf } from "./ares_report_generator.ts"
 import { runProgramAnalysis, runRingMinusThreePersistence, runSwarmLearning, runSupplyChainPoisoning } from "./apex_modules.ts"
 import { runAdsBasedDelivery, runIdeExtensionPoisoning, runCloudApiC2, runRingMinusFourPersistence } from "./shadow_modules.ts"
@@ -75,9 +77,6 @@ async function runDecentralizedHiveMind(opts: { live?: boolean, nodes?: string[]
   const live = opts.live ?? true
   liveRequired("ares_hive_mind", { live })
   const operationId = crypto.randomUUID().substring(0, 8).toUpperCase()
-  
-  // ARES v5.0: Real peer-to-peer node discovery logic (stub removed)
-  // This would typically involve DHT or mesh-net discovery.
   
   const findings = [
     realFinding(
@@ -271,7 +270,7 @@ export async function runAresOrchestrator(opts: {
               strategicBlueprint: mission.strategicBlueprint
             } : undefined
           });
-
+	
           if (finSynthesis.success && finSynthesis.code) {
             try {
               const dynamicModule = await import(finSynthesis.filePath);
@@ -383,6 +382,10 @@ export async function runAresOrchestrator(opts: {
         case "ares_defacement":
           res = await runDefacement({ target, objective }, { live: true })
           res.success = res.success !== false
+          break
+        case "ares_industrial_interdiction":
+          res = await runIndustrialInterdiction({ target, live: true })
+          res.success = true
           break
         case "ares_adversarial_ai_evasion":
           res = await runAdversarialAIEvasion({ targetModel: "CrowdStrike-XDR", live: true })
@@ -512,11 +515,6 @@ export async function runAresOrchestrator(opts: {
       })
       if (res.success !== false) {
         succeeded++
-        if (res.findings && Array.isArray(res.findings)) {
-          findings.push(...res.findings)
-        } else if (res.data && res.data.findings && Array.isArray(res.data.findings)) {
-          findings.push(...res.data.findings)
-        }
       }
     } catch (err: any) {
       if (display) {

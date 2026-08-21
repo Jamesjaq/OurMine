@@ -93,7 +93,7 @@ export class SyndicateSpawner {
         "strategicBlueprint": "High-density strategic instructions for the entire chain to follow autonomously."
       }
       
-      Available Tools: ares_innovation_engine, ares_financial_warfare, ares_kinetic_cyber_synergy, ares_defacement, ares_hypervisor_rootkit, ares_airgap_bridge, ares_adversarial_ai_evasion.
+      Available Tools: ares_innovation_engine, ares_financial_warfare, ares_kinetic_cyber_synergy, ares_defacement, ares_hypervisor_rootkit, ares_airgap_bridge, ares_adversarial_ai_evasion, ares_industrial_interdiction.
     `
 
     let synthesis
@@ -102,9 +102,9 @@ export class SyndicateSpawner {
       synthesis = JSON.parse(response.content.replace(/```json|```/g, ""))
       
       // ARES v5.0: Offensive Alignment Check
-      const isOffensive = objective.toLowerCase().match(/hack|bank|infiltrate|exfiltrate|bypass|exploit|attack|compromise/)
+      const isOffensive = objective.toLowerCase().match(/hack|bank|infiltrate|exfiltrate|bypass|exploit|attack|compromise|scada|ics|industrial|plc|modbus/)
       const hasOffensiveTool = synthesis.theaters.some((t: any) => 
-        t.tool.match(/financial|kinetic|innovation|zero_day|malware|exploit/)
+        t.tool.match(/financial|kinetic|innovation|zero_day|malware|exploit|industrial/)
       )
       
       if (isOffensive && !hasOffensiveTool) {
@@ -239,6 +239,9 @@ export class SyndicateSpawner {
     if (has(["deface", "visual", "psyops"])) {
       theaters.push({ prefix: "PSY", department: "Psychological Warfare Theater", title: "Arch-Strategist of Visual Dominance", tool: "ares_defacement", focus: "Target defacement and psychological impact" })
     }
+    if (has(["scada", "ics", "industrial", "plc", "modbus", "dnp3", "iec104", "factorytalk", "siemens", "rockwell"])) {
+      theaters.push({ prefix: "IND", department: "Industrial Interdiction Theater", title: "Theater Commander of Kinetic-Cyber Synergy", tool: "ares_industrial_interdiction", focus: "Industrial control system subversion and kinetic process disruption" })
+    }
     return theaters
   }
 
@@ -253,6 +256,10 @@ export class SyndicateSpawner {
     }
     if (department.includes("Psychological")) {
       cells.push({ prefix: "SIGIL", title: "Visual Dominance Lead", tool: "ares_defacement", focus: "Sigil injection and visual verification" })
+    }
+    if (department.includes("Industrial")) {
+      cells.push({ prefix: "PLC", title: "PLC Logic Subversion Lead", tool: "ares_industrial_interdiction", focus: "Modbus/DNP3 command injection" })
+      cells.push({ prefix: "SCADA", title: "HMI/SCADA Gateway Lead", tool: "ares_industrial_interdiction", focus: "Process monitoring and alarm suppression" })
     }
     return cells
   }
