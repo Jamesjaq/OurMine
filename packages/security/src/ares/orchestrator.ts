@@ -114,6 +114,10 @@ export async function runAresOrchestrator(opts: {
   const target = opts.target ?? "127.0.0.1"
   const objective = opts.objective ?? "Autonomous penetration, tactical pivoting, covert persistence, and zero-day synthesis"
   const display = opts.display
+  if (display) {
+    display.emit({ type: "info", label: "DEBUG", detail: `Orchestrator Objective: "${objective}"` })
+    display.emit({ type: "info", label: "DEBUG", detail: `Orchestrator Target: "${target}"` })
+  }
 
   // ARES v5.0: Recall prior heuristics from Encrypted Ephemeral Memory
   let priorHeuristics: Record<string, any> = {}
@@ -193,6 +197,23 @@ export async function runAresOrchestrator(opts: {
           break
         case "ares_innovation_engine":
           res = await runInnovationEngine({ objective, strategicBlueprint: mission.strategicBlueprint }, { live: true })
+          
+          // ARES v5.0: Execute synthesized zero-day modules if battle-hardened
+          if (res.data && res.data.hypotheses) {
+            for (const hypo of res.data.hypotheses) {
+              if (hypo.module && hypo.liveOutput === "PROVEN_LETHAL & COMMITTED_TO_VAULT") {
+                const modPath = path.join(process.cwd(), "packages/security/src/ares", `${hypo.module}.ts`);
+                try {
+                  const dynamicMod = await import(modPath);
+                  const runFunc = dynamicMod.runAutoModule || dynamicMod.runInnovationEngine;
+                  if (typeof runFunc === 'function') {
+                    const execRes = await runFunc({ target }, { live: true });
+                    res.summary += ` | EXECUTED: ${hypo.module} (${execRes.summary})`;
+                  }
+                } catch (e) {}
+              }
+            }
+          }
           res.success = (res.data?.hypothesesCount ?? 0) > 0
           break
         case "ares_self_healing":
@@ -236,7 +257,37 @@ export async function runAresOrchestrator(opts: {
                             objL.includes("flash") || objL.includes("arbitrage") ? "flash_loan_arbitrage" :
                             objL.includes("oracle") ? "oracle_manipulation" :
                             objL.includes("smart contract") || objL.includes("defi") || objL.includes("crypto") ? "smart_contract_exploit" : "iso20022_injection"
-          res = await runFinancialWarfare({ vector: finVector, live: true })
+          
+          // ARES v5.0: Sovereign Lethality Upgrade — Synthesize and Execute real tactical code
+          const finCell = new SynthesisCell();
+          const finSynthesis = await finCell.synthesizeModule({
+            objective: `Execute ${finVector} against ${target}. Objective: ${objective}`,
+            targetType: "financial_warfare",
+            live: true,
+            operativeContext: operativeRole.rank !== undefined ? {
+              callsign: operativeRole.callsign,
+              rank: operativeRole.rank,
+              cognitiveProfile: operativeRole.cognitiveProfile,
+              strategicBlueprint: mission.strategicBlueprint
+            } : undefined
+          });
+
+          if (finSynthesis.success && finSynthesis.code) {
+            try {
+              const dynamicModule = await import(finSynthesis.filePath);
+              const runFunc = dynamicModule.runAutoModule || dynamicModule.runFinancialWarfare;
+              if (typeof runFunc === 'function') {
+                res = await runFunc({ target, vector: finVector }, { live: true });
+                res.success = true;
+              } else {
+                res = await runFinancialWarfare({ vector: finVector, live: true });
+              }
+            } catch (e) {
+              res = await runFinancialWarfare({ vector: finVector, live: true });
+            }
+          } else {
+            res = await runFinancialWarfare({ vector: finVector, live: true });
+          }
           res.success = true
           break
         case "ares_deception_noise":
