@@ -5,6 +5,7 @@
 import * as fs from "node:fs"
 import * as path from "node:path"
 import { auditUEFIAndBootkit } from "../uefi_bootkit_audit.ts"
+import { auditHardwareRootOfTrust } from "./hardware_probe.ts"
 import { brokerExec, ensureAresDir, liveRequired, isToolAvailable, writeArtifact } from "./_base.ts"
 import { runCmd, step, type ExecStep } from "./_integrations.ts"
 import { flashFirmwareBackup, runPlatformCmd } from "./_operational.ts"
@@ -92,6 +93,11 @@ export async function deployFirmwareImplant(opts: {
   // v5.0 Ring -2 Implementation
   const ring2Steps = await ringMinusTwoPersistence(keyId)
   steps.push(...ring2Steps)
+
+  // v5.0 Hardware-Aware Probing & Root-of-Trust Audit Integration
+  const hwAudit = auditHardwareRootOfTrust()
+  writeArtifact("firmware", "hardware_root_of_trust.json", JSON.stringify(hwAudit, null, 2))
+  steps.push(step("hrot_audit", !hwAudit.rootOfTrustWall, hwAudit.recommendation))
 
   const audit = auditUEFIAndBootkit({ live: true })
   writeArtifact("firmware", "uefi_audit.json", JSON.stringify(audit, null, 2))
