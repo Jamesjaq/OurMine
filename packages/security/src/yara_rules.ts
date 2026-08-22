@@ -277,7 +277,7 @@ export function ruleFromStrings(
   } = {},
 ): string {
   const { description = "", attackId = "", condition = "any of them", author = "VANTA" } = opts;
-  const cleaned = [...new Set(strings.filter((s) => s && s.length >= 4))].sort();
+  const cleaned = Array.from(new Set(strings.filter((s) => s && s.length >= 4))).sort();
   if (!cleaned.length) {
     throw new Error("rule_from_strings: no usable strings (need >=4 chars each)");
   }
