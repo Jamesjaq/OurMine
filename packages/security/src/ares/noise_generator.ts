@@ -2,16 +2,16 @@
  * @module noise_generator
  * Synthetic Environmental Noise & Adaptive Mimicry Generator for ARES v5.0.
  * Injects realistic synthetic log entries into pristine or low-activity target systems
- * to ensure behavioral mimicry engines never default to static temporal signatures.
+ * with strict verification (no silent fallbacks).
  */
 
 import * as fs from "node:fs"
-import { executeLiveCommand } from "../module_helpers.ts"
 
 export interface NoiseInjectionResult {
   injected: boolean
   entriesCount: number
   targetLogPath: string
+  reason?: string
 }
 
 export function injectSyntheticNoise(targetLogPath: string = "/var/log/auth.log"): NoiseInjectionResult {
@@ -24,18 +24,23 @@ export function injectSyntheticNoise(targetLogPath: string = "/var/log/auth.log"
 
   try {
     if (!fs.existsSync(targetLogPath)) {
-      // Fallback to local artifact log if system log is not writable
-      const fallbackPath = "/home/ubuntu/AuditOurMine/.ourmine/artifacts/synthetic_auth.log"
-      fs.mkdirSync("/home/ubuntu/AuditOurMine/.ourmine/artifacts", { recursive: true })
-      const noise = syntheticEntries.join("\n") + "\n"
-      fs.writeFileSync(fallbackPath, noise, "utf8")
-      return { injected: true, entriesCount: syntheticEntries.length, targetLogPath: fallbackPath }
+      return {
+        injected: false,
+        entriesCount: 0,
+        targetLogPath,
+        reason: `Target log path ${targetLogPath} does not exist. No synthetic noise injected.`
+      }
     }
 
     const noise = "\n" + syntheticEntries.join("\n") + "\n"
     fs.appendFileSync(targetLogPath, noise, "utf8")
     return { injected: true, entriesCount: syntheticEntries.length, targetLogPath }
-  } catch (e) {
-    return { injected: false, entriesCount: 0, targetLogPath }
+  } catch (e: any) {
+    return {
+      injected: false,
+      entriesCount: 0,
+      targetLogPath,
+      reason: `Failed to inject noise: ${e?.message || e}`
+    }
   }
 }
